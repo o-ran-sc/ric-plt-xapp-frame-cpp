@@ -1,0 +1,55 @@
+---
+project: 'ric_plt_xapp_frame_cpp'
+project_creation_date: '2020-02-25'
+project_category: ''
+lifecycle_state: 'Incubation'
+project_lead: &oran_ric_plt_xapp_frame_cpp_ptl
+    name: 'Thoralf Czichy'
+    email: 'thoralf.czichy@nokia.com'
+    id: 'czichy'
+    company: 'Nokia'
+    timezone: 'America/New_York'
+primary_contact: *oran_ric_plt_xapp_frame_cpp_ptl
+issue_tracking:
+    type: 'jira'
+    url: 'https://jira.o-ran-sc.org/projects/'
+    key: 'RIC'
+mailing_list:
+    type: 'groups.io'
+    url: 'main@lists.o-ran-sc.org'
+    tag: '[]'
+realtime_discussion:
+    type: 'NA'
+    server: 'NA'
+    channel: 'NA'
+meetings:
+    - type: 'gotomeeting+irc'
+      agenda: 'https://wiki.o-ran-sc.org/display/'
+      url: ''
+      server: 'freenode.net'
+      channel: '#oran'
+      repeats: ''
+      time: ''
+repositories:
+    - ric-plt/xapp-frame-cpp
+committers:
+    - <<: *oran_ric_plt_xapp_frame_cpp_ptl
+    - name: 'Anssi Mannila'
+      email: 'anssi.mannila@nokia.com'
+      company: 'Europe/Helsinki'
+      id: 'amannila'
+    - name: 'Scott Daniels'
+      email: 'daniels@research.att.com'
+      company: 'ATT'
+      id: 'escottdaniels'
+    - name: 'Ron Shacham'
+      email: 'rshacham@research.att.com'
+      company: 'ATT'
+      id: 'rshacham'
+tsc:
+    # yamllint disable rule:line-length
+    approval: 'https://lists.o-ran-sc.org/g/main/topic/71383459#488'
+    changes:
+        - type: ''
+          name: ''
+          link: ''
