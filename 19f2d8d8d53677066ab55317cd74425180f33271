@@ -1,0 +1,8 @@
+Code-Review+1: Anssi Mannila <anssi.mannila@nokia.com>
+Code-Review+2: Ron Shacham <rshacham@research.att.com>
+Verified+1: Ron Shacham <rshacham@research.att.com>
+Submitted-by: Scott Daniels <daniels@research.att.com>
+Submitted-at: Tue, 10 Mar 2020 12:17:01 +0000
+Reviewed-on: https://gerrit.o-ran-sc.org/r/c/ric-plt/xapp-frame-cpp/+/2631
+Project: ric-plt/xapp-frame-cpp
+Branch: refs/heads/master
