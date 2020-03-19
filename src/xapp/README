@@ -16,7 +16,12 @@
    limitations under the License.
 ==================================================================================
 
-xAPP C++ Framework
+This directory contains the source for the overall Xapp class.
+Specifially:
 
-This repository contains a "framework" on which C++ RIC applications (xAPPs)
-can be built.
+	xapp.*
+		Is the class that the user creates in their application. It provides, by
+		extension, the RMR messaging functions.
+
+
+	
