@@ -1,4 +1,3 @@
-
 ==================================================================================
        Copyright (c) 2020 Nokia
        Copyright (c) 2020 AT&T Intellectual Property.
@@ -16,7 +15,19 @@
    limitations under the License.
 ==================================================================================
 
-xAPP C++ Framework
+This directory contains a few simple examples which illustrate
+the various ways that the xAPP-C++ framework (xfcpp) can be
+used.
 
-This repository contains a "framework" on which C++ RIC applications (xAPPs)
-can be built.
+xapp_t1.cpp
+	A receiver which demonstrates how callbacks can be
+	declared and used to process specific messages.
+	Also demonstrates the simplicity of setting up an
+	xAPP which simply responds to received messages (a
+	total of 4 instuctions in main()).
+
+xapp_t2.cpp
+	A sender application which demonstrates how the framework
+	can be used for applications which are sending based
+	and need to check for responses. This does not involve
+	the use of callbacks or the frameworks "driver".
