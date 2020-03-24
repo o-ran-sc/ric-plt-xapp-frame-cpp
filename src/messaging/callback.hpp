@@ -35,8 +35,7 @@ class Messenger;
 class Message;
 #include "message.hpp"
 
-typedef void(*user_callback)( Messenger& mr, Message& m, int mtype, int subid, int payload_len, Msg_component payload, void* usr_data );
-								//std::unique_ptr<unsigned char,unfreeable> payload, void* usr_data );
+typedef void(*user_callback)( Message& m, int mtype, int subid, int payload_len, Msg_component payload, void* usr_data );
 
 class Callback {
 
@@ -46,8 +45,7 @@ class Callback {
 
 	public:
 		Callback( user_callback, void* data );					// builder
-		~Callback();											// destroyer
-		void Drive_cb( Messenger& mr, Message& m );		// invoker
+		void Drive_cb( Message& m );							// invoker
 };
 
 

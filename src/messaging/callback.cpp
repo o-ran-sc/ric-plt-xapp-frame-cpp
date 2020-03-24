@@ -42,21 +42,17 @@ Callback::Callback( user_callback ufun, void* data ) {		// builder
 }
 
 /*
-	Wrecking ball.
+	there is nothing to be done from a destruction perspective, so no
+	destruction function needed at the moment.
 */
-Callback::~Callback() {
-	// nothing to do at the moment.
-}
 
 /*
 	Drive_cb will invoke the callback and pass along the stuff passed here.
 */
-void Callback::Drive_cb( Messenger& mr, Message& m ) {
-	if( user_fun == NULL ) {
-		return;
+void Callback::Drive_cb( Message& m ) {
+	if( user_fun != NULL ) {
+		user_fun( m, m.Get_mtype(), m.Get_subid(), m.Get_len(), m.Get_payload(),  udata );
 	}
-
-	user_fun( mr, m, m.Get_mtype(), m.Get_subid(), m.Get_len(), m.Get_payload(),  udata );
 }
 
 

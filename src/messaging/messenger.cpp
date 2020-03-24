@@ -148,8 +148,8 @@ void Messenger::Listen( ) {
 					sel_cb = mi->second;								// override with user callback
 				}
 				if( sel_cb != NULL ) {
-					sel_cb->Drive_cb( *this, *m );						// drive the selected one
-					mbuf = NULL;										// not safe to use after given to cb
+					sel_cb->Drive_cb( *m );							// drive the selected one
+					mbuf = NULL;									// not safe to use after given to cb
 				}
 			} else {
 				if( mbuf->state != RMR_ERR_TIMEOUT ) {
@@ -190,10 +190,10 @@ void Messenger::Stop( ) {
 	RMR messages must be released by RMR as there might be transport
 	buffers that have to be dealt with. Every callback is expected to
 	call this function when finished with the message.
-*/
 void Messenger::Release_mbuf( void* vmbuf ) {
 	rmr_free_msg( (rmr_mbuf_t *)  vmbuf );
 }
+*/
 
 /*
 	Wait for clear to send.
@@ -216,16 +216,18 @@ void Messenger::Release_mbuf( void* vmbuf ) {
 */
 bool Messenger::Wait_for_cts( int max_wait ) {
 	bool block_4ever;
+	bool	state = false;
 
 	block_4ever = max_wait == 0;
 	while( block_4ever || max_wait > 0 ) {
 		if( rmr_ready( mrc ) ) {
-			return true;
+			state = true;
+			break;
 		}
 
 		sleep( 1 );
 		max_wait--;
 	}
 
-	return false;
+	return state;
 }

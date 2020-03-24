@@ -97,28 +97,30 @@ std::unique_ptr<unsigned char> Message::Copy_payload( ){
 std::unique_ptr<unsigned char> Message::Get_meid(){
 	unsigned char* m = NULL;
 
-	if( m != NULL ) {
-		m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_MEID );
-		rmr_get_meid( mbuf, m );
-	}
+	m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_MEID );
+	rmr_get_meid( mbuf, m );
 
 	return std::unique_ptr<unsigned char>( m );
 }
 
+/*
+	Return the total size of the payload (the amount that can be written to
+	as opposed to the portion of the payload which is currently in use.
+	If mbuf isn't valid (nil, or message has a broken header) the return
+	will be -1.
+*/
 int Message::Get_available_size(){
-	if( mbuf != NULL ) {
-		return rmr_payload_size( mbuf );
-	}
-
-	return 0;
+	return rmr_payload_size( mbuf );		// rmr can handle a nil pointer
 }
 
 int	Message::Get_mtype(){
+	int rval = INVALID_MTYPE;
+
 	if( mbuf != NULL ) {
-		return mbuf->mtype;
+		rval = mbuf->mtype;
 	}
 
-	return INVALID_MTYPE;
+	return rval;
 }
 
 /*
@@ -128,6 +130,8 @@ std::unique_ptr<unsigned char> Message::Get_src(){
 	unsigned char* m = NULL;
 
 	m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_SRC );
+	memset( m, 0, sizeof( unsigned char ) * RMR_MAX_SRC );
+
 	if( m != NULL ) {
 		rmr_get_src( mbuf, m );
 	}
@@ -144,19 +148,27 @@ int	Message::Get_state( ){
 }
 
 int	Message::Get_subid(){
+	int	rval = INVALID_SUBID;
+
 	if( mbuf != NULL ) {
-		return mbuf->sub_id;
+		rval =mbuf->sub_id;
 	}
 
-	return INVALID_SUBID;
+	return rval;
 }
 
+/*
+	Return the amount of the payload (bytes) which is used. See
+	Get_available_size() to get the total usable space in the payload.
+*/
 int	Message::Get_len(){
+	int rval = 0;
+
 	if( mbuf != NULL ) {
-		return mbuf->len;
+		rval = mbuf->len;
 	}
 
-	return 0;
+	return rval;
 }
 
 /*
@@ -175,7 +187,7 @@ Msg_component Message::Get_payload(){
 	return NULL;
 }
 
-void Message::Set_meid( std::unique_ptr<unsigned char> new_meid ) {
+void Message::Set_meid( std::shared_ptr<unsigned char> new_meid ) {
 	if( mbuf != NULL ) {
 		rmr_str2meid( mbuf, (unsigned char *) new_meid.get() );
 	}
@@ -184,6 +196,12 @@ void Message::Set_meid( std::unique_ptr<unsigned char> new_meid ) {
 void Message::Set_mtype( int new_type ){
 	if( mbuf != NULL ) {
 		mbuf->mtype = new_type;
+	}
+}
+
+void Message::Set_len( int new_len ){
+	if( mbuf != NULL  && new_len >= 0 ) {
+		mbuf->len = new_len;
 	}
 }
 
@@ -271,7 +289,7 @@ bool Message::Send( int mtype, int subid, int payload_len, unsigned char* payloa
 	The second form of the call allows for a stack allocated buffer (e.g. char foo[120]) to
 	be passed as the payload.
 */
-bool Message::Send_response(  int mtype, int subid, int response_len, std::unique_ptr<unsigned char> response ) {
+bool Message::Send_response(  int mtype, int subid, int response_len, std::shared_ptr<unsigned char> response ) {
 	return Send( mtype, subid, response_len, response.get(), RESPONSE );
 }
 
@@ -282,7 +300,7 @@ bool Message::Send_response(  int mtype, int subid, int response_len, unsigned c
 /*
 	These allow a response message to be sent without changing the mtype/subid.
 */
-bool Message::Send_response(  int response_len, std::unique_ptr<unsigned char> response ) {
+bool Message::Send_response(  int response_len, std::shared_ptr<unsigned char> response ) {
 	return Send( NOCHANGE, NOCHANGE, response_len, response.get(), RESPONSE );
 }
 
@@ -300,7 +318,7 @@ bool Message::Send_response(  int response_len, unsigned char* response ) {
 	Return is a new mbuf suitable for sending another message, or the original buffer with
 	a bad state sent if there was a failure.
 */
-bool Message::Send_msg(  int mtype, int subid, int payload_len, std::unique_ptr<unsigned char> payload ) {
+bool Message::Send_msg(  int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload ) {
 	return Send( mtype, subid, payload_len, payload.get(), MESSAGE );
 }
 
@@ -311,7 +329,7 @@ bool Message::Send_msg(  int mtype, int subid, int payload_len, unsigned char* p
 /*
 	Similar send functions that allow the message type/subid to remain unchanged
 */
-bool Message::Send_msg(  int payload_len, std::unique_ptr<unsigned char> payload ) {
+bool Message::Send_msg(  int payload_len, std::shared_ptr<unsigned char> payload ) {
 	return Send( NOCHANGE, NOCHANGE, payload_len, payload.get(), MESSAGE );
 }
 
