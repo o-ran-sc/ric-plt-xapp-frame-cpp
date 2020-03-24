@@ -53,13 +53,12 @@
 
 class Message {
 	private:
-		static const int	NOCHANGE = -99;	// internal constant indicating no change to something
-
 		rmr_mbuf_t*	mbuf;					// the underlying RMR message buffer
 		void*		mrc;					// message router context
 		std::shared_ptr<char> psp;			// shared pointer to the payload to give out
 
 	public:
+		static const int	NO_CHANGE = -99;			// indicates no change to a send/reply parameter
 		static const int	INVALID_MTYPE = -1;
 		static const int	INVALID_STATUS = -1;
 		static const int	INVALID_SUBID = -2;
@@ -74,7 +73,7 @@ class Message {
 
 		std::unique_ptr<unsigned char>  Copy_payload( );		// copy the payload; deletable smart pointer
 
-		std::unique_ptr<unsigned char> Get_meid();		// returns a copy of the meid bytes
+		std::unique_ptr<unsigned char> Get_meid();				// returns a copy of the meid bytes
 		int Get_available_size();
 		int	Get_len();
 		int	Get_mtype();
@@ -83,22 +82,23 @@ class Message {
 		int	Get_state( );
 		int	Get_subid();
 
-		void Set_meid( std::unique_ptr<unsigned char> new_meid );
+		void Set_meid( std::shared_ptr<unsigned char> new_meid );
 		void Set_mtype( int new_type );
 		void Set_subid( int new_subid );
+		void Set_len( int new_len );
 
 		bool Reply( );
 		bool Send( );
 		bool Send( int mtype, int subid, int payload_len, unsigned char* payload, int stype );
 
-		bool Send_msg( int mtype, int subid, int payload_len, std::unique_ptr<unsigned char> payload );
+		bool Send_msg( int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload );
 		bool Send_msg( int mtype, int subid, int payload_len, unsigned char* payload );
-		bool Send_msg( int payload_len, std::unique_ptr<unsigned char> payload );
+		bool Send_msg( int payload_len, std::shared_ptr<unsigned char> payload );
 		bool Send_msg( int payload_len, unsigned char* payload );
 
-		bool Send_response( int mtype, int subid, int payload_len, std::unique_ptr<unsigned char> response );
+		bool Send_response( int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> response );
 		bool Send_response( int mtype, int subid, int payload_len, unsigned char* response );
-		bool Send_response( int payload_len, std::unique_ptr<unsigned char> response );
+		bool Send_response( int payload_len, std::shared_ptr<unsigned char> response );
 		bool Send_response( int payload_len, unsigned char* response );
 };
 
