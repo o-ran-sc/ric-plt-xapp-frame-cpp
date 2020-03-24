@@ -71,7 +71,7 @@ class Messenger {
 		void Listen( );													// lisen driver
 		std::unique_ptr<Message> Receive( int timeout );				// receive 1 message
 		void Stop( );													// force to stop
-		void Release_mbuf( void* vmbuf );
+		//void Release_mbuf( void* vmbuf );
 		bool Wait_for_cts( int max_wait );
 };
 
