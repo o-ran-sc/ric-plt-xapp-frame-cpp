@@ -33,7 +33,7 @@
 #define _DEF_CB_H
 
 
-void Health_ck_cb( Messenger& mr, Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data );
+void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data );
 
 
 #endif

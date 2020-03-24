@@ -30,7 +30,7 @@ cmake_minimum_required( VERSION 3.5 )
 
 set( major_version "0" )		# should be automatically populated from git tag later, but until CI process sets a tag we use this
 set( minor_version "1" )
-set( patch_level "0" )
+set( patch_level "1" )
 
 set( install_root "${CMAKE_INSTALL_PREFIX}" )
 set( install_inc "include/ricxfcpp" )
@@ -198,6 +198,15 @@ if( DEV_PKG )
 	)
 	target_include_directories( ricxfcpp_static PUBLIC "src/messenger" "src/xapp" )
 endif()
+
+# -------- unit testing -------------------------------------------------------
+enable_testing()
+add_test(
+	NAME drive_unit_tests
+	COMMAND bash ../test/unit_test.sh -q
+	WORKING_DIRECTORY ../test
+)
+
 
 # ------------- packaging -----------------------------------------------------
 

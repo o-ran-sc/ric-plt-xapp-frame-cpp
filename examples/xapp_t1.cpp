@@ -52,7 +52,7 @@ long cbd_count = 0;
 long cb1_lastts = 0;
 long cb1_lastc = 0;
 
-void cb1( Messenger& mr, Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cb1( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
 	long now;
 	long total_count;
 
@@ -72,13 +72,13 @@ void cb1( Messenger& mr, Message& mbuf, int mtype, int subid, int len, Msg_compo
 	}
 }
 
-void cb2( Messenger& mr, Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cb2( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
 	//fprintf( stderr, "callback 2 got a message type = %d len = %d\n", mtype, len );
 	//mbuf.Send_msg( 101, -1, 4, (unsigned char *) "HI\n" );		// send, including the trailing 0
 	cb2_count++;
 }
 
-void cbd( Messenger& mr, Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cbd( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
 	//fprintf( stderr, "default callback  got a message type = %d len = %d\n", mtype, len );
 	cbd_count++;
 }

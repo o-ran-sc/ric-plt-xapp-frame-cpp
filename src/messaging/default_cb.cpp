@@ -46,7 +46,7 @@
 	The mr paramter is obviously ignored, but to add this as a callback
 	the function sig must match.
 */
-void Health_ck_cb( Messenger& mr, Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data ) {
+void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data ) {
 	unsigned char response[128];
 
 	snprintf( (char* ) response, sizeof( response ), "OK\n" );
