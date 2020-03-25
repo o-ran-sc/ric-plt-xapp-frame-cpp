@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f643150b_4b62cff5",
+        "filename": "rmr-version.yaml",
+        "patchSetId": 10
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-03-25T18:28:05Z",
+      "side": 1,
+      "message": "vet?  Is there something I don\u0027t know??",
+      "range": {
+        "startLine": 1,
+        "startChar": 65,
+        "endLine": 1,
+        "endChar": 68
+      },
+      "revId": "4e4fb5021cc9aa67390f6641a060b85c077a1880",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    }
+  ]
+}
