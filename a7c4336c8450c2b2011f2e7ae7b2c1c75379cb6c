@@ -16,6 +16,24 @@
       "revId": "a7c4336c8450c2b2011f2e7ae7b2c1c75379cb6c",
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "46b66dd2_9d5c1fe8",
+        "filename": "rmr-version.yaml",
+        "patchSetId": 7
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1000037
+      },
+      "writtenOn": "2020-03-25T13:41:27Z",
+      "side": 1,
+      "message": "\u003cintentionally void of meaningful information\u003e",
+      "parentUuid": "308d214d_e84b30fe",
+      "revId": "a7c4336c8450c2b2011f2e7ae7b2c1c75379cb6c",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": false
     }
   ]
 }
