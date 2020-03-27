@@ -45,12 +45,14 @@ extern int main( int argc, char** argv ) {
 	std::unique_ptr<Message> msg;
 	Msg_component payload;				// special type of unique pointer to the payload 
 
-	int mtype;
 	int	sz;
 	int i;
 	int ai;
 	int response_to = 0;				// max timeout wating for a response
 	char*	port = (char *) "4555";
+	int	mtype = 0;
+	int rmtype;							// received message type
+	int delay = 1000000;				// mu-sec delay; default 1s
 	
 
 	ai = 1;
@@ -60,6 +62,11 @@ extern int main( int argc, char** argv ) {
 		}
 
 		switch( argv[ai][1] ) {			// we only support -x so -xy must be -x -y
+			case 'd':					// delay between messages (mu-sec)
+				delay = atoi( argv[ai+1] );
+				ai++;
+				break;
+				
 			case 'p': 
 				port = argv[ai+1];	
 				ai++;
@@ -80,6 +87,11 @@ extern int main( int argc, char** argv ) {
 	msg = xfw->Alloc_msg( 2048 );
 
 	for( i = 0; i < 100; i++ ) {
+		mtype++;
+		if( mtype > 10 ) {
+			mtype = 0;
+		}
+
 		sz = msg->Get_available_size();			// we'll reuse a message if we received one back; ensure it's big enough
 		if( sz < 2048 ) {
 			fprintf( stderr, "<SNDR> fail: message returned did not have enough size: %d [%d]\n", sz, i );
@@ -90,19 +102,21 @@ extern int main( int argc, char** argv ) {
 		snprintf( (char *) payload.get(), 2048, "This is message %d\n", i );	// something silly to send
 
 		// payload updated in place, nothing to copy from, so payload parm is nil
-		if ( ! msg->Send_msg( 1, Message::NO_SUBID, strlen( (char *) payload.get() )+1, NULL )) {
+		if ( ! msg->Send_msg( mtype, Message::NO_SUBID, strlen( (char *) payload.get() )+1, NULL )) {
 			fprintf( stderr, "<SNDR> send failed: %d\n", i );
 		}
 
 		msg = xfw->Receive( response_to );
 		if( msg != NULL ) {
-			mtype = msg->Get_mtype();
+			rmtype = msg->Get_mtype();
 			payload = msg->Get_payload();
-			fprintf( stderr, "got: mtype=%d payload=(%s)\n", mtype, (char *) payload.get() );
+			fprintf( stderr, "got: mtype=%d payload=(%s)\n", rmtype, (char *) payload.get() );
 		} else {
 			msg = xfw->Alloc_msg( 2048 );				// nothing back, need a new message to send
 		}
 
-		sleep( 1 );
+		if( delay > 0 ) {
+			usleep( delay );
+		}
 	}
 }

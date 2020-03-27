@@ -55,7 +55,7 @@
 	If port is nil, then the default port is used (4560).
 */
 Xapp::Xapp( char* port, bool wait4table ) : Messenger( port, wait4table ) {
-	// what's left to do?
+	// nothing to do; all handled in Messenger constructor
 }
 
 /*
@@ -72,7 +72,6 @@ Xapp::~Xapp() {
 	function won't return unless that listener crashes.
 */
 void Xapp::Run( int nthreads ) {
-	int joined;						// at end, number of threads joined back
 	int i;
 	std::thread** tinfo;				// each thread we'll start
 
@@ -87,6 +86,8 @@ void Xapp::Run( int nthreads ) {
 	for( i = 0; i < nthreads - 1; i++ ) {				// wait for others to stop
 		tinfo[i]->join();
 	}
+
+	delete tinfo;
 }
 
 /*

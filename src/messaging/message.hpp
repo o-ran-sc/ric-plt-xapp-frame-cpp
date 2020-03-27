@@ -69,6 +69,10 @@ class Message {
 
 		Message( rmr_mbuf_t* mbuf, void* mrc );		// builders
 		Message( void* mrc, int payload_len );
+		Message( const Message& soi );				// copy cat
+		Message& operator=( const Message& soi );	// copy operator
+		Message( Message&& soi );				// mover
+		Message& operator=( Message&& soi );	// move operator
 		~Message();									// destroyer
 
 		std::unique_ptr<unsigned char>  Copy_payload( );		// copy the payload; deletable smart pointer

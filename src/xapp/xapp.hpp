@@ -47,6 +47,10 @@ class Xapp : public Messenger {
 	private:
 		std::string name;
 
+		// copy and assignment are PRIVATE because we cant "clone" the listen environment
+		Xapp( const Xapp& soi );
+		Xapp& operator=( const Xapp& soi );
+
 	public:
 		Xapp( char* listen_port, bool wait4rt );	// builder
 		Xapp( );

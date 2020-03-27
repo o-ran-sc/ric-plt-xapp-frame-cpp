@@ -43,7 +43,7 @@
 
 // --------------- private ------------------------------------------------
 
-// --------------- builders -----------------------------------------------
+// --------------- builders/operators  -------------------------------------
 
 /*
 	Create a new message wrapper for an existing RMR msg buffer.
@@ -57,6 +57,73 @@ Message::Message( void* mrc, int payload_len ) {
 	this->mrc = mrc;
 	this->mbuf = rmr_alloc_msg( mrc, payload_len );
 }
+
+/*
+	Copy builder.  Given a source object instance (soi), create a copy.
+	Creating a copy should be avoided as it can be SLOW!
+*/
+Message::Message( const Message& soi ) {
+	int payload_size;
+
+	mrc = soi.mrc;
+	payload_size = rmr_payload_size( soi.mbuf );		// rmr can handle a nil pointer
+	mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );	
+}
+
+/*
+	Assignment operator. Simiolar to the copycat, but "this" object exists and
+	may have data that needs to be released prior to making a copy of the soi.
+*/
+Message& Message::operator=( const Message& soi ) {
+	int	payload_size;
+
+	if( this != &soi ) {				// cannot do self assignment
+		if( mbuf != NULL ) {
+			rmr_free_msg( mbuf );		// release the old one so we don't leak
+		}
+	
+		payload_size = rmr_payload_size( soi.mbuf );		// rmr can handle a nil pointer
+		mrc = soi.mrc;
+		mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );	
+	}
+
+	return *this;
+}
+
+/*
+	Move builder.  Given a source object instance (soi), move the information from
+	the soi ensuring that the destriction of the soi doesn't trash things from
+	under us.
+*/
+Message::Message( Message&& soi ) {
+	mrc = soi.mrc;
+	mbuf = soi.mbuf;
+
+	soi.mrc = NULL;		// prevent closing of RMR stuff on soi destroy
+	soi.mbuf = NULL;
+}
+
+/*
+	Move Assignment operator. Move the message data to the existing object
+	ensure the object reference is cleaned up, and ensuring that the source
+	object references are removed.
+*/
+Message& Message::operator=( Message&& soi ) {
+	if( this != &soi ) {				// cannot do self assignment
+		if( mbuf != NULL ) {
+			rmr_free_msg( mbuf );		// release the old one so we don't leak
+		}
+	
+		mrc = soi.mrc;
+		mbuf = soi.mbuf;
+
+		soi.mrc = NULL;
+		soi.mbuf = NULL;
+	}
+
+	return *this;
+}
+
 
 /*
 	Destroyer.
@@ -140,11 +207,13 @@ std::unique_ptr<unsigned char> Message::Get_src(){
 }
 
 int	Message::Get_state( ){
+	int state = INVALID_STATUS;
+
 	if( mbuf != NULL ) {
-		return mbuf->state;
+		state =  mbuf->state;
 	}
 
-	return INVALID_STATUS;
+	return state;
 }
 
 int	Message::Get_subid(){
@@ -220,12 +289,14 @@ void Message::Set_subid( int new_subid ){
 	Exposed to the user, but not expected to be frequently used.
 */
 bool Message::Send( ) {
-	if( mbuf == NULL ) {
-		return false;
+	bool state = false;
+
+	if( mbuf != NULL ) {
+		mbuf =  rmr_send_msg( mrc, mbuf );	// send and pick up new mbuf
+		state = mbuf->state == RMR_OK;		// overall state for caller
 	}
 
-	mbuf =  rmr_send_msg( mrc, mbuf );
-	return mbuf->state == RMR_OK;
+	return state;
 }
 
 /*
@@ -233,12 +304,14 @@ bool Message::Send( ) {
 	Exposed to the user, but not expected to be frequently used.
 */
 bool Message::Reply( ) {
-	if( mbuf == NULL ) {
-		return false;
+	bool state = false;
+
+	if( mbuf != NULL ) {
+		mbuf =  rmr_rts_msg( mrc, mbuf );		// send and pick up new mbuf
+		state = mbuf->state == RMR_OK;			// state for caller based on send
 	}
 
-	mbuf =  rmr_rts_msg( mrc, mbuf );
-	return mbuf->state == RMR_OK;
+	return state;
 }
 
 /*
@@ -253,38 +326,39 @@ bool Message::Reply( ) {
 	This is public, but most users should use Send_msg or Send_response functions.
 */
 bool Message::Send( int mtype, int subid, int payload_len, unsigned char* payload, int stype ) {
+	bool state = false;
 
-	if( mbuf == NULL ) {
-		return false;
-	}
-
-	if( mtype != NO_CHANGE ) {
-		mbuf->mtype = mtype;
-	}
-	if( subid != NO_CHANGE ) {
-		mbuf->sub_id = subid;
-	}
-
-	if( payload_len != NO_CHANGE ) {
-		mbuf->len = payload_len;
-	}
-
-	if( payload != NULL ) {			// if we have a payload, ensure msg has room, realloc if needed, then copy
-		mbuf = rmr_realloc_payload( mbuf, payload_len, RMR_NO_COPY, RMR_NO_CLONE );		// ensure message is large enough
-		if( mbuf == NULL ) {
-			return false;
+	if( mbuf != NULL ) {
+		if( mtype != NO_CHANGE ) {
+			mbuf->mtype = mtype;
+		}
+		if( subid != NO_CHANGE ) {
+			mbuf->sub_id = subid;
 		}
 
-		memcpy( mbuf->payload, payload, mbuf->len );
+		if( payload_len != NO_CHANGE ) {
+			mbuf->len = payload_len;
+		}
+
+		if( payload != NULL ) {			// if we have a payload, ensure msg has room, realloc if needed, then copy
+			mbuf = rmr_realloc_payload( mbuf, payload_len, RMR_NO_COPY, RMR_NO_CLONE );		// ensure message is large enough
+			if( mbuf == NULL ) {
+				return false;
+			}
+
+			memcpy( mbuf->payload, payload, mbuf->len );
+		}
+
+		if( stype == RESPONSE ) {
+			mbuf = rmr_rts_msg( mrc, mbuf );
+		} else {
+			mbuf = rmr_send_msg( mrc, mbuf );
+		}
+
+		state = mbuf->state == RMR_OK;
 	}
 
-	if( stype == RESPONSE ) {
-		mbuf = rmr_rts_msg( mrc, mbuf );
-	} else {
-		mbuf = rmr_send_msg( mrc, mbuf );
-	}
-
-	return mbuf->state == RMR_OK;
+	return state;
 }
 
 /*

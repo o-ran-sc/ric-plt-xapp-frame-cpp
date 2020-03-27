@@ -79,6 +79,52 @@ Messenger::Messenger( char* port, bool wait4table ) {
 }
 
 /*
+	Move support. We DO allow the instance to be moved as only one copy 
+	remains following the move.
+	Given a source object instance (soi) we move the information to 
+	the new object, and then DELETE what was moved so that when the
+	user frees the soi, it doesn't destroy what we snarfed.
+*/
+Messenger::Messenger( Messenger&& soi ) {
+	mrc = soi.mrc;
+	listen_port = soi.listen_port;
+	ok_2_run = soi.ok_2_run;
+	gate = soi.gate;
+		cb_hash = soi.cb_hash;				// this seems dodgy
+	
+	soi.gate = NULL;
+	soi.listen_port = NULL;
+	soi.mrc = NULL;
+}
+
+/*
+	Move operator. Given a source object instance, movee it's contents
+	to this insance.  We must first clean up this instance.
+*/
+Messenger& Messenger::operator=( Messenger&& soi ) {
+	if( this != &soi ) {				// cannot move onto ourself
+		if( mrc != NULL ) {
+			rmr_close( mrc );
+		}
+		if( listen_port != NULL ) {
+			free( listen_port );
+		}
+
+		mrc = soi.mrc;
+		listen_port = soi.listen_port;
+		ok_2_run = soi.ok_2_run;
+		gate = soi.gate;
+			cb_hash = soi.cb_hash;				// this seems dodgy
+		
+		soi.gate = NULL;
+		soi.listen_port = NULL;
+		soi.mrc = NULL;
+	}
+
+	return *this;
+}
+
+/*
 	Destroyer.
 */
 Messenger::~Messenger() {
@@ -86,7 +132,9 @@ Messenger::~Messenger() {
 		rmr_close( mrc );
 	}
 
-	free( listen_port );
+	if( listen_port != NULL ) {
+		free( listen_port );
+	}
 }
 
 /*
@@ -165,18 +213,16 @@ void Messenger::Listen( ) {
 */
 std::unique_ptr<Message>  Messenger::Receive( int timeout ) {
 	rmr_mbuf_t*	mbuf = NULL;
-	//std::unique_ptr<Message> m;
+	std::unique_ptr<Message> m = NULL;
 
-	if( mrc == NULL ) {
-		return NULL;
+	if( mrc != NULL ) {
+		mbuf = rmr_torcv_msg( mrc, mbuf, timeout );		// future: do we want to reuse the mbuf here?
+		if( mbuf != NULL ) {
+			m = std::unique_ptr<Message>( new Message( mbuf, mrc ) );
+		}
 	}
 
-	mbuf = rmr_torcv_msg( mrc, mbuf, timeout );		// future: do we want to reuse the mbuf here?
-	if( mbuf != NULL ) {
-		return std::unique_ptr<Message>( new Message( mbuf, mrc ) );
-	}
-
-	return NULL;
+	return m;
 }
 
 /*

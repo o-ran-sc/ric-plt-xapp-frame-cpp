@@ -39,8 +39,6 @@
 
 #include <rmr/rmr.h>
 
-//#include "callback.hpp"
-//#include "default_cb.hpp"		// default callback prototypes
 #include "message.hpp"
 
 #ifndef RMR_FALSE
@@ -58,12 +56,18 @@ class Messenger {
 		void*		mrc;					// message router context
 		char*		listen_port;			// port we ask msg router to listen on
 
+		// copy and assignment are PRIVATE so that they fail if xapp tries; messenger cannot be copied!
+		Messenger( const Messenger& soi );	
+		Messenger& operator=( const Messenger& soi );
+
 	public:
 		// -- constants which need an instance; that happens as a global in the .cpp file (wtf C++)
 		static const int MAX_PAYLOAD;			// max message size we'll handle
 		static const int DEFAULT_CALLBACK;		// parm for add callback to set default
 
 		Messenger( char* port, bool wait4table );	// builder
+		Messenger( Messenger&& soi );				// move construction
+		Messenger& operator=( Messenger&& soi );	// move operator
 		~Messenger();								// destroyer
 
 		void Add_msg_cb( int mtype, user_callback fun_name, void* data );

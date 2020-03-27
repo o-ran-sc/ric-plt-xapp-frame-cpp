@@ -82,6 +82,7 @@ gcov unit_test >/tmp/PID$$.gcov_log 2>&1	# suss out our gcov files
 ./scrub_gcov.sh								# remove cruft
 
 list=$( mk_list )
+echo "[INFO] coverage stats, discounted (raw), for the various modules:"
 ./parse_gcov.sh $list						# generate simple, short, coverage stats
 
 rm -f /tmp/PID$$.*

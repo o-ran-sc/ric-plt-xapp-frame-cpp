@@ -20,7 +20,12 @@
 
 /*
 	Mnemonic:	Unit_test.cpp
-	Abstract:	This is the unit test driver for the C++ xAPP framework
+	Abstract:	This is the unit test driver for the C++ xAPP framework. It 
+				operates by including all of the modules directly (in order
+				to build them with the necessary coverage flags), then 
+				drives all that it can.  The RMR emulation module provides
+				emulated RMR functions which simulate the creation, sending
+				and receiving of messages etc.
 
 	Date:		20 March 2020
 	Author: 	E. Scott Daniels
@@ -42,7 +47,10 @@
 #include "../src/messaging/messenger.cpp"
 #include "../src/xapp/xapp.cpp"
 
-// callback error counts are global for ease
+/*
+	callback error counts are global for ease. They track the number of times each callback
+	was invoked with the expected message type(s) and any times they were not.
+*/
 int err_cb1 = 0;
 int err_cb2 = 0;
 int err_cbd = 0;
@@ -80,10 +88,17 @@ void cbd( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  
 	}
 }
 
+/*
+	The Xapp Run() function only returns when Xapp is asked to stop, and that
+	isn't supported from inside any of the callbacks.  This funciton is 
+	started in a thread and after a few seconds it will drive the halt 
+	function in the Xapp instance to stop the run function and allow the
+	unit test to finish.
+*/
 void killer( std::shared_ptr<Xapp> x ) {
-	fprintf( stderr, ">>>> killer is waiting in the shadows\n" );
-	sleep( 5 );
-	fprintf( stderr, ">>>> killer is on the loose\n" );
+	fprintf( stderr, "<INFO> killer is waiting in the shadows\n" );
+	sleep( 2 );
+	fprintf( stderr, "<INFO> killer is on the loose\n" );
 	x->Halt();
 }
 
@@ -99,7 +114,9 @@ int main( int argc, char** argv ) {
 	int		ai = 1;							// arg processing index
 	int		nthreads = 2;					// ensure the for loop is executed in setup
 	int		i;
+	int		len;
 	int		errors = 0;
+	char	wbuf[256];
 
 	ai = 1;
 	while( ai < argc ) {				// very simple flag processing (no bounds/error checking)
@@ -223,6 +240,62 @@ int main( int argc, char** argv ) {
 		fprintf( stderr, "<FAIL> one or more callbacks reported an error:  [%d] [%d] [%d]\n", err_cb1, err_cb2, err_cbd );
 		fprintf( stderr, "<INFO> callback good values:  [%d] [%d] [%d]\n", good_cb1, good_cb2, good_cbd );
 		errors++;
+	}
+
+	// -----  specific move/copy coverage drivers ---------------------------
+	
+	Messenger m1( (char *) "1234", false );		// messenger class does NOT permit copies, so no need to test
+	Messenger m2( (char *) "9999", false );
+	m1 = std::move( m2 );						// drives move operator= function
+	Messenger m3 = std::move( m1 );				// drives move constructor function
+
+	std::unique_ptr<Message> msg2 = x->Alloc_msg( 2048 );
+	std::unique_ptr<Message> msg3 = x->Alloc_msg( 4096 );
+
+	snprintf( wbuf, sizeof( wbuf ), "Stand up and cheer!!" );
+	msg3->Set_len( strlen( wbuf ) );
+	strcpy( (char *) (msg3->Get_payload()).get(), wbuf );			// populate the payload to vet copy later
+	fprintf( stderr, "<DBUG> set string (%s) \n", (char *) (msg3->Get_payload()).get() );
+
+	Message msg4 = *(msg3.get());									// drive copy builder; msg4 should have a 4096 byte payload
+	fprintf( stderr, "<DBUG> copy string (%s) \n", (char *) (msg4.Get_payload()).get() );	// and payload should be coppied
+	if( msg4.Get_available_size() != 4096 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message copy builder payload size smells: expected 4096, got %d\n", msg4.Get_available_size() );
+	}
+	if( strcmp( (char *) msg4.Get_payload().get(), wbuf ) != 0 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message copy builder payload of copy not the expected string\n" );
+	}
+
+	snprintf( wbuf, sizeof( wbuf ), "Rambling Wreck; GT!" );		// different string into msg 2 to ensure copy replaced msg3 string
+	strcpy( (char *) (msg2->Get_payload()).get(), wbuf );			// populate the msg2 payload to vet copy
+	msg2->Set_len( strlen( wbuf ) );
+	*msg3 = *msg2;													// drive the copy operator= function
+	if( msg3->Get_available_size() != 2048 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message copy operator payload size smells: expected 2048, got %d\n", msg3->Get_available_size() );
+	}
+	if( strcmp( (char *) msg3->Get_payload().get(), wbuf ) != 0 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message copy builder payload of copy not the expected string\n" );
+	}
+
+	Message msg5 = std::move( *(msg3.get()) );					// drive move constructor
+	if( msg5.Get_available_size() != 2048 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message copy operator payload size smells: expected 2048, got %d\n", msg5.Get_available_size() );
+	}
+	if( strcmp( (char *) msg5.Get_payload().get(), wbuf ) != 0 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message copy builder payload of copy not the expected string\n" );
+	}
+
+	msg5.Set_len( 2 );					// bogus len for vetting later
+	msg5 = std::move( *(msg3.get()) );
+	if( msg5.Get_len() == 21 ) {
+		errors++;
+		fprintf( stderr, "<FAIL> message move operator payload len smells: expected 21, got %d\n", msg5.Get_len() );
 	}
 
 	return errors > 0;

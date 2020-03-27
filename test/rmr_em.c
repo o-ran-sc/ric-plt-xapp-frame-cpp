@@ -186,7 +186,26 @@ rmr_mbuf_t* rmr_rts_msg( void* mrc, rmr_mbuf_t* mbuf ) {
 }
 
 rmr_mbuf_t* rmr_realloc_payload( rmr_mbuf_t* mbuf, int payload_len, int copy, int clone ) {             // ensure message is large enough
-	return rmr_alloc_msg( NULL, payload_len );
+	rmr_mbuf_t* nmb;
+	unsigned char* payload;
+
+	if( mbuf == NULL ) {
+		return NULL;
+	}
+
+	nmb = rmr_alloc_msg( NULL, payload_len );
+	if( copy ) {
+		memcpy( nmb->payload, mbuf->payload, mbuf->len );
+		nmb->len = mbuf->len;
+	} else {
+		nmb->len = 0;
+	}
+	nmb->state = mbuf->state;
+
+	if( ! clone ) {
+		free( mbuf );
+	}
+	return  nmb;
 }
 
 void rmr_close( void*  mrc ) {

@@ -24,10 +24,7 @@
 %.o:: %.cpp %.hpp
 	g++ -g ${prereq%% *} -c 
 
-all:: xapp_t1 xapp_t2
+% :: %.cpp
+	g++ $< -g -o $@  -lricxfcpp -lrmr_si -lpthread -lm
 
-xapp_t1:: xapp_t1.cpp
-	g++ xapp_t1.cpp -g -o xapp_t1 -lricxfcpp -lrmr_si -lpthread -lm
-
-xapp_t2:: xapp_t2.cpp
-	g++ xapp_t2.cpp -g -o xapp_t2 -lricxfcpp -lrmr_si -lpthread -lm
+all:: xapp_t1 xapp_t2 rmr_dump
