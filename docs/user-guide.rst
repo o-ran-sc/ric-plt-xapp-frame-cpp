@@ -48,7 +48,7 @@ the object's constructor with two required parameters:
        
       port 
           
-         A C string (char *) which defines the port that RMR will 
+         A C string (pointer to char) which defines the port that RMR will 
          open to listen for connections. 
           
        
@@ -101,8 +101,8 @@ the object's constructor with two required parameters:
       will complete and the program will exit as there is no code 
       following the instruction to create the object. 
        
-      Listening For Messages 
-      ============================================================================================ 
+Listening For Messages 
+============================================================================================ 
        
       The program in the previous example can be extended with just 
       a few lines of code to enable it to receive and process 
@@ -113,8 +113,8 @@ the object's constructor with two required parameters:
       registered callback for the message type will be invoked by 
       the framework. 
        
-      Callback Signature 
-      -------------------------------------------------------------------------------------------- 
+Callback Signature 
+-------------------------------------------------------------------------------------------- 
        
       As with most callback related systems, a callback must have a 
       well known function signature which generally passes event 
@@ -218,8 +218,8 @@ the object's constructor with two required parameters:
       it is not necessary to wait for RMR to receive a table from 
       the Route Manager. 
        
-      Registering A Default Callback 
-      -------------------------------------------------------------------------------------------- 
+Registering A Default Callback 
+-------------------------------------------------------------------------------------------- 
        
       The xApp may also register a default callback function such 
       that the function will be invoked for any message that does 
@@ -229,8 +229,8 @@ the object's constructor with two required parameters:
       callback is registered by providing a *generic* message type 
       of xapp->DEFAULT_CALLBACK on an Add_msg_cb call. 
        
-      The Framework Callback Driver 
-      -------------------------------------------------------------------------------------------- 
+The Framework Callback Driver 
+-------------------------------------------------------------------------------------------- 
        
       The Run() function within the Xapp object is invoked to start 
       the callback driver, and the xApp should not expect the 
@@ -244,8 +244,8 @@ the object's constructor with two required parameters:
       callback function will be invoked concurrently from multiple 
       threads. 
        
-      Sending Messages 
-      ============================================================================================ 
+Sending Messages 
+============================================================================================ 
        
       It is very likely that most xApps will need to send messages 
       and will not operate in "receive only" mode. Sending the 
@@ -253,7 +253,7 @@ the object's constructor with two required parameters:
       take one of two forms: 
        
        
-      + 
+       
       $1 Replying to the sender of a received message 
        
       $1 Sending a message (routed based on the message type and subscription ID) 
@@ -333,8 +333,8 @@ the object's constructor with two required parameters:
       based on the mapping of the message type and subscription ID 
       using the current routing table known to RMR. 
        
-      Direct Payload Manipulation 
-      -------------------------------------------------------------------------------------------- 
+Direct Payload Manipulation 
+-------------------------------------------------------------------------------------------- 
        
       For some applications, it might be more efficient to 
       manipulate the payload portion of an Xapp Message in place, 
@@ -377,8 +377,8 @@ the object's constructor with two required parameters:
       Figure 7: Send message without buffer copy. 
        
        
-      Sending Multiple Responses 
-      -------------------------------------------------------------------------------------------- 
+Sending Multiple Responses 
+-------------------------------------------------------------------------------------------- 
        
       It is likely that the xApp will wish to send multiple 
       responses back to the process that sent a message that 
@@ -392,8 +392,8 @@ the object's constructor with two required parameters:
       necessary, the xApp must make a copy of the payload before 
       the first response call is made. 
        
-      Message Allocation 
-      -------------------------------------------------------------------------------------------- 
+Message Allocation 
+-------------------------------------------------------------------------------------------- 
        
       Not all xApps will be "responders," meaning that some xApps 
       will need to send one or more messages before they can expect 
@@ -404,8 +404,8 @@ the object's constructor with two required parameters:
       can be used to create a Message object with a desired payload 
       size. 
        
-      Framework Provided Callbacks 
-      ============================================================================================ 
+Framework Provided Callbacks 
+============================================================================================ 
        
       The framework itself may provide message handling via the 
       driver such that the xApp might not need to implement some 
@@ -418,14 +418,14 @@ the object's constructor with two required parameters:
       response, all it needs to do is to register its own callback 
       function for the health check message type. 
        
-      Example Programmes 
-      ============================================================================================ 
+Example Programmes 
+============================================================================================ 
        
       The following sections contain several example programmes 
       which are written on top of the C++ framework. 
        
-      RMR Dump xAPP 
-      -------------------------------------------------------------------------------------------- 
+RMR Dump xAPP 
+-------------------------------------------------------------------------------------------- 
        
       The RMR dump application is an example built on top of the 
       C++ xApp framework to both illustrate the use of the 
@@ -649,8 +649,8 @@ the object's constructor with two required parameters:
        
       Figure 8: Simple callback application. 
        
-      Callback Receiver 
-      -------------------------------------------------------------------------------------------- 
+Callback Receiver 
+-------------------------------------------------------------------------------------------- 
        
       This sample programme implements a simple message listener 
       which registers three callback functions to process two 
@@ -736,8 +736,8 @@ the object's constructor with two required parameters:
       Figure 9: Simple callback application. 
        
        
-      Looping Sender 
-      -------------------------------------------------------------------------------------------- 
+Looping Sender 
+-------------------------------------------------------------------------------------------- 
        
       This is another very simple application which demonstrates 
       how an application can control its own listen loop while 
