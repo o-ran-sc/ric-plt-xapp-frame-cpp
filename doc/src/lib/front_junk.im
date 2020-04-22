@@ -1,0 +1,102 @@
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+	Mnemonic:	front_junk.im
+    Absgtract:	This is the front matter (junk):
+					Title page,
+					table of contents
+					license (for page oriented output)
+
+				If defined, this uses the following variables:
+					doc_title
+					doc_subtitle
+					orig_date
+
+	Date:		21 April 2020
+.fi
+
+.if ! _front_junk
+	.gv e OUTPUT_TYPE ot
+	.if "&ot" "generic_ps" =
+		.sp 20
+		.st 24
+		.bc start
+		.if doc_title
+			&doc_title
+		.fi
+		.br
+		.if doc_subtitle
+			&doc_subtitle
+		.fi
+		.bc end
+
+		.st &textsize
+
+		.sp 25
+		.if orig_date
+			Original: &orig_date .br
+		.fi
+		.gv Date
+		Revised: &_date
+		.pa
+
+		.lw 0
+		.pn on noline center roman 0
+		.im &{lib}/license.im
+		.pa
+
+		.gv e XFM_PASS pass
+		.if &pass 1 =
+			.tc on
+		.ei
+		.tc off
+
+		.im &{fname_base}.toc    .** initial page eject inside
+		.pa
+		.fi
+
+		.** ensure these happen after toc is rendered
+		.if pfm
+			.pn on 0 noline center f=%d
+			.cd 1 6.0i
+		.fi
+	.ei
+		.if "&ot" "rst" =
+			.dv raw_comment_sym ^..
+			.cd 1 26i
+			.ll 18i
+			.im &{lib}/raw_license.im
+			.ll 6i
+
+			.if doc_title
+				&many_equals
+				&doc_title
+				&many_equals
+			.fi
+			.if doc_subtitle
+				&many_dashes
+				&doc_subtitle
+				&many_dashes
+			.fi
+		.fi
+
+	.dv _front_junk 1
+.fi
+

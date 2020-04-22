@@ -1,0 +1,65 @@
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+    Mnemonic:   setup.im
+    Abstract:   Look at environment variables and pull in the correct setup prep
+                imbed file based on the desired output type (when running tfm).
+                Obviously, when running pfm we are always generating postscript
+                so this isn't really doing much.
+    Date:       29 July 2019
+.fi
+
+
+.if ! _setup_im
+	.gv e XFM_IM_LIB lib
+	.if ! lib
+		.dv lib ../lib
+	.fi
+
+	.** sane default for everything except rst
+	.dv col_width 6.5i
+	.dv textsize 10
+	.dv textfont Helvetica
+
+	.**  imbed output type specific macro file
+	.gv e OUTPUT_TYPE ot
+	.im  &{lib}/&{ot}.im
+
+
+	.** set up for an index when using pfm and snare file is defined
+	.if pfm
+		.if index_snare_file
+			.ix space .sp 1 .cc 5 %c .ln  ^: .sp 0
+			.ix term .br %s  `^`   ^`` %d
+			.ix groupb .sp .5 %s .br .ll -.25i .in +.25i
+			.ix groupe .sp .1 .in -.25i .ll +.25i
+			.if ! index_cols
+				.dv index_cols 2
+			.fi
+
+			.dv index_col_width [ 6.5 &index_cols / .25 &index_cols 1 - * - ]
+			.dv index_here  .pa .ju off .st &textsize .cd 1 i=1i w=7 ^: .h1 INDEX ^: .pn off .lw 0 .sp 0 .tt ^: .cd &index_cols i=1i w=&{index_col_width}i  g=.25i ^: .in -i .ll &{index_col_width}i .ix insert
+			.im &index_snare_file
+		.fi
+	.fi
+
+	.dv _setup_im 1
+
+.fi

@@ -1,0 +1,134 @@
+.if false
+==================================================================================
+	Copyright (c) 2020 Nokia
+	Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+	Mnemonic:	markdown.im
+	Abstract:	This is a setup for a very basic generation of markdown from the few
+				macros which are designed for the RMR doc.  It is very scaled down from
+				the markdown imbed file supplied with {X}fm.
+
+	Author:		E. Scott Danils
+	Date:		26 October 2016
+-------------------------------------------------------------------------------
+.fi
+
+
+.dh 1 m=.5i  e=no s=21 i=0 p=16 f=Helvetica-bold
+.dh 2  m=.5i s=21 i=0      p=14 f=Helvetica-bold
+.dh 3  m=.5i s=10 i=0      p=12 f=Helvetica-bold
+
+.ju on
+.hn off
+
+
+.dv esc : .** rst needs an escape for some things
+
+.**  these macros are common for prfm/tfm, markdown will override some
+.dv indent .ll -.5i .in +.25i
+.dv uindent .in -.25i .ll +.5i
+.dv smindent .ll -.2i .in +.1i
+.dv smuindent .in -.1i .ll +.2i
+
+.dv def_list .bd $1
+.dv end_dlist .ed
+.dv bd .bd $1
+.dv ed .ed
+
+.dv ex_start .sp .5 .ll -.25i .in +.25i .sf Courier .st ^&extextsize .fo off
+.** ex_end macro calls _must_ be placed in col 0 to cause an exit from no-format mode.
+.dv ex_end .fo on .sf ^&textfont .st ^&textsize .in -.25i .ll +.25i .sp .1
+
+.dv proto_start .sp 1 .cc .5i .st 9 .sf Courier-bold .nf
+.dv proto_end .fo on .sf ^&text_font .st ^&text_size .sp .3
+
+
+.dv h1 .sp .1 .h1 $1
+.dv h2 .sp .1 .h2 $1
+.dv h3 .sp .1 .h3 $1
+.dv di .di $1 ^:
+
+.** superscript number for start_note macro
+.dv ss_num 1
+.dv super .sm ^[ .sm ^&{ss_num}]
+.dv note .dv ss_num ^[ ^&ss_num 1 + ] ^: .sm ^[ .sm ^&{ss_num}]
+.dv atbot atclose
+
+.dv start_note .cn start atclose Times-roman 8p .5i
+.dv end_note .cn end
+.dv bold $1
+.dv cw $1
+.dv set_font_prop
+.dv ital $1
+.dv lic1 *
+.dv lic2 +
+
+.dv figure .fg $1
+
+.dv line_len .ll $1
+.dv space .sp 1
+.dv half_space .sp 1
+.dv mult_space .sp $1
+
+.** -----------------------------------------------
+.** not used, but might be needed if doc expanded
+.** .dv ta .br  ^.ta .br |
+.** .dv et .br ^.et .br
+.** .dv cl |
+.** .dv tr | .br ^.tr .br |
+.** .dv table_head $1
+.** .dv empty_cell &nbsp;
+.** -----------------------------------------------
+
+.dv break .sm ^`  ^` .br
+.dv br .sm ^`  ^` .br
+.ju off
+.dv image .ep ^[ .sm $2] ($3)
+
+.** no concept of a definition list in markdown; no start/end and just make the text bold to emulate
+.dv beg_dlist  .sp 1
+.dv bd  .sp 1
+.dv end_dlist .sp 1
+.dv ed .sp 1
+.dv di ^&break  **$1:**
+.dv ditem ^&break  **$1:**
+
+.dv beg_list .bl *
+.dv item .li
+.dv li .li
+.dv end_list .el
+
+.dv center_start
+.dv center_end
+
+.dv line .sp 1  ------
+
+.** leading indention is significant to markdown, so turn it off
+.in 0
+.dv indent
+.dv uindent .sp 2
+.dv smindent
+.dv smuindent .sp 2
+.dv bold **${1}**
+.dv ital _${1}_
+.dv h1 .sp 2 # $1 .br
+.dv h2 .sp 1 ## $1 .br
+.dv h3 .sp 1 ### $1 .br
+
+.dv ex_start .sp .5 .ll -4 .in .5i .sp 2 .fo off
+.dv ex_end .fo on .in 0i .ll +4 .sp 2

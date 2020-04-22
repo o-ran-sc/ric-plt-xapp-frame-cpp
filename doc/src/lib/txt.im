@@ -1,0 +1,108 @@
+.if false
+==================================================================================
+	Copyright (c) 2020 Nokia
+	Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+	Mnemonic:	txt.im
+	Abstract:	To generate raw ASCII we just need to 'disable' the macros which
+				are defined to support things like troff, markdown and rts.
+				For each of those macros, we just map to real {X}fm commandd
+				which do the right thing when generating real .txt output.
+
+	Author:		E. Scott Daniels
+	Date:		29 July 2019
+
+.fi
+
+
+.cd 1 6.5i i=0
+.in .25i
+
+.** paragraph headers
+.dv h1 .h1 $1
+.dv h2 .h2 $1
+.dv h3 .h3 $1
+.dv h4 .h4 $1
+
+.dh 1 s=2,1 i=.25i m=.25i
+.dh 2 s=1,1 i=.25i m=.25i
+.dh 3 s=1,0 i=.25i m=.25i
+.hn off
+
+.dv fig .fi t=figure
+.dv set_font_cw
+
+.dv nf  .sp 1 ^:^: .br .ll -2 .in +2
+.dv fo  .in -2 .ll +2 .sp 1
+
+.dv indent .ll -.25i .in +.25i
+.dv uindent .in -.25i .ll +.25i
+
+.dv lic1 *
+.dv lic2 +
+.dv lic3 -
+
+.dv esc : .** rst needs an escape for some things
+
+.dv line_len .ll $1
+.dv space .sp 1
+.dv mult_space .sp $1
+.dv half_space .sp 1
+.dv beg_list .bl $1
+.dv end_list .el
+.dv li .li
+.dv item .li
+
+.dv beg_dlist .sp 1 .bd $1
+.dv end_dlist .ed
+
+.dv center .ce $1 ^:
+.dv center_start .bc start
+.dv center_end	.bc end
+
+.dv figure .fg $1
+
+.** for now we allow only a single layer of defitems
+.dv di .di $1 ^:
+.dv diitem  .di $1 ^:
+.dv item .li
+
+.dv ex_start .sp 1 .ll -2 .in +2 .nf
+.dv ex_end .fo on .in -2 .ll +2 .sp 1
+
+.dv proto_start .sp 1 .cc .5i .st 9 .sf Courier-bold .nf
+.dv proto_end .fo on .sf ^&text_font .st ^&text_size .sp .3
+
+.** fonts and font macros
+.dv ital $1
+.dv bold $1
+.dv cw $1
+.dv set_font_prop
+
+.dv table .sp 1 ^[table not supported in plain txt output]  .if false
+.dv tab_cell
+.dv tab_row
+.dv end_table .fi
+
+.dv super .sm ^[ .sm ^&{ss_num}]
+.dv ss_num 1
+.dv note .dv ss_num ^[ ?%.0f ^&ss_num 1 + ] ^: .sm ^^[^&{ss_num}]
+.** pure ascii out has no concept of a page, so all notes go to the close of the doc
+.dv atbot atclose
+.ju on
+

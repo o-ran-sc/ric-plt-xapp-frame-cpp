@@ -1,0 +1,17 @@
+
+This directory is the root of documentation source.
+Below this directory you might find:
+
+	lib - Directory containing common macros for all
+		documents that live here.
+
+	user - User guide document
+
+
+In this directory running the command 'make publish' will
+build and push all documents to the RTD scraper directory.
+Simple documents, such as the release notes, are sourced
+directly at this level as they require only a single
+bit of input.
+
+

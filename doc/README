@@ -1,0 +1,12 @@
+
+This directory contains documentation source which generates
+some (if not all) of the documentation that is put into the
+directory scraped for RTD.  One of the advantages of this
+approach is that example code presented in the document is
+pulled from the examples directory in the repo which avoids
+a duplicate set of "code" in the document which is likely to
+become out of date.
+
+The documents in the scraped directory (<repo-root>/docs)
+can be created with the command 'make publish' executed
+in the source (src) directory.

@@ -1,0 +1,57 @@
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+
+&h2(RMR Dump xAPP)
+The RMR dump application is an example built on top of the C++ xApp framework to both
+illustrate the use of the framework, and to provide a useful diagnostic tool when
+testing and troubleshooting xApps.
+&space
+
+The RMR dump xApp isn't a traditional xApp inasmuch as its goal is to listen for message
+types and to dump information about the messages received to the TTY much as &cw(tcpdump)
+does for raw packet traffic.
+The full source code, and Makefile, are in the &cw(examples) directory of the C++ framework repo.
+&space
+
+When invoked, the RMR dump program is given one or more message types to listen for.
+A callback function is registered for each, and the framework &cw(Run()) function is invoked
+to drive the process.
+For each recognised message, and depending on the verbosity level supplied at program start,
+information about the received message(s) is written to the TTY.
+If the forwarding option, -f, is given on the command line, and an appropriate route table is
+provided, each received message is forwarded without change.
+This allows for the insertion of the RMR dump program into a flow, however if the ultimate
+receiver of a message needs to reply to that message, the reply will not reach the original
+sender, so RMR dump is not a complete "middle box" application.
+&space
+
+The following is the code for this xAPP. Several functions, which provide logic unrelated to
+the framework, have been omitted. The full code is in the framework repository.
+&half_space
+
+&space
+&indent
+.** pull in the code from the example directory
+&ex_start
+.im  j=start-example ../../../examples/rmr_dump.cpp
+&ex_end
+&figure( Simple callback application. )
+&uindent
+
