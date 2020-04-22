@@ -26,8 +26,13 @@
 
 	Date:		18 March 2020
 	Author:		E. Scott Daniels
-		
+
+	Caution:	This example code is pulled directly into one or more of the documents
+				(starting from the "start-example" tag below.  Use caution with
+				line lengths and contents because of the requirement that this
+				be documentation as well as working code.
 */
+// start-example
 
 #include <stdio.h>
 #include <string.h>
@@ -38,14 +43,13 @@
 
 #include "ricxfcpp/xapp.hpp"
 
-// ----------------------------------------------------------
-
 extern int main( int argc, char** argv ) {
 	std::unique_ptr<Xapp> xfw;
 	std::unique_ptr<Message> msg;
-	Msg_component payload;				// special type of unique pointer to the payload 
+	Msg_component payload;				// special type of unique pointer to the payload
 
 	int	sz;
+	int len;
 	int i;
 	int ai;
 	int response_to = 0;				// max timeout wating for a response
@@ -53,26 +57,29 @@ extern int main( int argc, char** argv ) {
 	int	mtype = 0;
 	int rmtype;							// received message type
 	int delay = 1000000;				// mu-sec delay; default 1s
-	
 
-	ai = 1;
-	while( ai < argc ) {				// very simple flag processing (no bounds/error checking)
+
+	// very simple flag processing (no bounds/error checking)
+	while( ai < argc ) {
 		if( argv[ai][0] != '-' )  {
 			break;
 		}
 
-		switch( argv[ai][1] ) {			// we only support -x so -xy must be -x -y
-			case 'd':					// delay between messages (mu-sec)
+		// we only support -x so -xy must be -x -y
+		switch( argv[ai][1] ) {
+			// delay between messages (mu-sec)
+			case 'd':
 				delay = atoi( argv[ai+1] );
 				ai++;
 				break;
-				
-			case 'p': 
-				port = argv[ai+1];	
+
+			case 'p':
+				port = argv[ai+1];
 				ai++;
 				break;
 
-			case 't':					// timeout in seconds; we need to convert to ms for rmr calls
+			// timeout in seconds; we need to convert to ms for rmr calls
+			case 't':
 				response_to = atoi( argv[ai+1] ) * 1000;
 				ai++;
 				break;
@@ -83,7 +90,8 @@ extern int main( int argc, char** argv ) {
 	fprintf( stderr, "<XAPP> response timeout set to: %d\n", response_to );
 	fprintf( stderr, "<XAPP> listening on port: %s\n", port );
 
-	xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );		// new xAPP thing; wait for a route table
+	// get an instance and wait for a route table to be loaded
+	xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
 	msg = xfw->Alloc_msg( 2048 );
 
 	for( i = 0; i < 100; i++ ) {
@@ -92,27 +100,27 @@ extern int main( int argc, char** argv ) {
 			mtype = 0;
 		}
 
-		sz = msg->Get_available_size();			// we'll reuse a message if we received one back; ensure it's big enough
-		if( sz < 2048 ) {
-			fprintf( stderr, "<SNDR> fail: message returned did not have enough size: %d [%d]\n", sz, i );
-			exit( 1 );
-		}
+		// we'll reuse a received message; get max size
+		sz = msg->Get_available_size();
 
-		payload = msg->Get_payload();											// direct access to payload
-		snprintf( (char *) payload.get(), 2048, "This is message %d\n", i );	// something silly to send
+		// direct access to payload; add something silly
+		payload = msg->Get_payload();
+		len = snprintf( (char *) payload.get(), sz, "This is message %d\n", i );
 
-		// payload updated in place, nothing to copy from, so payload parm is nil
-		if ( ! msg->Send_msg( mtype, Message::NO_SUBID, strlen( (char *) payload.get() )+1, NULL )) {
+		// payload updated in place, prevent copy by passing nil
+		if ( ! msg->Send_msg( mtype, Message::NO_SUBID,  len, NULL )) {
 			fprintf( stderr, "<SNDR> send failed: %d\n", i );
 		}
 
+		// receive anything that might come back
 		msg = xfw->Receive( response_to );
 		if( msg != NULL ) {
 			rmtype = msg->Get_mtype();
 			payload = msg->Get_payload();
-			fprintf( stderr, "got: mtype=%d payload=(%s)\n", rmtype, (char *) payload.get() );
+			fprintf( stderr, "got: mtype=%d payload=(%s)\n",
+				rmtype, (char *) payload.get() );
 		} else {
-			msg = xfw->Alloc_msg( 2048 );				// nothing back, need a new message to send
+			msg = xfw->Alloc_msg( 2048 );
 		}
 
 		if( delay > 0 ) {

@@ -1,0 +1,120 @@
+.if false
+==================================================================================
+	Copyright (c) 2019 Nokia
+	Copyright (c) 2018-2019 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+	Mnemonic:	rts.im
+	Abstract:	This file provides macros allowing {X}fm source to generate
+				rts input from {X}fm source when the doc is passed through
+				tfm, and to generate postscirpt output when passed through
+				pfm. Simalar to the roff.im macro set that allows the generation
+				of troff input for man pages.
+
+	Author:		E. Scott Daniels
+	Date:		7 February 2019
+
+
+		Maybe useful (but doesn't explain why real formatters aren't being used)
+		http://docutils.sourceforge.net/docs/user/rst/quickref.html
+.fi
+
+
+	.** convert {X}fm input into rts.
+	.** post processing is needed to strip the leading space that tfm insists on adding.
+
+	.** bloody rst has no consistant marking character, and each header level must be different and as long as the text.
+	.** and of course they don't generate <hx> tags in the resulting HTML, but <section> tags. WTF?
+	.dv many_equals ============================================================================================
+	.dv many_dashes --------------------------------------------------------------------------------------------
+	.dv many_tildas ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	.dv h1 .sp 1 $1 .br &many_equals .sp 1
+	.dv h2 .sp 1 $1 .br &many_dashes .sp 1
+	.dv h3 .sp 1 $1 .br &many_tildas .sp 1
+
+	.** bloody rst won't allow breaks in a bullet list so we have to allow the column to go wide.
+	.dv cd 1 180i m=0i
+
+	.dv h4 **$1**
+	.** .dv h1 === $1 .br ===  .sp 1
+	.** .dv h2 === $1 .br === .sp 1
+	.** .dv h3 === $1 .br === .sp 1
+
+	.dv fig
+	.dv set_font_cw
+
+	.dv nf  .sp 1 ^:^: .br .ll -2 .in +2
+	.dv fo  .in -2 .ll +2 .sp 1
+
+	.dv indent
+	.dv uindent
+
+	.dv lic1 +
+	.dv lic2 -
+	.dv lic3 *
+
+	.in 0i						.** bloody rst is indention sensitive like markdown; sheesh
+
+	.dv esc \ : .** bloody need to escape _ and * at the end of a word
+	.dv line_len .ll $1
+	.dv space .sp 1
+	.dv half_space .sp 1
+	.dv mult_space .sp $1
+	.dv beg_list .ll 17i .sp 1 .dv lic $1 ^:
+	.dv end_list .ll 6i .sp 1
+
+	.dv figure .fg $1
+
+	.dv beg_dlist .sp 1  .ll -3
+	.dv end_dlist .br .in 0i .ll +3
+
+	.** for now we allow only a single layer of defitems
+	.dv di     .in 0i .br  $1 .br .in +3
+	.dv ditem .in 0i .br  $1 .br .in +3
+	.** diitem is odd and deprecated
+	.dv diitem .in 0i .br  $1 .br .in +3
+	.dv item .br &lic
+	.dv li .br &lic
+
+	.dv ex_start .sp 1 ^:^: .br .ll -2 .in +2 .nf
+	.dv ex_end .fo on .in -2 .ll +2 .sp 1
+
+	.dv proto_start .sp 1 .cc .5i .st 9 .sf Courier-bold .nf
+	.dv proto_end .fo on .sf ^&text_font .st ^&text_size .sp .3
+
+	.dv center .br $1 .br
+	.dv center_start .br
+	.dv center_end .br
+
+	.** fonts and font macros
+	.dv ital *$1*
+	.dv bold **$1**
+	.dv cw $1
+	.dv set_font_prop
+
+	.dv table .sp 1 ^[table not supported in rst output]  .if false
+	.dv tab_cell
+	.dv tab_row
+	.dv end_table .fi
+
+	.dv super .sm ^[ .sm ^&{ss_num}]
+	.dv ss_num 1
+	.dv note .dv ss_num ^[ ?%.0f ^&ss_num 1 + ] ^: .sm ^^[^&{ss_num}]
+	.** rst has no concept of a page, so all notes go to the close of the doc
+	.dv atbot atclose
+
+	.ju off

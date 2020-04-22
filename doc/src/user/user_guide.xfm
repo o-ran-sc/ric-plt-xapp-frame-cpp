@@ -1,0 +1,60 @@
+.if false
+==================================================================================
+    Copyright (c) 2019 Nokia
+    Copyright (c) 2018-2019 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+	Mnemonic:	user_guide.xfm
+	Abstract:	Source for the user guide. Use {X}fm to generate one of several
+				output types:
+					- postscript
+					- roff
+					- markdown
+					- rst
+					- ascii text
+
+	Date:		21 April  2020
+	Author:		E. Scott Daniels
+.fi
+
+
+.dv col_width 6.5i
+.dv fname_base user_guide
+.dv doc_title RIC xAPP C++ Framework
+.dv doc_subtitle User's Guide
+.dv orig_date 21 April 2020
+
+.dv textfont Helvetica
+.dv ditemtext Helvetica-bold
+
+.in .5i
+.ll 6i
+.hn off
+
+.im ../lib/setup.im 
+
+.im &{lib}/front_junk.im 
+
+.im cpp_frame.im
+
+&h1(Example Programmes)
+The following sections contain several example programmes which are written on
+top of the C++ framework.
+
+.im example1.im
+.im example2.im
+.im example3.im
