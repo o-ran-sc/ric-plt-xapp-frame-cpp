@@ -1,0 +1,573 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "119029c4_1bd7cf09",
+        "filename": "doc/src/README",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "annoying trailing ws",
+      "range": {
+        "startLine": 14,
+        "startChar": 52,
+        "endLine": 14,
+        "endChar": 53
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2f71a5c_e486c89b",
+        "filename": "doc/src/lib/front_junk.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "since you are adding these files in 2020, please consider updating all the copyright/license header dates. I know it\u0027s a pain.",
+      "range": {
+        "startLine": 3,
+        "startChar": 18,
+        "endLine": 3,
+        "endChar": 22
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8dc54ef_5e809215",
+        "filename": "doc/src/lib/license.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "here especially",
+      "range": {
+        "startLine": 12,
+        "startChar": 18,
+        "endLine": 13,
+        "endChar": 32
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c18a4257_8d7906dd",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "showing your age here Scotto!",
+      "range": {
+        "startLine": 27,
+        "startChar": 12,
+        "endLine": 27,
+        "endChar": 21
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8c314ef0_a25fdf2e",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "its",
+      "range": {
+        "startLine": 28,
+        "startChar": 32,
+        "endLine": 28,
+        "endChar": 36
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e3c98a49_9be4cfd5",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "math lib is required?",
+      "range": {
+        "startLine": 79,
+        "startChar": 63,
+        "endLine": 79,
+        "endChar": 66
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e0cc60aa_bdc020d1",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "debugging is required?",
+      "range": {
+        "startLine": 79,
+        "startChar": 19,
+        "endLine": 79,
+        "endChar": 21
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9aab55fa_a602919d",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "function names are CAPITALIZED ?",
+      "range": {
+        "startLine": 167,
+        "startChar": 14,
+        "endLine": 167,
+        "endChar": 15
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8406cd30_34bab4ba",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "I guess they are capitalized.  A little surprised by that.",
+      "range": {
+        "startLine": 170,
+        "startChar": 14,
+        "endLine": 170,
+        "endChar": 15
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bf24f849_755d3ab1",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "\"If\" (not By)",
+      "range": {
+        "startLine": 201,
+        "startChar": 0,
+        "endLine": 201,
+        "endChar": 2
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9648d091_253875b1",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "Might want to remove this tab char, you have almost none in this file",
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b01c4305_c1d00fbf",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "originating?",
+      "range": {
+        "startLine": 221,
+        "startChar": 65,
+        "endLine": 221,
+        "endChar": 71
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3e85fb2f_2dbf4bd4",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "another sneaky ws",
+      "range": {
+        "startLine": 230,
+        "startChar": 63,
+        "endLine": 230,
+        "endChar": 64
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "14c93900_25ed5f1e",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "another sneaky tab",
+      "range": {
+        "startLine": 231,
+        "startChar": 1,
+        "endLine": 231,
+        "endChar": 2
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "362b371a_1ced0002",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 317,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "buffer a ?",
+      "range": {
+        "startLine": 317,
+        "startChar": 37,
+        "endLine": 317,
+        "endChar": 38
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c9a0d002_8a86cd39",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "they?  subj-verb agreement issue",
+      "range": {
+        "startLine": 334,
+        "startChar": 0,
+        "endLine": 334,
+        "endChar": 3
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2f72635e_4b4d8db8",
+        "filename": "doc/src/user/cpp_frame.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 347,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "its",
+      "range": {
+        "startLine": 347,
+        "startChar": 96,
+        "endLine": 347,
+        "endChar": 100
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6bec51cc_4663f5ea",
+        "filename": "doc/src/user/example1.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "its",
+      "range": {
+        "startLine": 27,
+        "startChar": 55,
+        "endLine": 27,
+        "endChar": 59
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "911f9210_b014e6c4",
+        "filename": "doc/src/user/example1.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "??",
+      "range": {
+        "startLine": 30,
+        "startChar": 88,
+        "endLine": 30,
+        "endChar": 92
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4c8e96b_c53461e0",
+        "filename": "doc/src/user/example1.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "why is code duplicated here? why isn\u0027t this pulled in from the repo?  Who cares what size things are on the web, you\u0027re not publishing a book here.",
+      "range": {
+        "startLine": 51,
+        "startChar": 3,
+        "endLine": 53,
+        "endChar": 6
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e7fc014d_30a46627",
+        "filename": "doc/src/user/example2.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "really, programme?",
+      "range": {
+        "startLine": 21,
+        "startChar": 20,
+        "endLine": 21,
+        "endChar": 21
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54833383_fe1f2359",
+        "filename": "doc/src/user/example3.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "its\n\nmaybe I should steal your single-apostrophe key :)",
+      "range": {
+        "startLine": 22,
+        "startChar": 24,
+        "endLine": 22,
+        "endChar": 28
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "30f0e2fd_f3454097",
+        "filename": "doc/src/user/example3.im",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "have been (what)?",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 4
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b88fc5af_01e23bab",
+        "filename": "docs/index.rst",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "should make line length match text above it",
+      "range": {
+        "startLine": 12,
+        "startChar": 23,
+        "endLine": 12,
+        "endChar": 26
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "217d78df_7a809403",
+        "filename": "docs/rel-notes.rst",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000014
+      },
+      "writtenOn": "2020-04-22T17:56:18Z",
+      "side": 1,
+      "message": "c\u0027mon you can declare version 1.0.0 and the date you declared it, that\u0027s a good start and saves you from this useless text",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 1
+      },
+      "revId": "56c86822f1efc9650dc50d582e4771209d8464bb",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53",
+      "unresolved": true
+    }
+  ]
+}
