@@ -1,0 +1,188 @@
+.if false
+==================================================================================
+    Copyright (c) 2019 Nokia
+    Copyright (c) 2018-2019 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+
+&h2(RMR Dump xAPP)
+The RMR dump application is an example built on top of the C++ xApp framework to both
+illustrate the use of the framework, and to provide a useful diagnostic tool when
+testing and troubleshooting xApps.
+&space
+
+The RMR dump xApp isn't a traditional xApp inasmuch as it's goal is to listen for message
+types and to dump information about the messages received to the TTY much as &cw(tcpdump)
+does for raw packet traffic.
+The full source code, and Makefile, are in the &cw(examples) directory of the C++ repo (link?).
+&space
+
+When invoked, the RMR dump program is given one or more message types to listen for.
+A callback function is registered for each, and the framework &cw(Run()) function is invoked
+to drive the process.
+For each recognised message, and depending on the verbosity level supplied at program start,
+information about the received message(s) is written to the TTY.
+If the forwarding option, -f, is given on the command line, and an appropriate route table is
+provided, each received message is forwarded without change.
+This allows for the insertion of the RMR dump program into a flow, however if the ultimate
+receiver of a message needs to reply to that message, the reply will not reach the original
+sender, so RMR dump is not a complete "middle box" application.
+&space
+
+The following is the code for this xAPP. Several functions, which provide logic unrelated to
+the framework, have been omitted. The full code is in the framework repository.
+&half_space
+
+&indent
+&ex_start
+  #include <stdio.h>
+  #include <unistd.h>
+  #include <atomic>
+
+  #include "ricxfcpp/xapp.hpp"
+
+  /*
+    Information that the callback needs outside
+    of what is given to it via params on a call
+    by the framework.
+  */
+  typedef struct {
+    int   vlevel;       // verbosity level
+    bool  forward;      // if true, message is forwarded
+    int   stats_freq;   // header/stats after n messages
+    std::atomic<long> pcount; // messages processed
+    std::atomic<long> icount; // messages ignored
+    std::atomic<int>  hdr;    // number of messages before next header
+  } cb_info_t;
+
+  // ----------------------------------------------------------
+
+  // Dump bytes to tty.
+  void dump( unsigned const char* buf, int len ) {
+    // omitted for brevity
+  }
+
+  /*
+    generate stats when the hdr count reaches 0. Only one active
+    thread will ever see it be exactly 0, so this is thread safe.
+  */
+  void stats( cb_info_t& cbi ) {
+    int curv;         // current stat trigger value
+
+    curv = cbi.hdr--;
+
+    if( curv == 0 ) {         // stats when we reach 0
+      fprintf( stdout, "ignored: %ld  processed: %ld\n",
+        cbi.icount.load(), cbi.pcount.load() );
+      if( cbi.vlevel > 0 ) {
+        fprintf( stdout, "\n     %5s %5s %2s %5s\n", 
+            "MTYPE", "SUBID", "ST", "PLLEN" );
+      }
+
+      cbi.hdr = cbi.stats_freq;   // reset must be last
+    }
+  }
+
+   // Callback registered for all msgs we are interested in
+   void cb1( Message& mbuf, int mtype, int subid, int len,
+           Msg_component payload,  void* data ) {
+     cb_info_t*  cbi;
+     long total_count;
+
+     if( (cbi = (cb_info_t *) data) == NULL ) {
+       return;
+     }
+
+     cbi->pcount++;
+     stats( *cbi );      // gen stats & header if needed
+
+     if( cbi->vlevel > 0 ) {
+       fprintf( stdout, "<RD> %-5d %-5d %02d %-5d \n",
+           mtype, subid, mbuf.Get_state(), len );
+
+       if( cbi->vlevel > 1 ) {
+         dump(  payload.get(), len > 64 ? 64 : len );
+       }
+     }
+
+    if( cbi->forward ) {
+      // forward with no change to len or payload
+      mbuf.Send_msg( Message::NO_CHANGE, NULL );
+    }
+  }
+
+  /*
+    registered as the default callback; it counts the
+    messages that we aren't giving details about.
+  */
+  void cbd( Message& mbuf, int mtype, int subid, int len,
+          Msg_component payload,  void* data ) {
+    cb_info_t*  cbi;
+
+    if( (cbi = (cb_info_t *) data) == NULL ) {
+      return;
+    }
+
+    cbi->icount++;
+    stats( *cbi );
+
+    if( cbi->forward ) {
+      // forward with no change to len or payload
+      mbuf.Send_msg( Message::NO_CHANGE, NULL );
+    }
+  }
+
+  int main( int argc, char** argv ) {
+    std::unique_ptr<Xapp> x;
+    char* port = (char *) "4560";
+    int ai = 1;         // arg processing index
+    cb_info_t*  cbi;
+    int   mtype;
+    int   nthreads = 1;
+
+    cbi = (cb_info_t *) malloc( sizeof( *cbi ) );
+    cbi->pcount = 0;
+    cbi->icount = 0;
+    cbi->stats_freq = 10;
+
+    // very simple flag parsing (no error/bounds checking)
+    while( ai < argc ) {
+      // code ommited for brevity
+      ai++;
+    }
+
+    cbi->hdr = cbi->stats_freq;
+    fprintf( stderr, "<RD> listening on port: %s\n", port );
+
+    // create xapp, wait for route table if forwarding
+    x = std::unique_ptr<Xapp>( new Xapp( port, cbi->forward ) );
+
+    // register callback for each type on the command line
+    while( ai < argc ) {
+      mtype = atoi( argv[ai] );
+      ai++;
+      fprintf( stderr, "<RD> capturing messages for type %d\n", mtype );
+      x->Add_msg_cb( mtype, cb1, cbi );
+    }
+    x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, cbi );   // register default cb
+
+    fprintf( stderr, "<RD> starting driver\n" );
+    x->Run( nthreads );   // return from Run() is not expected
+  }
+&ex_end
+&figure( The RMR dump xAPP. )
+&space
+&uindent
