@@ -1,0 +1,348 @@
+
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+
+.fi
+
+&h1(Introduction)
+The C++ framework allows the programmer to create an xApp object instance, and to use that instance as
+the logic base.
+The xApp object provides a message level interface to the RIC Message Router (RMR), including the ability
+to register callback functions which the instance will drive as messages are received; much in the same
+way that an X-windows application is driven by the window manager for all activity.
+The xApp may also choose to use its own send/receive loop, and thus is not required to use the callback
+driver mechanism provided by the framework.
+
+&h1(The Framework API)
+The C++ framework API consists of the creation of the xApp object, and invoking desired functions via
+the instance of the object.
+The following paragraphs cover the various steps involved to create an xApp instance, wait for a route
+table to arrive, send a message, and wait for messages to arrive.
+
+&h2(Creating the xApp instance)
+The creation of the xApp instance is as simple as invoking the object's constructor with two required
+parameters:
+
+&half_space
+&indent
+&beg_dlist(.5i:&ditemtext)
+    &ditem(port) A C string (char *) which defines the port that RMR will open to listen for connections.
+    &half_space
+
+    &ditem(wait) A Boolean value which indicates whether or not the initialization process should wait for
+        the arrival of a valid route table before completing.
+        When true is supplied, the initialization will not complete until RMR has received a valid route table
+        (or one is located via the &cw(RMR_SEED_RT) environment variable).
+&end_dlist
+&uindent
+&space
+
+The following code sample illustrates the simplicity of creating the instance of the xApp object.
+&half_space
+
+&ex_start
+    #include <memory>
+    #include <ricxfcpp/xapp.hpp>
+    int main( ) {
+        std::unique_ptr<Xapp> xapp;
+        char* listen_port = (char *) "4560";    //RMR listen port
+        bool  wait4table = true;            // wait for a route table
+
+        xapp = std::unique_ptr<Xapp>(
+              new Xapp( listen_port, wait4table ) );
+    }
+&ex_end
+&figure( Creating an xAPP instance.)
+&space
+
+From a compilation perspective, the following is the simple compiler invocation string needed to compile
+and link the above program (assuming that the sample code exists in a file called &cw(man_ex1.cpp).
+&half_space
+
+
+&ex_start
+   g++ man_ex1.cpp -o man_ex1 -lricxfcpp -lrmr_si -lpthread
+&ex_end
+&space
+
+The above program, while complete and capable of being compiled, does nothing useful.
+When invoked, RMR will be initialized and will begin listening for a route table; blocking the return
+to the main program until one is received.
+When a valid route table arrives, initialization will complete and the program will exit as there is
+no code following the instruction to create the object.
+
+&h1(Listening For Messages)
+The program in the previous example can be extended with just a few lines of code to enable it to receive
+and process messages.
+The application needs to register a callback function for each message type which it desires to process.
+&space
+
+Once registered, each time a message is received the registered callback for the message type will be
+invoked by the framework.
+
+&h2(Callback Signature)
+As with most callback related systems, a callback must have a well known function signature which generally
+passes event related information and a "user" data pointer which was registered with the function.
+The following is the prototype which callback functions must be defined with:
+&half_space
+
+&ex_start
+    void cb_name( Message& m, int mtype, int subid,
+          int payload_len, Msg_component payload,
+          void* usr_data );
+&ex_end
+&figure( Callback function signature)
+&space
+
+The parameters passed to the callback function are as follows:
+&multi_space( .1 )
+
+&indent
+&beg_dlist(1i:&ditemtext)
+    &ditem(m) A reference to the Message that was received.
+    &half_space
+
+    &ditem(mtype) The message type (allows for disambiguation if the callback is registered for multiple message types).
+    &half_space
+
+    &ditem(subid) The subscription ID from the message.
+    &half_space
+
+    &ditem(payload len) The number of bytes which the sender has placed into the payload.
+    &half_space
+
+    &ditem(payload) A direct reference (smart pointer) to the payload. (The smart pointer is wrapped in a
+            special class in order to provide a custom destruction function without burdening the xApp developer
+            with that knowledge.)
+    &half_space
+    &ditem(user data) A pointer to user data. This is the pointer that was provided when the function was registered.
+&end_dlist
+&uindent
+&space
+
+To illustrate the use of a callback function, the previous code example has been extended to add the
+function, register it for message types 1000 and 1001, and to invoke the &cw(Run()) function in the
+framework (explained in the next section).
+
+&ex_start
+    #include <memory>
+    #include <ricxfcpp/xapp.hpp>
+    long m1000_count = 0;    // message counters, one for each type
+    long m1001_count = 0;
+
+    // callback function that will increase the appropriate counter
+    void cbf( Message& mbuf, int mtype, int subid, int len,
+                Msg_component payload,  void* data ) {
+        long* counter;
+
+        if( (counter = (long *) data) != NULL ) {
+            (*counter)++;
+        }
+    }
+
+    int main( ) {
+        std::unique_ptr<Xapp> xapp;
+        char* listen_port = (char *) "4560";
+        bool  wait4table = false;
+
+        xapp = std::unique_ptr<Xapp>(
+              new Xapp( listen_port, wait4table ) );
+
+        // register the same callback function for both msg types
+        xapp->Add_msg_cb( 1000, cbf, (void *) &m1000_count );
+        xapp->Add_msg_cb( 1001, cbf, (void *) &m1001_count );
+
+        xapp->Run( 1 );        // start the callback driver
+    }
+&ex_end
+&figure( Callback function example.)
+&space
+
+As before, the program does nothing useful, but now it will execute and receive messages.
+For this example,
+the same function can be used to increment the appropriate counter simply by providing a pointer to the
+counter as the user data when the callback function is registered.
+In addition, a subtle change from the previous example has been to set the wait for table flag to &cw(false.)
+&space
+
+For an xApp that is a receive only application (never sends) it is not necessary to wait for RMR
+to receive a table from the Route Manager.
+
+&h2(Registering A Default Callback)
+The xApp may also register a default callback function such that the function will be invoked for any
+message that does not have a registered callback.
+If the xAPP does not register a default callback, any message which cannot be mapped to a known callback
+function is silently dropped.
+A default callback is registered by providing a &ital(generic) message type of &cw(xapp->DEFAULT_CALLBACK)
+on an &cw(Add_msg_cb) call.
+
+&h2(The Framework Callback Driver)
+The &cw(Run()) function within the Xapp object is invoked to start the callback driver, and the xApp
+should not expect the function
+to return under most circumstances.
+The only parameter that the &cw(Run()) function expects is the number of threads to start.
+For each thread requested, the framework will start a listener thread which will allow received messages
+to be processed in parallel.
+If supplying a value greater than one, the xApp must ensure that the callback functions are thread safe
+as it is very likely that
+the same callback function will be invoked concurrently from multiple threads.
+
+&h1(Sending Messages)
+It is very likely that most xApps will need to send messages and will not operate in "receive only" mode.
+Sending the message is a function of the message object itself and can take one of two forms:
+
+&half_space
+&indent
+&beg_list &lic1
+    &item Replying to the sender of a received message
+    &half_space
+
+    &item Sending a message (routed based on the message type and subscription ID)
+&end_list
+&uindent
+&space
+
+When replying to the sender, the message type and subscription ID are not used to determine the destination
+of the message; RMR ensures that the message is sent back to the originating xApp. The xApp may still need
+to change the message type and/or the subscription ID in the message prior to using the reply function.
+&space
+
+To provide for both situations, two reply functions are supported by the Message object as illustrated
+with the following prototypes.
+&half_space
+
+&ex_start
+   bool Send_response(  int mtype, int subid, int response_len,
+        std:shared_ptr<unsigned char> response );
+
+   bool Send_response(  int response_len, std::shared_ptr<unsigned char> response );
+&ex_end
+&figure( Reply function prototypes. )
+&space
+
+In the first prototype the xApp must supply the new message type and subscription ID values, where the
+second function uses the values which are currently set in the message.
+Further, the new payload contents, and length, are supplied to both functions; the framework ensures
+that the message is large enough to accommodate the payload, reallocating it if necessary, and copies
+the response into the message payload prior to sending.
+Should the xApp need to change either the message type, or the subscription ID, but not both, the &cw(NO_CHANGE)
+constant can be used as illustrated below.
+&half_space
+
+&ex_start
+    msg->Send_response( Message::NO_CHANGE, Message::NO_SUBID,
+        pl_length, (unsigned char *) payload );
+&ex_end
+&figure( Send response prototype. )
+&space
+
+In addition to the two function prototypes for &cw(Send_response()) there are two additional prototypes
+which allow the new payload to be supplied as a shared smart pointer.
+The other parameters to these functions are identical to those illustrated above, and thus are not presented
+here.
+&space
+
+The &cw(Send_msg()) set of functions supported by the Message object are identical to the &cw(Send_response())
+functions and are shown below.
+&half_space
+
+&ex_start
+    bool Send_msg( int mtype, int subid, int payload_len,
+        std::shared_ptr<unsigned char> payload );
+
+    bool Send_msg( int mtype, int subid, int payload_len,
+        unsigned char* payload );
+
+    bool Send_msg( int payload_len,
+        std::shared_ptr<unsigned char> payload );
+
+    bool Send_msg( int payload_len, unsigned char* payload );
+&ex_end
+&figure( Send function prototypes. )
+&space
+
+Each send function accepts the message, copies in the payload provided, sets the message type and subscription
+ID (if provided), and then causes the message to be sent.
+The only difference between the &cw(Send_msg()) and &cw(Send_response()) functions is that the destination
+of the message is selected based on the mapping of the message type and subscription ID using the current
+routing table known to RMR.
+
+&h2(Direct Payload Manipulation)
+For some applications, it might be more efficient to manipulate the payload portion of an Xapp Message
+in place, rather than creating it and relying on a buffer copy when the message is finally sent.
+To achieve this, the xApp must either use the smart pointer to the payload passed to the callback function,
+or retrieve one from the message using &cw(Get_payload()) when working with a message outside of a
+callback function.
+Once the smart pointer is obtained, the pointer's get() function can be used to directly reference the
+payload (unsigned char) bytes.
+&space
+
+When working directly with the payload, the xApp must take care not to write more than the actual payload
+size which can be extracted from the Message object using the &cw(Get_available_size()) function.
+&space
+
+When sending a message where the payload has been directly altered, and no extra buffer copy is needed,
+a NULL pointer should be passed to the Message send function.
+The following illustrates how the payload can be directly manipulated and returned to the sender (for
+simplicity, there is no error handling if the payload size of the received message isn't large enough
+for the response string, the response is just not sent).
+&half_space
+
+&ex_start
+    Msg_component payload;  // smart reference
+    int pl_size;            // max size of payload
+
+    payload = msg->Get_payload();
+    pl_size = msg->Get_available_size();
+    if( snprintf( (char *) payload.get(), pl_size,
+        "Msg Received\n" ) < pl_size ) {
+      msg->Send_response( M_TYPE, SID, strlen( raw_pl ), NULL );
+    }
+&ex_end
+&figure( Send message without buffer copy. )
+&space
+
+&h2(Sending Multiple Responses)
+It is likely that the xApp will wish to send multiple responses back to the process that sent a message
+that triggered the callback.
+The callback function may invoke the &cw(Send_response()) function multiple times before returning.
+&space
+
+After each call, the Message retains the necessary information to allow for a subsequent invocation to
+send more data.
+It should be noted though, that after the first call to &cw({Send_response()) the original payload
+will be lost; if necessary, the xApp must make a copy of the payload before the first response call is
+made.
+
+&h2(Message Allocation)
+Not all xApps will be "responders," meaning that some xApps will need to send one or more messages before
+they can expect to receive any messages back.
+To accomplish this, the xApp must first allocate a message buffer, optionally initialising the payload,
+and then using the message's &cw(Send_msg()) function to send a message out.
+The framework's &cw(Alloc_msg()) function can be used to create a Message object with a desired payload
+size.
+
+&h1(Framework Provided Callbacks)
+The framework itself may provide message handling via the driver such that the xApp might not need to
+implement some message processing functionality.
+Initially, the C++ framework will provide a default callback function to handle the RMR based health
+check messages.
+This callback function will assume that if the message was received, and the callback invoked, that all
+is well and will reply with an OK state.
+If the xApp should need to override this simplistic response, all it needs to do is to register its
+own callback function for the health check message type.

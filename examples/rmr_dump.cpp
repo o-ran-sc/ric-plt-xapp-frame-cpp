@@ -27,9 +27,9 @@
 				on by the application.  The verbosity level may be used to increase
 				the amount of detail given for the tracked messages.
 
-				This writes to the TTY which is slow, so do not expect it to be able 
+				This writes to the TTY which is slow, so do not expect it to be able
 				to process and report on a high rate of messages. Also, forwarded
-				messages will reach the intended target, however if the target 
+				messages will reach the intended target, however if the target
 				attempts to send a response the response will come back to THIS
 				application, and not the message origination; this cannot be a bit
 				of middleware in it's current form.
@@ -37,7 +37,12 @@
 	Date:		25 March 2020
 	Author:		E. Scott Daniels
 
+	Caution:	This example code is pulled directly into one or more of the documents
+				(starting from the "start-example" tag below.  Use caution with
+				line lengths and contents because of the requirement that this
+				be documentation as well as working code.
 */
+// start-example
 #include <stdio.h>
 #include <unistd.h>
 #include <atomic>
@@ -50,15 +55,15 @@
 	by the framework.
 */
 typedef struct {
-	int		vlevel;				// verbosity level
-	bool	forward;			// if true, message is forwarded
-	int		stats_freq;			// header/stats after n messages
-	std::atomic<long>	pcount;	// messages processed
-	std::atomic<long>	icount;	// messages ignored
-	std::atomic<int>	hdr; 	// number of messages before next header
+	int		vlevel;             // verbosity level
+	bool	forward;            // if true, message is forwarded
+	int		stats_freq;         // header/stats after n messages
+	std::atomic<long>	pcount; // messages processed
+	std::atomic<long>	icount; // messages ignored
+	std::atomic<int>	hdr;    // number of messages before next header
 } cb_info_t;
 
-// ----------------------------------------------------------
+// ----------------------------------------------------------------------
 
 /*
 	Dump bytes to tty.
@@ -73,10 +78,10 @@ void dump( unsigned const char* buf, int len ) {
 	for( i = 0; i < len; i++ ) {
 		cheater[j++] =  isprint( buf[i] ) ? buf[i] : '.';
 		fprintf( stdout, "%02x ", buf[i] );
-			
+
 		if( j == 16 ) {
 			cheater[j] = 0;
-			fprintf( stdout, " | %s\n<RD> %04x | ", cheater, i+1 );	
+			fprintf( stdout, " | %s\n<RD> %04x | ", cheater, i+1 );
 			j = 0;
 		}
 	}
@@ -87,7 +92,7 @@ void dump( unsigned const char* buf, int len ) {
 			fprintf( stdout, "   " );
 		}
 		cheater[j] = 0;
-		fprintf( stdout, " | %s\n", cheater );	
+		fprintf( stdout, " | %s\n", cheater );
 	}
 }
 
@@ -101,10 +106,10 @@ void stats( cb_info_t& cbi ) {
 	curv = cbi.hdr--;
 
 	if( curv == 0 ) {					// stats when we reach 0
-		fprintf( stdout, "ignored: %ld  processed: %ld\n", 
+		fprintf( stdout, "ignored: %ld  processed: %ld\n",
 			cbi.icount.load(), cbi.pcount.load() );
 		if( cbi.vlevel > 0 ) {
-			fprintf( stdout, "\n     %5s %5s %2s %5s\n", 
+			fprintf( stdout, "\n     %5s %5s %2s %5s\n",
 				"MTYPE", "SUBID", "ST", "PLLEN" );
 		}
 
@@ -219,9 +224,13 @@ int main( int argc, char** argv ) {
 
 			default:
 				fprintf( stderr, "unrecognised option: %s\n", argv[ai] );
-				fprintf( stderr, "usage: %s [-f] [-p port] [-s stats-freq]  [-t thread-count] [-v | -V n] msg-type1 ... msg-typen\n", argv[0] );
-				fprintf( stderr, "\tstats frequency is in number of messages received\n" );
-				fprintf( stderr, "\tverbose levels (-V) 0 counts only, 1 message info 2 payload dump\n" );
+				fprintf( stderr, "usage: %s [-f] [-p port] "
+								"[-s stats-freq]  [-t thread-count] "
+								"[-v | -V n] msg-type1 ... msg-typen\n",
+								argv[0] );
+				fprintf( stderr, "\tstats frequency is based on # of messages received\n" );
+				fprintf( stderr, "\tverbose levels (-V) 0 counts only, "
+								"1 message info 2 payload dump\n" );
 				exit( 1 );
 		}
 
@@ -235,7 +244,7 @@ int main( int argc, char** argv ) {
 	x = std::unique_ptr<Xapp>( new Xapp( port, cbi->forward ) );
 
 	// register callback for each type on the command line
-	while( ai < argc ) {	
+	while( ai < argc ) {
 		mtype = atoi( argv[ai] );
 		ai++;
 		fprintf( stderr, "<RD> capturing messages for type %d\n", mtype );

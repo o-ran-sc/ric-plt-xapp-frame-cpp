@@ -1,0 +1,19 @@
+
+.if false
+	This is the "raw" license which goes into the document itself (where
+	possible).
+.fi
+
+&raw_comment_sym This work is licensed under a Creative Commons Attribution 4.0 International License.
+.br
+&raw_comment_sym SPDX-License-Identifier: CC-BY-4.0
+.br
+&raw_comment_sym
+.br
+&raw_comment_sym CAUTION: this document is generated from source in doc/src/*
+.br
+&raw_comment_sym To make changes edit the source and recompile the document.
+.br
+&raw_comment_sym Do NOT make changes directly to .rst or ^.md files.
+.sp 2
+
