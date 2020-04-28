@@ -1,0 +1,8 @@
+Verified+1: ORAN Jobbuilder <releng+oran-jobbuilder@linuxfoundation.org>
+Verified+1: Ron Shacham <rshacham@research.att.com>
+Code-Review+2: Ron Shacham <rshacham@research.att.com>
+Submitted-by: Scott Daniels <daniels@research.att.com>
+Submitted-at: Tue, 28 Apr 2020 15:41:24 +0000
+Reviewed-on: https://gerrit.o-ran-sc.org/r/c/ric-plt/xapp-frame-cpp/+/3510
+Project: ric-plt/xapp-frame-cpp
+Branch: refs/heads/master
