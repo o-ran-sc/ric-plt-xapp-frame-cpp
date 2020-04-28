@@ -1,5 +1,10 @@
 # This file contains a brief summary of each version bump.
 
+2020 April 28; version 1.0.0
+	Bump version to 1.0.0 to force a new package into the repo
+	(old package had bad install path), and to flip to 1.* for
+	the up coming release.
+
 2020 March 27; version 0.1.2
 	Changes identified by sonar (missing copy/move builders)
 	rmr_dump example programme
