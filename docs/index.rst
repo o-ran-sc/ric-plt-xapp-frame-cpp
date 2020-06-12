@@ -14,12 +14,14 @@ RIC xAPP C++ Framework
 .. toctree::
    :maxdepth: 1
    :caption: Documents:
+   :titlesonly:
 
    user-guide.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Misc:
+   :titlesonly:
 
    rel-notes.rst
 

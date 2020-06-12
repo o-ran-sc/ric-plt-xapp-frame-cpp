@@ -42,17 +42,34 @@
 	.dv many_equals ============================================================================================
 	.dv many_dashes --------------------------------------------------------------------------------------------
 	.dv many_tildas ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	.dv h1 .sp 1 $1 .br &many_equals .sp 1
-	.dv h2 .sp 1 $1 .br &many_dashes .sp 1
-	.dv h3 .sp 1 $1 .br &many_tildas .sp 1
+
+	.gv semver
+    .if &_major 1 >
+        .** tfm version 2.0.0+ supports header annotation for rst
+        .dh 1 a==after s=2,1 i=0 m=0
+        .dh 2 a=-after s=2,1 i=0 m=0
+        .dh 3 a=~after s=2,0 i=0 m=0
+
+        .dv h1 .h1 $1
+        .dv h2 .h2 $1
+        .dv h3 .h2 $1
+    .ei
+        .dv __alert ### WARNING ###  rst.im detects an old(er) version of tfm some formatting might not be right
+        .sv __alert
+
+        .dh 1 s=2,1 i=0 m=0
+        .dh 2 s=1.1 i=0 m=0
+        .dh 3 s=1,0 i=0 m=0
+
+        .dv h1 .sp 1 $1 .br &many_equals .sp 1
+        .dv h2 .sp 1 $1 .br &many_dashes .sp 1
+        .dv h3 .sp 1 $1 .br &many_tildas .sp 1
+    .fi
+	.dv h4 **$1**
 
 	.** bloody rst won't allow breaks in a bullet list so we have to allow the column to go wide.
 	.dv cd 1 180i m=0i
 
-	.dv h4 **$1**
-	.** .dv h1 === $1 .br ===  .sp 1
-	.** .dv h2 === $1 .br === .sp 1
-	.** .dv h3 === $1 .br === .sp 1
 
 	.dv fig
 	.dv set_font_cw
