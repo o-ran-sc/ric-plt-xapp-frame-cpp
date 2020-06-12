@@ -1,0 +1,10 @@
+---
+package_name: ricxfcpp
+log_dir: ric-plt-xapp-frame-cpp-rt-cmake-packagecloud-stage-master/1
+ref: cbd893c5f993181946cf979a23f46a9807874986
+version: 1.0.0
+packages:
+    - name: ricxfcpp-1.0.0-1.x86_64.rpm
+    - name: ricxfcpp-devel-1.0.0-1.x86_64.rpm
+    - name: ricxfcpp_1.0.0_amd64.deb
+    - name: ricxfcpp-dev_1.0.0_amd64.deb
