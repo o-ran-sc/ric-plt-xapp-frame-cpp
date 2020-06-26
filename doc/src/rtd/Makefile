@@ -37,7 +37,7 @@ desired_out = rst
 
 %.rst: %.xfm
 	OUTPUT_TYPE=rst XFM_PASS=1 tfm $< /dev/null
-	GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/^ //' >$@
+	GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/ $$//; s/^ //' >$@
 
 %.txt: %.xfm
 	OUTPUT_TYPE=txt XFM_PASS=1 tfm $< /dev/null
@@ -60,7 +60,7 @@ rel-notes.rst: rel-notes.xfm $(imbed_src)
 #
 $(docs:%=%.rst): always
 
-publish: user_guide.rst
+publish: rel-notes.rst
 	cp *.rst ../../../docs/
 
 # intermeidate junk that might straggle

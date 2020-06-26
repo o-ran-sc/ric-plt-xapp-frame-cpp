@@ -16,3 +16,4 @@
 
 publish:
 	(cd user; make publish)
+	(cd rtd; make publish)

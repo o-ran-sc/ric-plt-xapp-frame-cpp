@@ -52,7 +52,7 @@ class Xapp : public Messenger {
 		Xapp& operator=( const Xapp& soi );
 
 	public:
-		Xapp( char* listen_port, bool wait4rt );	// builder
+		Xapp( const char* listen_port, bool wait4rt );	// builder
 		Xapp( );
 		~Xapp();									// destroyer
 

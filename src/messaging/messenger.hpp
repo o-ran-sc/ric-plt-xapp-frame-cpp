@@ -65,7 +65,7 @@ class Messenger {
 		static const int MAX_PAYLOAD;			// max message size we'll handle
 		static const int DEFAULT_CALLBACK;		// parm for add callback to set default
 
-		Messenger( char* port, bool wait4table );	// builder
+		Messenger( const char* port, bool wait4table );	// builder
 		Messenger( Messenger&& soi );				// move construction
 		Messenger& operator=( Messenger&& soi );	// move operator
 		~Messenger();								// destroyer

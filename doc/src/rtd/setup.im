@@ -28,6 +28,7 @@
 .fi
 
 .if  ! _setup_im
+.dv _setup_im 1
 
 .** allow environment LIB to override
 .gv e LIB lib
@@ -63,7 +64,7 @@
 .** if we can set a license into the output, do it early
 .cd 1 11i
 &line_len(10i)
-.im license.im
+.im &{lib}/license.im
 .cd 1 6.5i m=0 i=0
 &line_len( 6i)
 
@@ -75,29 +76,8 @@
 .fi
 
 .if doc_title
-	.im &{lib}/library/front_junk.im
+	.im &{lib}/front_junk.im
 .fi
 
-.dv _setup_im 1
-.fi
-
-.if "&ot" "rst" =
-    .** copyright into .rst because it supports internal comments
-    .im license.im
-
-    &many_equals .br
-    &doc_title
-    &many_equals .br
-    .if doc_subtitle
-        &many_dashes .br
-        &doc_subtitle .br
-        &many_dashes .br
-    .fi
-.ei
-    &center_start
-    &doc_title .br
-    .if doc_subtitle
-        &doc_subtitle .br
-    .fi
 .fi
 

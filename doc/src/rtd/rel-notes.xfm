@@ -13,6 +13,14 @@
 &h1(C++ Framework Release Notes)
 The following is a list of release highlights for the C++ xAPP Framework.
 
+&h2(2020 June 26; version 1.1.0)
+	Change the port type in constructors to indicate "const"
+&space
+
+	Version bump to 1.1.0 to allow patches to bronze code to 
+	continue to be done on the 1.0.* level.
+&space
+
 &h1(Bronze Release)
 &h2(2020 April 28; version 1.0.0)
 	Bump version to force package build (old CI version added

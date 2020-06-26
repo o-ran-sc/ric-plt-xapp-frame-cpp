@@ -54,7 +54,7 @@
 
 	If port is nil, then the default port is used (4560).
 */
-Xapp::Xapp( char* port, bool wait4table ) : Messenger( port, wait4table ) {
+Xapp::Xapp( const char* port, bool wait4table ) : Messenger( port, wait4table ) {
 	// nothing to do; all handled in Messenger constructor
 }
 

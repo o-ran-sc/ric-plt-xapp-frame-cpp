@@ -60,13 +60,15 @@ const int Messenger::DEFAULT_CALLBACK = -1;
 
 	If port is nil, then the default port is used (4560).
 */
-Messenger::Messenger( char* port, bool wait4table ) {
-	if( port == NULL ) {
-		port = (char *) "4560";
+Messenger::Messenger( const char* uport, bool wait4table ) {
+
+	if( uport == NULL ) {
+		listen_port = strdup( "4560" );
+	} else {
+		listen_port = strdup( uport );
 	}
 
 	gate = new std::mutex();
-	listen_port = strdup( port );
 	mrc = rmr_init( listen_port, Messenger::MAX_PAYLOAD, 0 );
 
 	if( wait4table ) {
@@ -79,9 +81,9 @@ Messenger::Messenger( char* port, bool wait4table ) {
 }
 
 /*
-	Move support. We DO allow the instance to be moved as only one copy 
+	Move support. We DO allow the instance to be moved as only one copy
 	remains following the move.
-	Given a source object instance (soi) we move the information to 
+	Given a source object instance (soi) we move the information to
 	the new object, and then DELETE what was moved so that when the
 	user frees the soi, it doesn't destroy what we snarfed.
 */
@@ -91,7 +93,7 @@ Messenger::Messenger( Messenger&& soi ) {
 	ok_2_run = soi.ok_2_run;
 	gate = soi.gate;
 		cb_hash = soi.cb_hash;				// this seems dodgy
-	
+
 	soi.gate = NULL;
 	soi.listen_port = NULL;
 	soi.mrc = NULL;
@@ -115,7 +117,7 @@ Messenger& Messenger::operator=( Messenger&& soi ) {
 		ok_2_run = soi.ok_2_run;
 		gate = soi.gate;
 			cb_hash = soi.cb_hash;				// this seems dodgy
-		
+
 		soi.gate = NULL;
 		soi.listen_port = NULL;
 		soi.mrc = NULL;
