@@ -1,0 +1,11 @@
+
+This directory contains the code to allow the framework to
+provide a light-weight json parser. The parser, based on
+a the third party Jasmn code (link below) parses a json
+"blob" into a symbol table (rmr_symtab). The xcpp_json
+class provides the API to then access the parsed data.
+
+
+The jsmn package is included at the root as an submodule
+and is used only at build time.
+

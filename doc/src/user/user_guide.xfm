@@ -45,11 +45,12 @@
 .ll 6i
 .hn off
 
-.im ../lib/setup.im 
+.im ../lib/setup.im
+.im &{lib}/front_junk.im
 
-.im &{lib}/front_junk.im 
-
+.**  ------ major sections --------
 .im cpp_frame.im
+.im hash.im
 
 &h1(Example Programmes)
 The following sections contain several example programmes which are written on

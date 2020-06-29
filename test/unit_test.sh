@@ -71,17 +71,26 @@ do
 done
 
 make nuke >/dev/null
-make unit_test >/tmp/PID$$.log 2>&1
+make tests >/tmp/PID$$.log 2>&1
 abort_if_error $? "unable to make"
+#make unit_test >/tmp/PID$$.log 2>&1
 
 spew="cat"
-./unit_test >/tmp/PID$$.log 2>&1
-abort_if_error $? "unit test failed"
 
-gcov unit_test >/tmp/PID$$.gcov_log 2>&1	# suss out our gcov files
+for x in unit_test jhash_test
+do
+	./$x >/tmp/PID$$.log 2>&1
+	abort_if_error $? "test failed: $x"
+	gcov $x.c >/dev/null 2>&1
+done
+
+# wrapper_test is driven by jhash_test, but must be covered explicitly
+gcov jwrapper_test.c >/dev/null 2>&1
+
 ./scrub_gcov.sh								# remove cruft
 
 list=$( mk_list )
+echo ""
 echo "[INFO] coverage stats, discounted (raw), for the various modules:"
 ./parse_gcov.sh $list						# generate simple, short, coverage stats
 
