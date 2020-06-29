@@ -18,6 +18,13 @@ The following is a list of release highlights for the C++
 xAPP Framework.
 
 
+2020 June 29; version 1.2.0
+---------------------------
+
+Add support for json parsing
+
+
+
 2020 June 26; version 1.1.0
 ---------------------------
 
