@@ -41,7 +41,7 @@ parameters:
 &half_space
 &indent
 &beg_dlist(.5i:&ditemtext)
-    &ditem(port) A C string (char *) which defines the port that RMR will open to listen for connections.
+    &ditem(port) A C string (pointer to char) which defines the port that RMR will open to listen for connections.
     &half_space
 
     &ditem(wait) A Boolean value which indicates whether or not the initialization process should wait for
