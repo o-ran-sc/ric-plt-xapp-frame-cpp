@@ -1,0 +1,255 @@
+.** vim: sw=4 ts=4 et :
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+
+.if false
+	This imbed file contains the portion of the document that describes the
+	json support that is provided by the framework.
+.fi
+
+
+&h1(Json Support)
+The C++ xAPP framework provides a  very lightweight json parser and data
+hash facility.
+Briefly, a json hash (Jhash) can be established by creating an instance of
+the Jhash object with a string of valid json.
+The resulting object's functions can then be used to read values from the
+resulting hash.
+
+
+&h2(Creating The Jhash Object)
+The Jhash object is created simply by passing a json string to the constructor.
+
+.cc 10l
+&ex_start
+    #include <ricxfcpp/Jhash>
+
+    std::string jstring = "{ \"tag\": \"Hello World\" }";
+    Jhash*  jh;
+
+    jh =  new Jhash( jstring.c_str() );
+&ex_end
+&figure(The creation of the Jhash object.)
+&space
+
+
+Once the Jhash object has been created any of the methods described in the following
+paragraphs can be used to retrieve the data:
+
+&h2(Json Blobs)
+Json objects can be nested, and the nesting is supported by this  representation.
+The approach taken by Jhash is a "directory view" approach, where the "current directory,"
+or current &ital(blob,) limits the scope of visible fields.
+
+&space
+As an example, the json contained in figure jblob_fig, contains a "root" blob and
+two &ital(sub-blobs) (address and lease_info).
+
+&ex_start
+    {
+        "lodge_name": "Water Buffalo Lodge 714",
+        "member_count": 41,
+        "grand_poobah": "Larry K. Slate",
+        "attendance":   [ 23, 14, 41, 38, 24 ],
+        "address": {
+            "street":    "16801 Stonway Lane",
+            "suite":     null,
+            "city":      "Bedrock",
+            "post_code": "45701"
+        },
+        "lease_info": {
+            "owner":    "Stonegate Properties",
+            "amount":   216.49,
+            "due":      "monthly",
+            "contact:"  "Kyle Limestone"
+        }
+    }
+&ex_end
+.gv fig
+.sv _fig
+&set_fref(jblob_fig:&_fig)
+&figure(Sample json with a root and too blobs.)
+
+&space
+Upon creation of the Jhash object, the &ital(root) fields, &cw(lodge_name,) &cw(member_count,) and
+&cw(grand_poobah) are immediately available.
+The fields in the &ital(sub-blobs) are avalable only when the correct blob is selected.
+The code sample in figure &fig_blob_sample illustrates how  a &ital(sub-blob) is selected.
+
+&ex_start
+    jh->Set_blob( (char *) "address" );     // select address
+    jh->Unset_blob();                       // return to root
+    jh->Set_blob( (char *) "lease_info" );  // slect the lease blob
+&ex_end
+.gv fig
+.sv _fig
+&set_fref(fig_blob_sample:&_fig)
+&figure(Blob selection example.)
+&space
+
+Currently, the selected blob must be unset in order to select a blob at the root
+level; unset always sets the root blob.
+Attempting to use the &cw(Set_blob)  function will attempt to select the named blob
+from the current blob, and not the root.
+
+&h2(Simple Value Extraction)
+Simple values are the expected data types &ital(string, value,) and &ital(boolean.)
+This lightweight json parser treats all values as floating point numbers and does not
+attempt to maintain a separate integer type.
+A fourth type, &ital(null,) is supported to allow the user to expressly check for
+a field which is defined but has no value; as opposed to a field that was completely
+missing from the data.
+The following are the prototypes for the functions which allow values to be extracted:
+
+&half_space
+&ex_start
+    std::string String( const char* name );
+    float Value( const char* name );
+    bool Bool( const char* name );
+&ex_end
+&space
+
+Each of these funcitons returns the value associated with the field with the given &ital(name.)
+If the value is missing, the following default values are returned:
+
+&half_space
+&indent
+&beg_dlist( 1i Helvetica-bold : : 15,80 )
+    &di(String:) An empty string (.e.g "").
+    &di(Value:) Zero (e.g 0.0)
+    &di(bool:) false
+&end_dlist
+&uindent
+&space
+
+If the user needs to disambiguate between a missing value and the default value either the
+&cw(Missing) or &cw(Exists) function should be used first.
+
+&h2(Testing For Existing and Missing Fields)
+Two functions allow the developer to determine whether or not a field is included in the
+json.
+Both of these functions work on the current &ital(blob,) therefore it is important to ensure
+that the correct blob is selected before using either of these funcitons.
+The prototpyes for the &cw(Exists) and &cw(Missing) functions are below:
+
+&ex_start
+    bool Exists( const char* name );
+    bool Is_missing( const char* name );
+&ex_end
+
+The &cw(Exists) function returns &ital(true) if the field name exists in the json and &ital(false) otherwise.
+Conversly, the &cw(Missing) funciton returns &ital(true) when the field name does not exist in the json.
+
+
+&h2(Testing Field Type)
+The &cw(Exists) and &cw(Missing) functions might not be enough for the user code to validate
+the data that it has.
+To assist with this, several functions allow direct type testing on a field in the current
+blob.
+The following are the prototypes for these functions:
+
+&ex_start
+    bool Is_bool( const char* name );
+    bool Is_null( const char* name );
+    bool Is_string( const char* name );
+    bool Is_value( const char* name );
+&ex_end
+
+&space
+Each of these funcitons return &ital(true) if the field with the given name is of the type
+being tested for.
+
+
+&h2(Arrays)
+Arrays are supported in the same manner as simple field values with the addition of the need
+to supply an array index when fetching values from the object.
+In addition, there is a &ital(length) function which can be used to determine the number
+of elements in the named array.
+The prototypes for the array based functions are below:
+
+&ex_start
+    int Array_len( const char* name );
+
+    bool Is_bool_ele( const char* name, int eidx );
+    bool Is_null_ele( const char* name, int eidx );
+    bool Is_string_ele( const char* name, int eidx );
+    bool Is_value_ele( const char* name, int eidx );
+
+    bool Bool_ele( const char* name, int eidx );
+    std::string String_ele( const char* name, int eidx );
+    float Value_ele( const char* name, int eidx );
+&ex_end
+&space
+
+For each of these functions the &cw(eidx) is the zero based element index which is to
+be tested or selected.
+
+&h3(Arrays of Blobs)
+An array containing blobs, rather than simiple field value pairs, the blob must
+be selected prior to using it, just as a sub-blob needed to be selected.
+The &cw(Set_blob_ele) function is used to do this and has the following prototype:
+
+&ex_start
+    bool Set_blob_ele( const char* name, int eidx );
+&ex_end
+&space
+
+As with selecting a sub-blob, an unset must be preformed before selecting the next blob.
+Figure &array_blob_code_fig illustrates how these functions can be used to read and print
+values from the json in figure &array_blob_json_fig.
+
+
+.cc 8l
+&ex_start
+    "members": [
+        { "name": "Fred Flinstone", "member_num": 42 },
+        { "name": "Barney Rubble", "member_num": 48 },
+        { "name": "Larry K Slate", "member_num": 22 },
+        { "name": "Kyle Limestone", "member_num": 49 }
+    ]
+&ex_end
+.gv fig
+&set_fref(array_blob_code_fig:&_fig)
+&figure(Json array containing blobs.)
+&space
+
+
+.cc 18l
+&ex_start
+    std::string mname;
+    float mnum;
+    int len;
+
+    len = jh->Array_len( (char *) "members" );
+    for( i = 0; i < len; i++ ) {
+        jh->Set_blob_ele( (char *) "members", i );  // select blob
+
+        mname = jh->String( (char *) "name" );      // read values
+        mnum = jh->Value( (char *) "member_num" );
+        fprintf( stdout, "%s is member %d\n", mname.c_str(), (int) mnum );
+
+        jh->Unset_blob();                           // back to root
+    }
+&ex_end
+.gv fig
+&set_fref(array_blob_json_fig:&_fig)
+&figure(Code to process the array of blobs.)
+&space
+

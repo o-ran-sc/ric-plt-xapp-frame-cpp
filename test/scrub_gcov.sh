@@ -44,7 +44,6 @@ function mk_list {
 	done 
 }
 
-
 list=$( mk_list )
 if [[ -n $list ]]
 then
