@@ -19,7 +19,7 @@
 
 docs = user_guide
 src = user_guide.xfm
-imbed_src = cpp_frame.im example1.im example2.im example3.im
+imbed_src = cpp_frame.im example1.im example2.im example3.im jhash.im
 desired_out = rst ps
 
 # use care: the output type is used to source the macros based on the type
@@ -37,7 +37,7 @@ desired_out = rst ps
 
 %.rst: %.xfm
 	OUTPUT_TYPE=rst XFM_PASS=1 tfm $< /dev/null
-	GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/^ //' >$@
+	GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/^ //; s/ $$//' >$@
 
 %.txt: %.xfm
 	OUTPUT_TYPE=txt XFM_PASS=1 tfm $< /dev/null
@@ -55,7 +55,7 @@ user_guide.ps: user_guide.xfm $(imbed_src)
 $(docs:%=%.rst): always
 
 publish: user_guide.rst
-	cp *.rst ../../../docs/
+	cp user_guide.rst ../../../docs/user-guide.rst
 
 # intermeidate junk that might straggle
 clean:

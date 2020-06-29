@@ -107,7 +107,7 @@
 	.dv item .br &lic
 	.dv li .br &lic
 
-	.dv ex_start .sp 1 ^:^: .br .ll -2 .in +2 .nf
+	.dv ex_start .sp 1 ^:^: .sp 1 .ll -2 .in +2 .nf
 	.dv ex_end .fo on .in -2 .ll +2 .sp 1
 
 	.dv proto_start .sp 1 .cc .5i .st 9 .sf Courier-bold .nf
