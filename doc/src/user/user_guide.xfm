@@ -34,8 +34,12 @@
 
 .dv col_width 6.5i
 .dv fname_base user_guide
-.dv doc_title RIC xAPP C++ Framework
-.dv doc_subtitle User's Guide
+.if pfm
+	.dv doc_title RIC xAPP C++ Framework
+	.dv doc_subtitle User's Guide
+.ei
+	.dv doc_title User's Guide
+.fi
 .dv orig_date 21 April 2020
 
 .dv textfont Helvetica
@@ -45,11 +49,12 @@
 .ll 6i
 .hn off
 
-.im ../lib/setup.im 
+.im ../lib/setup.im
+.im &{lib}/front_junk.im
 
-.im &{lib}/front_junk.im 
-
+.**  ------ major sections --------
 .im cpp_frame.im
+.im hash.im
 
 &h1(Example Programmes)
 The following sections contain several example programmes which are written on
