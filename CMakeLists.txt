@@ -29,7 +29,7 @@ project( ricxfcpp )
 cmake_minimum_required( VERSION 3.5 )
 
 set( major_version "1" )		# should be automatically populated from git tag later, but until CI process sets a tag we use this
-set( minor_version "1" )
+set( minor_version "2" )
 set( patch_level "0" )
 
 set( install_root "${CMAKE_INSTALL_PREFIX}" )
@@ -153,8 +153,7 @@ endif()
 # but Cmake insists on having these exist when we add them to include directories to
 # enable code to find them after we build them.
 #
-include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/src/messaging" )
-
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/src/messaging;${CMAKE_CURRENT_SOURCE_DIR}/src/json;${CMAKE_CURRENT_SOURCE_DIR}/ext/jsmn" )
 
 # Compiler flags
 #
@@ -170,31 +169,43 @@ else()
 endif()
 unset( GPROF CACHE )					# we don't want this to persist
 
+
+# --------------------- external building --------------------------------------------------------
+execute_process( COMMAND  git submodule update --init -- ext/jsmn
+                WORKING_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
+
+# --------------------- framework building --------------------------------------------------------
 # Include modules
+add_subdirectory( src/json )
 add_subdirectory( src/messaging )
 add_subdirectory( src/xapp )
 #add_subdirectory( doc )				# this will auto skip if {X}fm is not available
 
-
 # shared and static libraries are built from the same object files.
 #
-add_library( ricxfcpp_shared SHARED "$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:xapp_objects>" )
+add_library( ricxfcpp_shared SHARED
+	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:xapp_objects>"
+)
 set_target_properties( ricxfcpp_shared
 	PROPERTIES
 	OUTPUT_NAME "ricxfcpp"
 	SOVERSION ${major_version}
-	VERSION ${major_version}.${minor_version}.${patch_level} 
+	VERSION ${major_version}.${minor_version}.${patch_level}
 )
 target_include_directories( ricxfcpp_shared PUBLIC "src/messenger" "src/xapp" )
 
 # we only build/export the static archive (.a) if generating a dev package
 if( DEV_PKG )
-	add_library( ricxfcpp_static STATIC "$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:xapp_objects>" )
+	add_library( ricxfcpp_static STATIC
+		"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:xapp_objects>"
+	)
 	set_target_properties( ricxfcpp_static
 		PROPERTIES
 		OUTPUT_NAME "ricxfcpp"
 		SOVERSION ${major_version}
-		VERSION ${major_version}.${minor_version}.${patch_level} 
+		VERSION ${major_version}.${minor_version}.${patch_level}
 	)
 	target_include_directories( ricxfcpp_static PUBLIC "src/messenger" "src/xapp" )
 endif()

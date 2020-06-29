@@ -1,0 +1,50 @@
+{
+	"lodge_number":		41,
+	"meeting_day":		"Tuesday",
+	"meeting_place":	"16801 East Green Drive",
+	"monthly_dues":		43.50,
+
+	"grand_poobah": {
+		"name":	"Larry K. Slate",
+		"elected":	"February 2019",
+		"term":		"2 years"
+	},
+
+	"members": [
+		{
+			"name" : "Fred Flintstone",
+			"occupation" : "operator",
+			"age" : 45,
+			"married" : true,
+			"spouse" : "Wilma Flintsone"
+		},
+		{
+			"name" : "Barney Rubble",
+			"occupation" : "sidekick",
+			"age" : 43,
+			"married" : true,
+			"spouse" : "Betty Rubble"
+		},
+		{
+			"name" : "Larry K. Slate",
+			"occupation" : "manager",
+			"age" : 52,
+			"married" : true,
+			"spouse" : "Linda Slate"
+		},
+		{
+			"name" : "Benjamin Gravel",
+			"occupation" : "sculpter",
+			"age" : 25,
+			"married" : false
+		}
+	],
+
+	"timestamp": 1593541361.450337059,
+	"comment": "these are to drive array building in jwrapper",
+	"current_on_dues": [ true, false, true, true ],
+	"dues_assistance": [ 0.2, 0.1, 0.25, 0.2 ],
+	"sponser": [ "slate", "slate", "stonewall", "brick" ],
+	"nvat": [  null, null ],
+	"nvt": null
+}
