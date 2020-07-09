@@ -46,7 +46,7 @@ The Jhash object is created simply by passing a json string to the constructor.
 
     jh =  new Jhash( jstring.c_str() );
 &ex_end
-&figure(The creation of the Jhash object.)
+&fig(The creation of the Jhash object.)
 &space
 
 
@@ -85,7 +85,7 @@ two &ital(sub-blobs) (address and lease_info).
 .gv fig
 .sv _fig
 &set_fref(jblob_fig:&_fig)
-&figure(Sample json with a root and too blobs.)
+&fig(Sample json with a root and too blobs.)
 
 &space
 Upon creation of the Jhash object, the &ital(root) fields, &cw(lodge_name,) &cw(member_count,) and
@@ -101,7 +101,7 @@ The code sample in figure &fig_blob_sample illustrates how  a &ital(sub-blob) is
 .gv fig
 .sv _fig
 &set_fref(fig_blob_sample:&_fig)
-&figure(Blob selection example.)
+&fig(Blob selection example.)
 &space
 
 Currently, the selected blob must be unset in order to select a blob at the root
@@ -227,7 +227,7 @@ values from the json in figure &array_blob_json_fig.
 &ex_end
 .gv fig
 &set_fref(array_blob_code_fig:&_fig)
-&figure(Json array containing blobs.)
+&fig(Json array containing blobs.)
 &space
 
 
@@ -250,6 +250,6 @@ values from the json in figure &array_blob_json_fig.
 &ex_end
 .gv fig
 &set_fref(array_blob_json_fig:&_fig)
-&figure(Code to process the array of blobs.)
+&fig(Code to process the array of blobs.)
 &space
 

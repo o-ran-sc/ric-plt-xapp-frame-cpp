@@ -52,6 +52,6 @@ the framework, have been omitted. The full code is in the framework repository.
 &ex_start
 .im  j=start-example ../../../examples/rmr_dump.cpp
 &ex_end
-&figure( Simple callback application. )
+&fig( Simple callback application. )
 &uindent
 
