@@ -80,7 +80,7 @@
 	.ei
 		.if "&ot" "rst" =
 			.dv raw_comment_sym ^..
-			.cd 1 26i
+			.cd 1 6.5i m=0i
 			.ll 18i
 			.im &{lib}/raw_license.im
 			.ll 6i

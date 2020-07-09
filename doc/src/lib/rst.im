@@ -68,7 +68,7 @@
 	.dv h4 **$1**
 
 	.** bloody rst won't allow breaks in a bullet list so we have to allow the column to go wide.
-	.dv cd 1 180i m=0i
+	.dv cd 1 6.5i m=0i
 
 
 	.dv fig
