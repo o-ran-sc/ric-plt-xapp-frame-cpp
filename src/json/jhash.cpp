@@ -45,8 +45,8 @@
 	suss out the values.
 */
 Jhash::Jhash( const char* jbuf ) :
-	st( jw_new( jbuf ) ),
-	master_st( NULL )
+	master_st( NULL ),
+	st( jw_new( jbuf ) )
 { /* empty body */ }
 
 //Jhash::Jhash( Jhash&& soi );						// mover

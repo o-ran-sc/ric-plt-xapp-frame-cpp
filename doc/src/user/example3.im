@@ -30,6 +30,6 @@ been made in order to keep the example small and to the point.
 &ex_start
 .im  j=start-example ../../../examples/xapp_t2.cpp
 &ex_end
-&figure( Simple looping sender application. )
+&fig( Simple looping sender application. )
 &space
 

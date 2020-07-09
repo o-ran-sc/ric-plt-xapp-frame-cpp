@@ -95,6 +95,7 @@ int main( int argc, char** argv ) {
 	fprintf( stderr, "read: (%s)\n", jstr );
 
 	jh = new Jhash( jstr );
+	free( jstr );
 
 	if( jh == NULL ) {
 		fprintf( stderr, "<FAIL> could not parse json string from: test.json\n" );

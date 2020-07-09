@@ -58,6 +58,7 @@
 #define PT_STRING		4
 
 #define OBJ_SPACE		1			// space in the symbol table where json bits are stashed
+#define MGT_SPACE		2			// non-json objects in the hash (management things)
 
 extern void jw_nuke( void* st );
 
@@ -180,15 +181,29 @@ static void nix_things( void* st, void* se, const char* name,  void* ele, void *
 					}
 
 					free( j->v.pv );			// must free the array (arrays aren't nested, so all things in the array don't reference allocated mem)
+					free( j );
 				}
 				break;
 
-			case JSMN_OBJECT:
+			case JSMN_OBJECT:							// delete the sub symtab
 				jw_nuke( j->v.pv );
 				j->jsmn_type = JSMN_UNDEFINED;			// prevent a double free
+				free( j );
+				break;
+
+			case JSMN_STRING:
+			case JSMN_PRIMITIVE:
+				free( j );
 				break;
 		}
 	}
+}
+
+/*
+	Nix non-json things that are also in the hash.
+*/
+static void nix_mgt( void* st, void* se, const char* name,  void* ele, void *data ) {
+	free( ele );
 }
 
 /*
@@ -239,6 +254,8 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 
 	if( jtokens[0].type != JSMN_OBJECT ) {				// if it's not an object then we can't parse it.
 		fprintf( stderr, "[WARN] jwrapper: badly formed json; initial opening bracket ({) not detected\n" );
+		rmr_sym_free( st );
+		free( jtokens );
 		return NULL;
 	}
 
@@ -252,6 +269,7 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 		if( jtokens[i].type != JSMN_STRING ) {
 			fprintf( stderr, "[WARN] jwrapper: badly formed json [%d]; expected name (string) found type=%d %s\n", i, jtokens[i].type, extract( json, &jtokens[i] ) );
 			rmr_sym_free( st );
+			free( jtokens );
 			return NULL;
 		}
 		name = extract( json, &jtokens[i] );
@@ -267,7 +285,7 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 			case JSMN_OBJECT:				// save object in two ways: as an object 'blob' and in the current symtab using name as a base (original)
 				dstr = strdup( extract( json, &jtokens[i] ) );
 				snprintf( wbuf, sizeof( wbuf ), "%s_json", name );	// must stash the json string in the symtab for clean up during nuke
-				rmr_sym_put( st, wbuf, OBJ_SPACE, dstr );
+				rmr_sym_put( st, wbuf, MGT_SPACE, dstr );
 
 				parse_jobject( st, dstr, name );					// recurse to add the object as objectname.xxxx elements
 
@@ -275,7 +293,7 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 					(jtp->v.pv = (void *) rmr_sym_alloc( 255 ) ) != NULL ) {		// object is just a blob
 
 					dstr = strdup( extract( json, &jtokens[i] ) );
-					rmr_sym_put( jtp->v.pv, JSON_SYM_NAME, OBJ_SPACE, dstr );		// must stash json so it is freed during nuke()
+					rmr_sym_put( jtp->v.pv, JSON_SYM_NAME, MGT_SPACE, dstr );		// must stash json so it is freed during nuke()
 					parse_jobject( jtp->v.pv,  dstr, "" );							// recurse acorss the string and build a new symtab
 
 					size = jtokens[i].end;											// done with them, we need to skip them
@@ -300,6 +318,7 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 				if( jtp == NULL ) {
 					fprintf( stderr, "[WARN] jwrapper: memory alloc error processing element [%d] in json\n", i );
 					rmr_sym_free( st );
+					free( jtokens );
 					return NULL;
 				}
 				jarray = jtp->v.pv = (jsmntok_t *) malloc( sizeof( *jarray ) * size );		// allocate the array
@@ -327,6 +346,9 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 						case JSMN_ARRAY:
 							fprintf( stderr, "[WARN] jwrapper: [%d] array element %d is not valid type (array) is not string or primative\n", i, n );
 							n += jtokens[i+n].size;			// this should skip the nested array
+							free( jtp );
+							free( jarray );
+							jarray = NULL;
 							break;
 
 						case JSMN_STRING:
@@ -371,6 +393,7 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 						default:
 							fprintf( stderr, "[WARN] jwrapper: [%d] array element %d is not valid type (unknown=%d) is not string or primative\n", i, n, jtokens[i].type  );
 							rmr_sym_free( st );
+							free( jtokens );
 							return NULL;
 							break;
 					}
@@ -436,7 +459,8 @@ extern void jw_nuke( void* st ) {
 	char*	buf;					// pointer to the original json to free
 
 	if( st != NULL ) {
-		rmr_sym_foreach_class( st, OBJ_SPACE, nix_things, NULL );	// free anything that the symtab references
+		rmr_sym_foreach_class( st, OBJ_SPACE, nix_things, NULL );	// free any json thing that the symtab references
+		rmr_sym_foreach_class( st, MGT_SPACE, nix_mgt, NULL );		// free management things
 		rmr_sym_free( st );											// free the symtab itself
 	}
 }
@@ -462,15 +486,18 @@ extern void jw_dump( void* st ) {
 	if present.
 */
 extern void* jw_new( const char* json ) {
-	void	*st;				// symbol table
+	void	*st = NULL;			// symbol table
 	char*	djson;				// dup so we can save it
 	void*	rp = NULL;			// return value
 
 	if( json != NULL && (st = rmr_sym_alloc( MAX_THINGS )) != NULL ) {
 		djson = strdup( json );													// allows user to free/overlay their buffer as needed
-		rmr_sym_put( st, (unsigned char *) JSON_SYM_NAME, OBJ_SPACE, djson );	// must have a reference to the string until symtab is trashed
-
-		rp =  parse_jobject( st,  djson, "" );									// empty prefix for the root object
+		rp =  parse_jobject( st,  djson, "" );			// empty prefix for the root object; parse_jo will clean up and free st
+		if( rp == NULL ) {
+			free( djson );
+		} else {
+			rmr_sym_put( st, (unsigned char *) JSON_SYM_NAME, MGT_SPACE, djson );	// must have a reference to the string until symtab is trashed
+		}
 	}
 
 	return rp;
