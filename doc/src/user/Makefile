@@ -17,6 +17,8 @@
 
 # this uses {X}fm which can be cloned from: https://gitlab.com/rouxware/xfm
 
+XPATH=XFM_PATH=.:/usr/local/share/xfm TFM_PATH=.:/usr/local/share/xfm
+
 docs = user_guide
 src = user_guide.xfm
 imbed_src = cpp_frame.im example1.im example2.im example3.im jhash.im
@@ -28,20 +30,20 @@ desired_out = rst ps
 # references etc.
 #
 %.ps: %.xfm
-	OUTPUT_TYPE=generic_ps XFM_PASS=1 pfm $< /dev/null
-	OUTPUT_TYPE=generic_ps XFM_PASS=2 pfm $< $@
+	$(XPATH) OUTPUT_TYPE=generic_ps XFM_PASS=1 pfm $< /dev/null
+	$(XPATH) OUTPUT_TYPE=generic_ps XFM_PASS=2 pfm $< $@
 
 %.md: %.xfm
-	OUTPUT_TYPE=markdown XFM_PASS=1 tfm $< /dev/null
-	OUTPUT_TYPE=markdown XFM_PASS=2 tfm $< | sed 's/^ //' >$@
+	$(XPATH) OUTPUT_TYPE=markdown XFM_PASS=1 tfm $< /dev/null
+	$(XPATH) OUTPUT_TYPE=markdown XFM_PASS=2 tfm $< | sed 's/^ //' >$@
 
 %.rst: %.xfm
-	OUTPUT_TYPE=rst XFM_PASS=1 tfm $< /dev/null
-	GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/^ //; s/ *$$//' >$@
+	$(XPATH) OUTPUT_TYPE=rst XFM_PASS=1 tfm $< /dev/null
+	$(XPATH) GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/^ //; s/ *$$//' >$@
 
 %.txt: %.xfm
-	OUTPUT_TYPE=txt XFM_PASS=1 tfm $< /dev/null
-	OUTPUT_TYPE=txt XFM_PASS=2 tfm $< $@
+	$(XPATH) OUTPUT_TYPE=txt XFM_PASS=1 tfm $< /dev/null
+	$(XPATH) OUTPUT_TYPE=txt XFM_PASS=2 tfm $< $@
 
 # -----------------------------------------------------------------------------------
 all:    $(desired_out:%=user_guide.%)

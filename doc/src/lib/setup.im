@@ -40,7 +40,10 @@
 
 	.**  imbed output type specific macro file
 	.gv e OUTPUT_TYPE ot
-	.im  &{lib}/&{ot}.im
+	.dv output_type &{ot!txt}
+
+	.im cmd_master.im
+	.** .im  &{lib}/&{ot}.im
 
 	.gv e XFM_PASS pass
 	.dv pass &{pass!1}

@@ -40,6 +40,6 @@ are not locked when incremented.
 &ex_start
 .im  j=start-example ../../../examples/xapp_t1.cpp
 &ex_end
-&figure( Simple callback application. )
+&fig( Simple callback application. )
 &uindent
 &space

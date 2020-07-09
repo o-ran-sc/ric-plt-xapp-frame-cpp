@@ -54,7 +54,7 @@
 
 .**  ------ major sections --------
 .im cpp_frame.im
-.im hash.im
+.im jhash.im
 
 &h1(Example Programmes)
 The following sections contain several example programmes which are written on

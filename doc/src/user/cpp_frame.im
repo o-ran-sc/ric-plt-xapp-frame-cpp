@@ -41,10 +41,10 @@ parameters:
 &half_space
 &indent
 &beg_dlist(.5i:&ditemtext)
-    &ditem(port) A C string (pointer to char) which defines the port that RMR will open to listen for connections.
+    &di(port) A C string (pointer to char) which defines the port that RMR will open to listen for connections.
     &half_space
 
-    &ditem(wait) A Boolean value which indicates whether or not the initialization process should wait for
+    &di(wait) A Boolean value which indicates whether or not the initialization process should wait for
         the arrival of a valid route table before completing.
         When true is supplied, the initialization will not complete until RMR has received a valid route table
         (or one is located via the &cw(RMR_SEED_RT) environment variable).
@@ -67,7 +67,7 @@ The following code sample illustrates the simplicity of creating the instance of
               new Xapp( listen_port, wait4table ) );
     }
 &ex_end
-&figure( Creating an xAPP instance.)
+&fig( Creating an xAPP instance.)
 &space
 
 From a compilation perspective, the following is the simple compiler invocation string needed to compile
@@ -106,31 +106,31 @@ The following is the prototype which callback functions must be defined with:
           int payload_len, Msg_component payload,
           void* usr_data );
 &ex_end
-&figure( Callback function signature)
+&fig( Callback function signature)
 &space
 
 The parameters passed to the callback function are as follows:
-&multi_space( .1 )
+&mult_space( .1 )
 
 &indent
 &beg_dlist(1i:&ditemtext)
-    &ditem(m) A reference to the Message that was received.
+    &di(m) A reference to the Message that was received.
     &half_space
 
-    &ditem(mtype) The message type (allows for disambiguation if the callback is registered for multiple message types).
+    &di(mtype) The message type (allows for disambiguation if the callback is registered for multiple message types).
     &half_space
 
-    &ditem(subid) The subscription ID from the message.
+    &di(subid) The subscription ID from the message.
     &half_space
 
-    &ditem(payload len) The number of bytes which the sender has placed into the payload.
+    &di(payload len) The number of bytes which the sender has placed into the payload.
     &half_space
 
-    &ditem(payload) A direct reference (smart pointer) to the payload. (The smart pointer is wrapped in a
+    &di(payload) A direct reference (smart pointer) to the payload. (The smart pointer is wrapped in a
             special class in order to provide a custom destruction function without burdening the xApp developer
             with that knowledge.)
     &half_space
-    &ditem(user data) A pointer to user data. This is the pointer that was provided when the function was registered.
+    &di(user data) A pointer to user data. This is the pointer that was provided when the function was registered.
 &end_dlist
 &uindent
 &space
@@ -170,7 +170,7 @@ framework (explained in the next section).
         xapp->Run( 1 );        // start the callback driver
     }
 &ex_end
-&figure( Callback function example.)
+&fig( Callback function example.)
 &space
 
 As before, the program does nothing useful, but now it will execute and receive messages.
@@ -209,10 +209,10 @@ Sending the message is a function of the message object itself and can take one 
 &half_space
 &indent
 &beg_list(&lic1)
-    &item Replying to the sender of a received message
+    &li Replying to the sender of a received message
     &half_space
 
-    &item Sending a message (routed based on the message type and subscription ID)
+    &li Sending a message (routed based on the message type and subscription ID)
 &end_list
 &uindent
 &space
@@ -232,7 +232,7 @@ with the following prototypes.
 
    bool Send_response(  int response_len, std::shared_ptr<unsigned char> response );
 &ex_end
-&figure( Reply function prototypes. )
+&fig( Reply function prototypes. )
 &space
 
 In the first prototype the xApp must supply the new message type and subscription ID values, where the
@@ -248,7 +248,7 @@ constant can be used as illustrated below.
     msg->Send_response( Message::NO_CHANGE, Message::NO_SUBID,
         pl_length, (unsigned char *) payload );
 &ex_end
-&figure( Send response prototype. )
+&fig( Send response prototype. )
 &space
 
 In addition to the two function prototypes for &cw(Send_response()) there are two additional prototypes
@@ -273,7 +273,7 @@ functions and are shown below.
 
     bool Send_msg( int payload_len, unsigned char* payload );
 &ex_end
-&figure( Send function prototypes. )
+&fig( Send function prototypes. )
 &space
 
 Each send function accepts the message, copies in the payload provided, sets the message type and subscription
@@ -314,7 +314,7 @@ for the response string, the response is just not sent).
       msg->Send_response( M_TYPE, SID, strlen( raw_pl ), NULL );
     }
 &ex_end
-&figure( Send message without buffer copy. )
+&fig( Send message without buffer copy. )
 &space
 
 &h2(Sending Multiple Responses)

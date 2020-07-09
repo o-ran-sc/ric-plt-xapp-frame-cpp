@@ -243,7 +243,8 @@ SENDING MESSAGES
 
       + Replying to the sender of a received message
 
-      + Sending a message (routed based on the message type and subscription ID)
+      + Sending a message (routed based on the message type and
+      subscription ID)
 
 
       When replying to the sender, the message type and
@@ -409,6 +410,254 @@ FRAMEWORK PROVIDED CALLBACKS
       state. If the xApp should need to override this simplistic
       response, all it needs to do is to register its own callback
       function for the health check message type.
+
+
+JSON SUPPORT
+============
+
+      The C++ xAPP framework provides a very lightweight json
+      parser and data hash facility. Briefly, a json hash (Jhash)
+      can be established by creating an instance of the Jhash
+      object with a string of valid json. The resulting object's
+      functions can then be used to read values from the resulting
+      hash.
+
+
+Creating The Jhash Object
+-------------------------
+
+      The Jhash object is created simply by passing a json string
+      to the constructor.
+
+      ::
+
+            #include <ricxfcpp/Jhash>
+
+            std::string jstring = "{ \\"tag\\": \\"Hello World\\" }";
+            Jhash*  jh;
+
+            jh =  new Jhash( jstring.c_str() );
+
+      Figure 8: The creation of the Jhash object.
+
+      Once the Jhash object has been created any of the methods
+      described in the following paragraphs can be used to retrieve
+      the data:
+
+
+Json Blobs
+----------
+
+      Json objects can be nested, and the nesting is supported by
+      this representation. The approach taken by Jhash is a
+      "directory view" approach, where the "current directory," or
+      current *blob,* limits the scope of visible fields.
+
+      As an example, the json contained in figure jblob_fig,
+      contains a "root" blob and two *sub-blobs* (address and
+      lease_info).
+
+      ::
+
+            {
+                "lodge_name": "Water Buffalo Lodge 714",
+                "member_count": 41,
+                "grand_poobah": "Larry K. Slate",
+                "attendance":   [ 23, 14, 41, 38, 24 ],
+                "address": {
+                    "street":    "16801 Stonway Lane",
+                    "suite":     null,
+                    "city":      "Bedrock",
+                    "post_code": "45701"
+                },
+                "lease_info": {
+                    "owner":    "Stonegate Properties",
+                    "amount":   216.49,
+                    "due":      "monthly",
+                    "contact:"  "Kyle Limestone"
+                }
+            }
+
+      Figure 9: Sample json with a root and too blobs.
+
+      Upon creation of the Jhash object, the *root* fields,
+      lodge_name, member_count, and grand_poobah are immediately
+      available. The fields in the *sub-blobs* are avalable only
+      when the correct blob is selected. The code sample in figure
+      10 illustrates how a *sub-blob* is selected.
+
+      ::
+
+            jh->Set_blob( (char *) "address" );     // select address
+            jh->Unset_blob();                       // return to root
+            jh->Set_blob( (char *) "lease_info" );  // slect the lease blob
+
+      Figure 10: Blob selection example.
+
+      Currently, the selected blob must be unset in order to select
+      a blob at the root level; unset always sets the root blob.
+      Attempting to use the Set_blob function will attempt to
+      select the named blob from the current blob, and not the
+      root.
+
+
+Simple Value Extraction
+-----------------------
+
+      Simple values are the expected data types *string, value,*
+      and *boolean.* This lightweight json parser treats all values
+      as floating point numbers and does not attempt to maintain a
+      separate integer type. A fourth type, *null,* is supported to
+      allow the user to expressly check for a field which is
+      defined but has no value; as opposed to a field that was
+      completely missing from the data. The following are the
+      prototypes for the functions which allow values to be
+      extracted:
+
+
+      ::
+
+            std::string String( const char* name );
+            float Value( const char* name );
+            bool Bool( const char* name );
+
+
+      Each of these funcitons returns the value associated with the
+      field with the given *name.* If the value is missing, the
+      following default values are returned:
+
+
+      String
+         An empty string (.e.g "").
+      Value
+         Zero (e.g 0.0)
+      bool
+         false
+
+      If the user needs to disambiguate between a missing value and
+      the default value either the Missing or Exists function
+      should be used first.
+
+
+Testing For Existing and Missing Fields
+---------------------------------------
+
+      Two functions allow the developer to determine whether or not
+      a field is included in the json. Both of these functions work
+      on the current *blob,* therefore it is important to ensure
+      that the correct blob is selected before using either of
+      these funcitons. The prototpyes for the Exists and Missing
+      functions are below:
+
+      ::
+
+            bool Exists( const char* name );
+            bool Is_missing( const char* name );
+
+      The Exists function returns *true* if the field name exists
+      in the json and *false* otherwise. Conversly, the Missing
+      funciton returns *true* when the field name does not exist in
+      the json.
+
+
+Testing Field Type
+------------------
+
+      The Exists and Missing functions might not be enough for the
+      user code to validate the data that it has. To assist with
+      this, several functions allow direct type testing on a field
+      in the current blob. The following are the prototypes for
+      these functions:
+
+      ::
+
+            bool Is_bool( const char* name );
+            bool Is_null( const char* name );
+            bool Is_string( const char* name );
+            bool Is_value( const char* name );
+
+
+      Each of these funcitons return *true* if the field with the
+      given name is of the type being tested for.
+
+
+Arrays
+------
+
+      Arrays are supported in the same manner as simple field
+      values with the addition of the need to supply an array index
+      when fetching values from the object. In addition, there is a
+      *length* function which can be used to determine the number
+      of elements in the named array. The prototypes for the array
+      based functions are below:
+
+      ::
+
+            int Array_len( const char* name );
+
+            bool Is_bool_ele( const char* name, int eidx );
+            bool Is_null_ele( const char* name, int eidx );
+            bool Is_string_ele( const char* name, int eidx );
+            bool Is_value_ele( const char* name, int eidx );
+
+            bool Bool_ele( const char* name, int eidx );
+            std::string String_ele( const char* name, int eidx );
+            float Value_ele( const char* name, int eidx );
+
+
+      For each of these functions the eidx is the zero based
+      element index which is to be tested or selected.
+
+
+Arrays of Blobs
+---------------
+
+      An array containing blobs, rather than simiple field value
+      pairs, the blob must be selected prior to using it, just as a
+      sub-blob needed to be selected. The Set_blob_ele function is
+      used to do this and has the following prototype:
+
+      ::
+
+            bool Set_blob_ele( const char* name, int eidx );
+
+
+      As with selecting a sub-blob, an unset must be preformed
+      before selecting the next blob. Figure 11 illustrates how
+      these functions can be used to read and print values from the
+      json in figure 12.
+
+      ::
+
+            "members": [
+                { "name": "Fred Flinstone", "member_num": 42 },
+                { "name": "Barney Rubble", "member_num": 48 },
+                { "name": "Larry K Slate", "member_num": 22 },
+                { "name": "Kyle Limestone", "member_num": 49 }
+            ]
+
+      Figure 11: Json array containing blobs.
+
+
+      ::
+
+            std::string mname;
+            float mnum;
+            int len;
+
+            len = jh->Array_len( (char *) "members" );
+            for( i = 0; i < len; i++ ) {
+                jh->Set_blob_ele( (char *) "members", i );  // select blob
+
+                mname = jh->String( (char *) "name" );      // read values
+                mnum = jh->Value( (char *) "member_num" );
+                fprintf( stdout, "%s is member %d\\n", mname.c_str(), (int) mnum );
+
+                jh->Unset_blob();                           // back to root
+            }
+
+      Figure 12: Code to process the array of blobs.
+
 
 
 EXAMPLE PROGRAMMES
@@ -679,7 +928,7 @@ RMR Dump xAPP
             return 0;
         }
 
-      Figure 8: Simple callback application.
+      Figure 13: Simple callback application.
 
 
 Callback Receiver
@@ -781,7 +1030,7 @@ Callback Receiver
             // control should not return
         }
 
-      Figure 9: Simple callback application.
+      Figure 14: Simple callback application.
 
 
 
@@ -893,5 +1142,5 @@ Looping Sender
             }
         }
 
-      Figure 10: Simple looping sender application.
+      Figure 15: Simple looping sender application.
 

@@ -67,7 +67,7 @@
     .fi
 	.dv h4 **$1**
 
-	.** bloody rst won't allow breaks in a bullet list so we have to allow the column to go wide.
+	.** initially need a wide column to allow copyright to not break
 	.dv cd 1 180i m=0i
 
 

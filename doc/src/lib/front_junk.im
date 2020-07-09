@@ -75,16 +75,18 @@
 		.** ensure these happen after toc is rendered
 		.if pfm
 			.pn on 0 noline center f=%d
-			.cd 1 6.0i
+			.cd 1 180i
 		.fi
 	.ei
 		.if "&ot" "rst" =
 			.dv raw_comment_sym ^..
-			.cd 1 26i
+			.cd 1 18i m=0i
 			.ll 18i
 			.im &{lib}/raw_license.im
+			.cd 1 6.5i m=0i
 			.ll 6i
 
+.if false
 			.if doc_title
 				&many_equals
 				&doc_title
@@ -95,6 +97,7 @@
 				&doc_subtitle
 				&many_dashes
 			.fi
+.fi
 		.fi
 
 	.dv _front_junk 1
