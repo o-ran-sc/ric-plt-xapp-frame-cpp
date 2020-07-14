@@ -47,8 +47,8 @@ class Jhash {
 	public:
 
 		Jhash( const char* jblob );					// builder
-		//Jhash( Message&& soi );						// mover
-		//Jhash& operator=( Message&& soi );			// move operator
+		Jhash( Jhash&& soi );						// mover
+		Jhash& operator=( Jhash&& soi );			// move operator
 		~Jhash();									// destruction
 
 		bool Set_blob( const char* name );					// blob/root selection

@@ -239,6 +239,11 @@ int main( int argc, char** argv ) {
 	fprintf( stderr, "<INFO> timestamp: %.10f\n", val );
 
 
+	//  ----- jhashes can be moved, drive that logic for coverage
+	Jhash  j2( "{}" );
+
+	Jhash j1 = std::move( *jh );				// drives move constructor function
+	j2 = std::move( j1 );						// drives move operator function
 
 
 

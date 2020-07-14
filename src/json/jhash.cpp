@@ -49,8 +49,32 @@ Jhash::Jhash( const char* jbuf ) :
 	st( jw_new( jbuf ) )
 { /* empty body */ }
 
-//Jhash::Jhash( Jhash&& soi );						// mover
-//Jhash::Jhash& operator=( Jhash&& soi );			// move operator
+
+/*
+	Move constructor.
+*/
+Jhash::Jhash( Jhash&& soi ) {
+	master_st = soi.master_st;
+	st = soi.st;
+
+	soi.st = NULL;						// prevent closing of RMR stuff on soi destroy
+	soi.master_st = NULL;
+}
+
+/*
+	Move Operator.
+*/
+Jhash& Jhash::operator=( Jhash&& soi ) {
+	if( this != &soi ) {						// cannot do self assignment
+		master_st = soi.master_st;
+		st = soi.st;
+
+		soi.st = NULL;						// prevent closing of RMR stuff on soi destroy
+		soi.master_st = NULL;
+	}
+
+	return *this;
+}
 
 /*
 	Blow it away.
@@ -86,7 +110,7 @@ bool Jhash::Set_blob( const char* name ) {
 	void*	bst;						// blob symbol table
 
 	if( master_st == NULL ) {			// must capture master
-		master_st == st;
+		master_st = st;
 	}
 
 	if( (bst = jw_blob( st, name )) != NULL ) {
@@ -104,11 +128,6 @@ void Jhash::Unset_blob( ) {
 	if( master_st != NULL ) {
 		st = master_st;
 	}
-/*
- else {
-fprintf( stderr, "bad unset pointer%p  %p\n", master_st, st );
-}
-*/
 }
 
 // ---------------- debugging and sanity checks ---------------------------------------
