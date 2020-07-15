@@ -11,7 +11,7 @@ rmr_em.o::	rmr_em.c
 
 unit_test:: unit_test.cpp rmr_em.o
 	# do NOT link the xapp lib; we include all modules in the test programme
-	g++ -g $(coverage_opts) -I ../src/messaging unit_test.cpp -o unit_test rmr_em.o  -lpthread
+	g++ -g $(coverage_opts) -I ../src/alarm -I ../src/messaging unit_test.cpp -o unit_test rmr_em.o  -lpthread
 
 # build a special jwrapper object with coverage settings
 jwrapper_test.o:: ../src/json/jwrapper.c ../src/json/jwrapper.h

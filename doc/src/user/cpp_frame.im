@@ -34,6 +34,22 @@ the instance of the object.
 The following paragraphs cover the various steps involved to create an xApp instance, wait for a route
 table to arrive, send a message, and wait for messages to arrive.
 
+&h2(The Namespace)
+Starting with version 2.0.0 the framwork introduces a &ital(namespace) of &cw(xapp) for the following
+classes and types:
+&half_space
+&indent
+&beg_list(&lic1)
+	&li Alarm
+	&li Jhash
+	&li Message
+	&li Msg_component
+&end_list
+&uindent
+&space
+
+This is a breaking change and as such the major version was bumpped from 1 to 2.
+
 &h2(Creating the xApp instance)
 The creation of the xApp instance is as simple as invoking the object's constructor with two required
 parameters:
@@ -67,7 +83,7 @@ The following code sample illustrates the simplicity of creating the instance of
               new Xapp( listen_port, wait4table ) );
     }
 &ex_end
-&fig( Creating an xAPP instance.)
+&fig_cen( Creating an xAPP instance.)
 &space
 
 From a compilation perspective, the following is the simple compiler invocation string needed to compile
@@ -102,11 +118,11 @@ The following is the prototype which callback functions must be defined with:
 &half_space
 
 &ex_start
-    void cb_name( Message& m, int mtype, int subid,
-          int payload_len, Msg_component payload,
+    void cb_name( xapp::Message& m, int mtype, int subid,
+          int payload_len, xapp::Msg_component payload,
           void* usr_data );
 &ex_end
-&fig( Callback function signature)
+&fig_cen( Callback function signature)
 &space
 
 The parameters passed to the callback function are as follows:
@@ -146,8 +162,8 @@ framework (explained in the next section).
     long m1001_count = 0;
 
     // callback function that will increase the appropriate counter
-    void cbf( Message& mbuf, int mtype, int subid, int len,
-                Msg_component payload,  void* data ) {
+    void cbf( xapp::Message& mbuf, int mtype, int subid, int len,
+                xapp::Msg_component payload,  void* data ) {
         long* counter;
 
         if( (counter = (long *) data) != NULL ) {
@@ -170,7 +186,7 @@ framework (explained in the next section).
         xapp->Run( 1 );        // start the callback driver
     }
 &ex_end
-&fig( Callback function example.)
+&fig_cen( Callback function example.)
 &space
 
 As before, the program does nothing useful, but now it will execute and receive messages.
@@ -232,7 +248,7 @@ with the following prototypes.
 
    bool Send_response(  int response_len, std::shared_ptr<unsigned char> response );
 &ex_end
-&fig( Reply function prototypes. )
+&fig_cen( Reply function prototypes. )
 &space
 
 In the first prototype the xApp must supply the new message type and subscription ID values, where the
@@ -245,10 +261,10 @@ constant can be used as illustrated below.
 &half_space
 
 &ex_start
-    msg->Send_response( Message::NO_CHANGE, Message::NO_SUBID,
+    msg->Send_response( xapp::Message::NO_CHANGE, xapp::Message::NO_SUBID,
         pl_length, (unsigned char *) payload );
 &ex_end
-&fig( Send response prototype. )
+&fig_cen( Send response prototype. )
 &space
 
 In addition to the two function prototypes for &cw(Send_response()) there are two additional prototypes
@@ -273,7 +289,7 @@ functions and are shown below.
 
     bool Send_msg( int payload_len, unsigned char* payload );
 &ex_end
-&fig( Send function prototypes. )
+&fig_cen( Send function prototypes. )
 &space
 
 Each send function accepts the message, copies in the payload provided, sets the message type and subscription
@@ -314,7 +330,7 @@ for the response string, the response is just not sent).
       msg->Send_response( M_TYPE, SID, strlen( raw_pl ), NULL );
     }
 &ex_end
-&fig( Send message without buffer copy. )
+&fig_cen( Send message without buffer copy. )
 &space
 
 &h2(Sending Multiple Responses)

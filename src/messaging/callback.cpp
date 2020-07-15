@@ -30,8 +30,8 @@
 #include <rmr/rmr.h>
 
 #include "message.hpp"
-//class Messenger;
 
+namespace xapp {
 
 /*
 	Builder.
@@ -49,10 +49,12 @@ Callback::Callback( user_callback ufun, void* data ) {		// builder
 /*
 	Drive_cb will invoke the callback and pass along the stuff passed here.
 */
-void Callback::Drive_cb( Message& m ) {
+void xapp::Callback::Drive_cb( Message& m ) {
 	if( user_fun != NULL ) {
 		user_fun( m, m.Get_mtype(), m.Get_subid(), m.Get_len(), m.Get_payload(),  udata );
 	}
 }
 
 
+
+} // namespace

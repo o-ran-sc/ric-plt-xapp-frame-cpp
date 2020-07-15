@@ -80,7 +80,7 @@ static char* read_jstring( char* fname ) {
 
 int main( int argc, char** argv ) {
 	int		errors = 0;
-	Jhash*	jh;
+	xapp::Jhash*	jh;
 	char*	jstr;
 	std::string	sval;
 	double	val;
@@ -94,7 +94,7 @@ int main( int argc, char** argv ) {
 
 	fprintf( stderr, "read: (%s)\n", jstr );
 
-	jh = new Jhash( jstr );
+	jh = new xapp::Jhash( jstr );
 	free( jstr );
 
 	if( jh == NULL ) {
@@ -240,9 +240,9 @@ int main( int argc, char** argv ) {
 
 
 	//  ----- jhashes can be moved, drive that logic for coverage
-	Jhash  j2( "{}" );
+	xapp::Jhash  j2( "{}" );
 
-	Jhash j1 = std::move( *jh );				// drives move constructor function
+	xapp::Jhash j1 = std::move( *jh );				// drives move constructor function
 	j2 = std::move( j1 );						// drives move operator function
 
 
@@ -251,18 +251,18 @@ int main( int argc, char** argv ) {
 
 	fprintf( stderr, "<INFO> testing for failures; jwrapper error and warning messages expected\n" );
 	// ---- these shouild all fail to parse, generate warnings to stderr, and drive error handling coverage ----
-    jh = new Jhash( (char *) "{ \"bad\": [ [ 1, 2, 3 ], [ 3, 4, 5]] }" );		// drive the exception process for bad json
+    jh = new xapp::Jhash( (char *) "{ \"bad\": [ [ 1, 2, 3 ], [ 3, 4, 5]] }" );		// drive the exception process for bad json
 	delete jh;
 
-    jh = new Jhash( (char *) " \"bad\":  5 }" );			// no opening brace
+    jh = new xapp::Jhash( (char *) " \"bad\":  5 }" );			// no opening brace
 	state = jh->Parse_errors();
 	errors += fail_if( !state, "parse errors check returned false when known errors exist" );
 	delete jh;
 
-    jh = new Jhash( (char *) "{ \"bad\":  fred }" );		// no quotes
+    jh = new xapp::Jhash( (char *) "{ \"bad\":  fred }" );		// no quotes
 	delete jh;
 
-    jh = new Jhash( (char *) "{ \"bad:  456, \"good\": 100 }" );			// missing quote; impossible to detect error
+    jh = new xapp::Jhash( (char *) "{ \"bad:  456, \"good\": 100 }" );			// missing quote; impossible to detect error
 	jh->Dump();																// but dump should provide details
 	fprintf( stderr, "<INFO> good value=%d\n", (int) val );
 	delete jh;

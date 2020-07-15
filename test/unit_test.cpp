@@ -20,15 +20,15 @@
 
 /*
 	Mnemonic:	Unit_test.cpp
-	Abstract:	This is the unit test driver for the C++ xAPP framework. It 
+	Abstract:	This is the unit test driver for the C++ xAPP framework. It
 				operates by including all of the modules directly (in order
-				to build them with the necessary coverage flags), then 
+				to build them with the necessary coverage flags), then
 				drives all that it can.  The RMR emulation module provides
 				emulated RMR functions which simulate the creation, sending
 				and receiving of messages etc.
 
 	Date:		20 March 2020
-	Author: 	E. Scott Daniels
+	Author:		E. Scott Daniels
 */
 
 #include <memory>
@@ -39,14 +39,19 @@
 #include "../src/messaging/message.hpp"
 #include "../src/messaging/messenger.hpp"
 #include "../src/messaging/msg_component.hpp"
+#include "../src/alarm/alarm.hpp"
 #include "../src/xapp/xapp.hpp"
 
 #include "../src/messaging/callback.cpp"
 #include "../src/messaging/default_cb.cpp"
 #include "../src/messaging/message.cpp"
 #include "../src/messaging/messenger.cpp"
+#include "../src/alarm/alarm.cpp"
 #include "../src/xapp/xapp.cpp"
 
+#include "ut_support.cpp"
+
+// ---------------------------------------------------------------------------------------------
 /*
 	callback error counts are global for ease. They track the number of times each callback
 	was invoked with the expected message type(s) and any times they were not.
@@ -60,25 +65,25 @@ int good_cb2 = 0;
 int good_cbd = 0;
 
 /*
-	callback functions to register; driven as we "receive" messages (the RMR emulation package 
+	callback functions to register; driven as we "receive" messages (the RMR emulation package
 	will generate a message every time the receive function is called).
 */
-void cb1( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cb1( xapp::Message& mbuf, int mtype, int subid, int len, xapp::Msg_component payload,  void* data ) {
 	if( mtype != 1 ) {	// should only be driven for type 1 messages
 		err_cb1++;
 	} else {
 		good_cb1++;
 	}
 }
-void cb2( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cb2( xapp::Message& mbuf, int mtype, int subid, int len, xapp::Msg_component payload,  void* data ) {
 	if( mtype != 2 ) {	// should only be driven for type 2 messages
 		err_cb2++;
 	} else {
 		good_cb2++;
 	}
 }
-void cbd( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
-	if( mtype > 0 && mtype < 3 ) {				// should only be driven for types that arent 1 or 2 
+void cbd( xapp::Message& mbuf, int mtype, int subid, int len, xapp::Msg_component payload,  void* data ) {
+	if( mtype > 0 && mtype < 3 ) {				// should only be driven for types that arent 1 or 2
 		if( err_cbd < 10 ) {
 			fprintf( stderr, "<FAIL> cbd: bad message type: %d\n", mtype );
 		}
@@ -90,8 +95,8 @@ void cbd( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  
 
 /*
 	The Xapp Run() function only returns when Xapp is asked to stop, and that
-	isn't supported from inside any of the callbacks.  This funciton is 
-	started in a thread and after a few seconds it will drive the halt 
+	isn't supported from inside any of the callbacks.  This funciton is
+	started in a thread and after a few seconds it will drive the halt
 	function in the Xapp instance to stop the run function and allow the
 	unit test to finish.
 */
@@ -104,9 +109,9 @@ void killer( std::shared_ptr<Xapp> x ) {
 
 int main( int argc, char** argv ) {
 	std::thread* tinfo;					// we'll start a thread that will shut things down after a few seconds
-	std::unique_ptr<Message> msg;
+	std::unique_ptr<xapp::Message> msg;
 	std::shared_ptr<Xapp> x;
-	Msg_component payload;
+	xapp::Msg_component payload;
 	std::unique_ptr<unsigned char> ucs;
 	unsigned char* new_payload;
 	std::shared_ptr<unsigned char> new_p_ref;	// reference to payload to pass to send functions
@@ -125,8 +130,8 @@ int main( int argc, char** argv ) {
 		}
 
 		switch( argv[ai][1] ) {			// we only support -x so -xy must be -x -y
-			case 'p': 
-				port = argv[ai+1];	
+			case 'p':
+				port = argv[ai+1];
 				ai++;
 				break;
 
@@ -138,7 +143,10 @@ int main( int argc, char** argv ) {
 
 		ai++;
 	}
-	
+
+	set_test_name( "unit_test" );
+
+	// ------------------- generic xapp tests ----------------------------------------------
 	x = std::shared_ptr<Xapp>( new Xapp( port, true ) );
 	x->Add_msg_cb( 1, cb1, NULL );
 	x->Add_msg_cb( 2, cb2, NULL );
@@ -243,21 +251,21 @@ int main( int argc, char** argv ) {
 	}
 
 	// -----  specific move/copy coverage drivers ---------------------------
-	
-	Messenger m1( (char *) "1234", false );		// messenger class does NOT permit copies, so no need to test
-	Messenger m2( (char *) "9999", false );
-	m1 = std::move( m2 );						// drives move operator= function
-	Messenger m3 = std::move( m1 );				// drives move constructor function
 
-	std::unique_ptr<Message> msg2 = x->Alloc_msg( 2048 );
-	std::unique_ptr<Message> msg3 = x->Alloc_msg( 4096 );
+	xapp::Messenger m1( (char *) "1234", false );		// messenger class does NOT permit copies, so no need to test
+	xapp::Messenger m2( (char *) "9999", false );
+	m1 = std::move( m2 );						// drives move operator= function
+	xapp::Messenger m3 = std::move( m1 );				// drives move constructor function
+
+	std::unique_ptr<xapp::Message> msg2 = x->Alloc_msg( 2048 );
+	std::unique_ptr<xapp::Message> msg3 = x->Alloc_msg( 4096 );
 
 	snprintf( wbuf, sizeof( wbuf ), "Stand up and cheer!!" );
 	msg3->Set_len( strlen( wbuf ) );
 	strcpy( (char *) (msg3->Get_payload()).get(), wbuf );			// populate the payload to vet copy later
 	fprintf( stderr, "<DBUG> set string (%s) \n", (char *) (msg3->Get_payload()).get() );
 
-	Message msg4 = *(msg3.get());									// drive copy builder; msg4 should have a 4096 byte payload
+	xapp::Message msg4 = *(msg3.get());									// drive copy builder; msg4 should have a 4096 byte payload
 	fprintf( stderr, "<DBUG> copy string (%s) \n", (char *) (msg4.Get_payload()).get() );	// and payload should be coppied
 	if( msg4.Get_available_size() != 4096 ) {
 		errors++;
@@ -281,7 +289,7 @@ int main( int argc, char** argv ) {
 		fprintf( stderr, "<FAIL> message copy builder payload of copy not the expected string\n" );
 	}
 
-	Message msg5 = std::move( *(msg3.get()) );					// drive move constructor
+	xapp::Message msg5 = std::move( *(msg3.get()) );					// drive move constructor
 	if( msg5.Get_available_size() != 2048 ) {
 		errors++;
 		fprintf( stderr, "<FAIL> message copy operator payload size smells: expected 2048, got %d\n", msg5.Get_available_size() );
@@ -298,5 +306,58 @@ int main( int argc, char** argv ) {
 		fprintf( stderr, "<FAIL> message move operator payload len smells: expected 21, got %d\n", msg5.Get_len() );
 	}
 
+	// --------------------- alarm testing ------------------------------------------
+	std::shared_ptr<xapp::Alarm> a;
+
+	a = x->Alloc_alarm( );							// drive all possible constructors through the framework
+	errors += fail_if( a == NULL, "unable to allcoate a generic alarm" );
+
+	setenv( "ALARM_MGR_SERVICE_NAME", "alarm_svc", 1 );
+	setenv( "ALARM_MGR_SERVICE_PORT", "9999", 1 );
+
+	a = x->Alloc_alarm( "meid-123" );
+	errors += fail_if( a == NULL, "unable to allcoate an alarm with just  meid" );
+
+	a = x->Alloc_alarm( 13, "meid-abc" );
+	errors += fail_if( a == NULL, "unable to allcoate an alarm with meid and  problem id" );
+
+
+    //#####:  210:xapp::Alarm::Alarm( const Alarm& soi ) {
+    //#####:  227:Alarm& xapp::Alarm::operator=( const Alarm& soi ) {
+    //#####:  249:xapp::Alarm::Alarm( Alarm&& soi ) {
+    //#####:  269:Alarm& xapp::Alarm::operator=( Alarm&& soi ) {
+
+	a->Set_meid( "changed_meid" );
+	for( i = 0; i < 6; i++ ) {
+		a->Set_severity( i );			// drive all switch possibilities
+	}
+
+	a->Set_appid( "new-appid" );
+	a->Set_problem( 99 );
+	a->Set_info( "new information string" );
+	a->Set_additional( "new additional information string" );
+
+	a->Dump();
+	errors += fail_if( !a->Raise(), "alarm raise with no parms failed" );
+	errors += fail_if( !a->Raise( xapp::Alarm::SEV_CRIT, 15, "problem string" ), "alarm raise s/p/i failed" );
+	errors += fail_if( !a->Raise( xapp::Alarm::SEV_CRIT, 15, "problem string", "addtl info" ), "alarm raise s/p/i/a failed" );
+
+	errors += fail_if( !a->Clear( ), "clear alarm failed" );
+	errors += fail_if( !a->Clear( xapp::Alarm::SEV_CRIT, 15, "problem string" ), "alarm clear s/p/i failed" );
+	errors += fail_if( !a->Clear( xapp::Alarm::SEV_CRIT, 15, "problem string", "addtl info" ), "alarm clear s/p/i/a failed" );
+	errors += fail_if( !a->Clear_all( ), "clear all failed" );
+
+	errors += fail_if( !a->Raise_again( ), "alarm raise again failed" );
+
+	xapp::Alarm b = *a.get();				// force the move/copy operator functions to trigger
+	xapp::Alarm c( NULL );					// a useless alarm without a message
+	xapp::Alarm f( NULL, "meid" );			// a useless alarm to drive direct construction
+	c = *a.get();							// drive copy = operator
+
+	b = std::move( c );						// move = operator
+	xapp::Alarm d = std::move( b );			// move constructor
+
+	announce_results( errors );
 	return errors > 0;
 }
+

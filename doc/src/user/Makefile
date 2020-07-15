@@ -17,33 +17,12 @@
 
 # this uses {X}fm which can be cloned from: https://gitlab.com/rouxware/xfm
 
-XPATH=XFM_PATH=.:/usr/local/share/xfm TFM_PATH=.:/usr/local/share/xfm
-
 docs = user_guide
 src = user_guide.xfm
-imbed_src = cpp_frame.im example1.im example2.im example3.im jhash.im
-desired_out = rst ps
+imbed_src = cpp_frame.im example1.im example2.im example3.im jhash.im example4.im
+desired_out = rst ps md
 
-# use care: the output type is used to source the macros based on the type
-# of output being rendered.
-# Two pass builds allow for table of contents gen/insert, forward var
-# references etc.
-#
-%.ps: %.xfm
-	$(XPATH) OUTPUT_TYPE=generic_ps XFM_PASS=1 pfm $< /dev/null
-	$(XPATH) OUTPUT_TYPE=generic_ps XFM_PASS=2 pfm $< $@
-
-%.md: %.xfm
-	$(XPATH) OUTPUT_TYPE=markdown XFM_PASS=1 tfm $< /dev/null
-	$(XPATH) OUTPUT_TYPE=markdown XFM_PASS=2 tfm $< | sed 's/^ //' >$@
-
-%.rst: %.xfm
-	$(XPATH) OUTPUT_TYPE=rst XFM_PASS=1 tfm $< /dev/null
-	$(XPATH) GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/^ //; s/ *$$//' >$@
-
-%.txt: %.xfm
-	$(XPATH) OUTPUT_TYPE=txt XFM_PASS=1 tfm $< /dev/null
-	$(XPATH) OUTPUT_TYPE=txt XFM_PASS=2 tfm $< $@
+include ../master.mk
 
 # -----------------------------------------------------------------------------------
 all:    $(desired_out:%=user_guide.%)

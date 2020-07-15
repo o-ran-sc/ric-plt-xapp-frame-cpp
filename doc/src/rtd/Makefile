@@ -22,26 +22,9 @@ src = rel-notes.xfm
 imbed_src =
 desired_out = rst
 
-# use care: the output type is used to source the macros based on the type
-# of output being rendered.
-# Two pass builds allow for table of contents gen/insert, forward var
-# references etc.
-#
-%.ps: %.xfm
-	OUTPUT_TYPE=generic_ps XFM_PASS=1 pfm $< /dev/null
-	OUTPUT_TYPE=generic_ps XFM_PASS=2 pfm $< $@
+include ../master.mk 
 
-%.md: %.xfm
-	OUTPUT_TYPE=markdown XFM_PASS=1 tfm $< /dev/null
-	OUTPUT_TYPE=markdown XFM_PASS=2 tfm $< | sed 's/^ //' >$@
-
-%.rst: %.xfm
-	OUTPUT_TYPE=rst XFM_PASS=1 tfm $< /dev/null
-	GEN_TITLE=1 OUTPUT_TYPE=rst XFM_PASS=2 tfm $< | sed 's/ $$//; s/^ //' >$@
-
-%.txt: %.xfm
-	OUTPUT_TYPE=txt XFM_PASS=1 tfm $< /dev/null
-	OUTPUT_TYPE=txt XFM_PASS=2 tfm $< $@
+XPATH = XFM_PATH=.:/usr/local/share/xfm
 
 # -----------------------------------------------------------------------------------
 
@@ -70,6 +53,7 @@ clean:
 # Destroy anything that can be built
 nuke: clean
 	rm -fr *.md *.ps *.pdf *.txt *.rst *.toc
+	rm -fr rel-notes.xfm
 
 # make hack to force a rule to always be out of date
 always:

@@ -1,0 +1,196 @@
+.** vim: sw=4 ts=4 et :
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+
+.if false
+	This imbed file contains the portion of the document that describes the
+	alarm collector AIP provided by the framework.
+.fi
+
+
+.if pfm
+    .** work round bug in cmd_ps.im
+    .dv beg_table .ta $1
+    .dv end_table .et
+    .dv col .cl ^:
+    .dv row .tr ^:
+.fi
+
+.** ------ positioning -------------------------------------
+
+&h1(Alarm Manager Interface)
+The C++ framework provides an API which allows the xAPP to easily construct and
+generate alarm messages.
+Alarm messages are a special class of RMR message, allocated in a similar fashion
+as an RMR message through the framework's &cw(Alloc_alarm()) function.
+
+&space
+The API consists of the following function types:
+
+&half_space
+&indent
+&beg_dlist( 1i &ditemtext: )
+	&di(Raise) Cause the alarm to be assigned a severity and and sent via RMR
+			message to the alarm collector process.
+
+	&half_space
+	&di(Clear) Cause a clear message to be sent to the alarm collector.
+
+	&half_space
+	&di(Raise Again) Cause a clear followed by a raise message to be sent to
+			the alarm collector.
+&end_dlist
+&uindent
+&space
+
+&h2(Allocating Alarms)
+The &cw(xapp::Alloc_alarm()) function provided by the framework is used to create
+an alarm object.
+Once the xAPP has an alarm object it can be used to send one, or more, alarm
+messages to the collector.
+
+&space
+The allocation function has three prototypes which allow the xAPP to create
+an alarm with an initial set of information as is appropriate.
+The following are the prototypes for the allocate functions:
+
+&half_space
+.im alloc_proto.im
+
+
+Each of the allocation functions returns a unique pointer to the alarm.
+In the simplest form (1) the alarm is initialised with an empty meid
+(managed element ID) string, and unset problem ID (-1).
+The second prototype allows the xAPP to supply the meid, and in the
+third form both the problem ID and the meid are used to initialise the
+alarm.
+
+&h2(Raising An Alarm)
+Once an alarm has been allocated, its &cw(Raise()) function can be used
+to cause the alarm to be sent to the collector.
+The raise process allows the xAPP to perform the following modifications
+to the alarm before sending the message:
+
+&half_space
+&indent
+&beg_list(&lic1)
+	&li Set the alarm severity
+	&half_space
+	&li Set the problem ID value
+	&half_space
+	&li Set the alarm information string
+	&half_space
+	&li Set the additional information string
+&end_list
+&uindent
+&space
+
+The following are the prototypes for the &cw(Raise()) functions of an alarm object:
+.....
+
+
+
+In its simplest form (1) the &cw(Raise()) function will send the alarm without making any
+changes to the data.
+The final two forms allow the xAPP to supply additional data which is added to the
+alarm before sending the message.
+
+Each of the raise functions returns &cw(true) on success and &cw(false) if the alarm
+message could not be sent.
+
+&h3(Severity)
+The severity is one of the &cw(SEV_) constants listed below.
+These map to alarm collector strings and insulate the xAPP from any future alarm collector
+changes.
+The specific meaning of these severity types are defined by the alarm collector and thus
+no attempt is made to guess what their actual meaning is.
+These constants are available by including &cw(alarm.hpp.)
+
+&half_space
+&indent
+&ex_start
+    SEV_MAJOR
+    SEV_MINOR
+    SEV_WARN
+    SEV_DEFAULT
+&ex_end
+&uindent
+&fig_cen(Severity constants available in alarm.hpp.)
+
+&h3(The Problem ID)
+The problem ID is an integer which is assigned by the xAPP.
+The framework makes no attempt to verify that it has been se, nor does it attempt
+to validate the value.
+If the xAPP does not set the value, &cw(-1) is used.
+
+&h3(Information Strings)
+The two information strings are also xAPP defined and provide the information that
+the xAPP deems necessary and related to the alarm.
+What the collector expects, and how these strings are used, is beyond the scope of
+the framework to describe or validate.
+If not supplied, empty strings are sent in the alarm message.
+
+&h2(Clearing An Alarm)
+The &cw(Clear()) function of an alarm may be used to send a clear message.
+In a manner similar to the &cw(Raise()) functions, the &cw(Clear()) functions allow
+the existing alarm data to be sent without change, or for the xAPP to modify the
+data before the message is sent to the collector.
+The following are the prototype for these functions.
+
+
+&ex_start
+   bool Clear( );
+   bool Clear( int severity, int problem, std::string info );
+   bool Clear( int severity, int problem, std::string info, std::string addional_info );
+   bool Clear_all( );
+
+&ex_end
+&fig_cen(Clear function prototypes. )
+&space
+
+Each of the clear functions returns &cw(true) on success and &cw(false) if the alarm
+message could not be sent.
+
+
+&space
+The &cw(Clear_all()) function sends a special action code to the collector which is assumed
+to clear all alarms.
+However, it is unknown whether that implies &bold(all) alarms, or all alarms matching the
+&cw(problem_id,) or some other interpretation.
+Please consult the alarm collector documentation for these specifics.
+
+
+&h2(Adjusting Alarm Contents)
+It might be necessary for the xAPP to adjust the alarm contents outside of the scope of
+the &cw(Raise()) function, or to adjust data that cannot be manipulated by &cw(Raise().)
+The following are the (self explanatory) prototypes for the &ital(setter) functions
+which are available to the xAPP.
+&half_space
+
+&ex_start
+  void Set_additional( std::string new_info );
+  void Set_appid( std::string new_id );
+  void Set_info( std::string new_info );
+  void Set_meid( std::string new_meid );
+  void Set_problem( int new_id );
+  void Set_severity( int new_sev );
+&ex_end
+&fig_cen(Alarm Setters)
+&space

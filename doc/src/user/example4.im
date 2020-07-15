@@ -1,8 +1,7 @@
-// vi: ts=4 sw=4 noet:
-/*
+.if false
 ==================================================================================
-	Copyright (c) 2020 Nokia
-	Copyright (c) 2020 AT&T Intellectual Property.
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,28 +15,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================================
-*/
+.fi
 
-/*
-	Mnemonic:	default_cb.hpp
-	Abstract:	Headers/prototypes for the default callbacks. The
-				default callbacks are those which we install when
-				the messenger is created and handles things that
-				the application might not want to (e.g. health check).
-
-	Date:		11 March 2020
-	Author:		E. Scott Daniels
-*/
-
-#ifndef _DEF_CB_H
-#define _DEF_CB_H
-
-namespace xapp {
-
-void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data );
+&h2(Alarm Example)
+This is an extension of a previous example which sends an alarm
+during initialisation and clears the alarm as soon as messages
+are being received.
+It is unknown if this is the type of alarm that is expected at the
+collector, but illustrates how an alarm is allocated, raised and
+cleared.
 
 
+&space
+&indent
+.** pull in the code from the example directory
+&ex_start
+.im  j=start-example ../../../examples/xapp_alarm.cpp
+&ex_end
+&fig( Simple looping sender application with alarm generation. )
+&space
 
-} // namespace
-
-#endif

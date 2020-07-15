@@ -46,7 +46,7 @@ The Jhash object is created simply by passing a json string to the constructor.
 
     jh =  new Jhash( jstring.c_str() );
 &ex_end
-&fig(The creation of the Jhash object.)
+&fig_cen(The creation of the Jhash object.)
 &space
 
 
@@ -59,9 +59,11 @@ The approach taken by Jhash is a "directory view" approach, where the "current d
 or current &ital(blob,) limits the scope of visible fields.
 
 &space
-As an example, the json contained in figure jblob_fig, contains a "root" blob and
+As an example, the json contained in figure &jblob_fig, contains a "root" blob and
 two &ital(sub-blobs) (address and lease_info).
+&half_space
 
+.ca start blob_ex.ca
 &ex_start
     {
         "lodge_name": "Water Buffalo Lodge 714",
@@ -82,26 +84,26 @@ two &ital(sub-blobs) (address and lease_info).
         }
     }
 &ex_end
-.gv fig
-.sv _fig
-&set_fref(jblob_fig:&_fig)
-&fig(Sample json with a root and too blobs.)
-
+&export_fig( jblob_fig )
+&fig_cen(Sample json with a root and two blobs.)
 &space
+.ca end
+&ifroom( 3i : blob_ex.ca )
+
+
 Upon creation of the Jhash object, the &ital(root) fields, &cw(lodge_name,) &cw(member_count,) and
 &cw(grand_poobah) are immediately available.
-The fields in the &ital(sub-blobs) are avalable only when the correct blob is selected.
+The fields in the &ital(sub-blobs) are available only when the correct blob is selected.
 The code sample in figure &fig_blob_sample illustrates how  a &ital(sub-blob) is selected.
 
 &ex_start
     jh->Set_blob( (char *) "address" );     // select address
     jh->Unset_blob();                       // return to root
-    jh->Set_blob( (char *) "lease_info" );  // slect the lease blob
+    jh->Set_blob( (char *) "lease_info" );  // select the lease blob
 &ex_end
-.gv fig
-.sv _fig
-&set_fref(fig_blob_sample:&_fig)
-&fig(Blob selection example.)
+.sv export_fig
+&export_fig( fig_blob_sample )
+&fig_cen(Blob selection example.)
 &space
 
 Currently, the selected blob must be unset in order to select a blob at the root
@@ -126,7 +128,7 @@ The following are the prototypes for the functions which allow values to be extr
 &ex_end
 &space
 
-Each of these funcitons returns the value associated with the field with the given &ital(name.)
+Each of these functions returns the value associated with the field with the given &ital(name.)
 If the value is missing, the following default values are returned:
 
 &half_space
@@ -146,8 +148,8 @@ If the user needs to disambiguate between a missing value and the default value 
 Two functions allow the developer to determine whether or not a field is included in the
 json.
 Both of these functions work on the current &ital(blob,) therefore it is important to ensure
-that the correct blob is selected before using either of these funcitons.
-The prototpyes for the &cw(Exists) and &cw(Missing) functions are below:
+that the correct blob is selected before using either of these functions.
+The prototypes for the &cw(Exists) and &cw(Missing) functions are below:
 
 &ex_start
     bool Exists( const char* name );
@@ -155,7 +157,7 @@ The prototpyes for the &cw(Exists) and &cw(Missing) functions are below:
 &ex_end
 
 The &cw(Exists) function returns &ital(true) if the field name exists in the json and &ital(false) otherwise.
-Conversly, the &cw(Missing) funciton returns &ital(true) when the field name does not exist in the json.
+Conversely, the &cw(Missing) function returns &ital(true) when the field name does not exist in the json.
 
 
 &h2(Testing Field Type)
@@ -173,7 +175,7 @@ The following are the prototypes for these functions:
 &ex_end
 
 &space
-Each of these funcitons return &ital(true) if the field with the given name is of the type
+Each of these functions return &ital(true) if the field with the given name is of the type
 being tested for.
 
 
@@ -202,7 +204,7 @@ For each of these functions the &cw(eidx) is the zero based element index which 
 be tested or selected.
 
 &h3(Arrays of Blobs)
-An array containing blobs, rather than simiple field value pairs, the blob must
+An array containing blobs, rather than simple field value pairs, the blob must
 be selected prior to using it, just as a sub-blob needed to be selected.
 The &cw(Set_blob_ele) function is used to do this and has the following prototype:
 
@@ -211,7 +213,7 @@ The &cw(Set_blob_ele) function is used to do this and has the following prototyp
 &ex_end
 &space
 
-As with selecting a sub-blob, an unset must be preformed before selecting the next blob.
+As with selecting a sub-blob, an unset must be performed before selecting the next blob.
 Figure &array_blob_code_fig illustrates how these functions can be used to read and print
 values from the json in figure &array_blob_json_fig.
 
@@ -225,9 +227,8 @@ values from the json in figure &array_blob_json_fig.
         { "name": "Kyle Limestone", "member_num": 49 }
     ]
 &ex_end
-.gv fig
-&set_fref(array_blob_code_fig:&_fig)
-&fig(Json array containing blobs.)
+&export_fig(array_blob_code_fig)
+&fig_cen(Json array containing blobs.)
 &space
 
 
@@ -248,8 +249,7 @@ values from the json in figure &array_blob_json_fig.
         jh->Unset_blob();                           // back to root
     }
 &ex_end
-.gv fig
-&set_fref(array_blob_json_fig:&_fig)
-&fig(Code to process the array of blobs.)
+&export_fig(array_blob_json_fig )
+&fig_cen(Code to process the array of blobs.)
 &space
 

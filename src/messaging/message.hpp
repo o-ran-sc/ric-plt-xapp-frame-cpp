@@ -49,6 +49,8 @@
 #endif
 
 
+namespace xapp {
+
 // ------------------------------------------------------------------------
 
 class Message {
@@ -59,6 +61,7 @@ class Message {
 
 	public:
 		static const int	NO_CHANGE = -99;			// indicates no change to a send/reply parameter
+		static const int	NO_WHID = -1;				// no wormhole id applies
 		static const int	INVALID_MTYPE = -1;
 		static const int	INVALID_STATUS = -1;
 		static const int	INVALID_SUBID = -2;
@@ -66,6 +69,7 @@ class Message {
 
 		static const int	RESPONSE = 0;					// send types
 		static const int	MESSAGE = 1;
+		static const int	WORMHOLE_MSG = 2;
 
 		Message( rmr_mbuf_t* mbuf, void* mrc );		// builders
 		Message( void* mrc, int payload_len );
@@ -93,7 +97,7 @@ class Message {
 
 		bool Reply( );
 		bool Send( );
-		bool Send( int mtype, int subid, int payload_len, unsigned char* payload, int stype );
+		bool Send( int mtype, int subid, int payload_len, unsigned char* payload, int stype, int whid );
 
 		bool Send_msg( int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload );
 		bool Send_msg( int mtype, int subid, int payload_len, unsigned char* payload );
@@ -104,7 +108,10 @@ class Message {
 		bool Send_response( int mtype, int subid, int payload_len, unsigned char* response );
 		bool Send_response( int payload_len, std::shared_ptr<unsigned char> response );
 		bool Send_response( int payload_len, unsigned char* response );
+
+		bool Wormhole_send( int whid, int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload );
 };
 
+} // namespace
 
 #endif

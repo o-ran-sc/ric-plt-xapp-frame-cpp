@@ -31,8 +31,10 @@ cat <<endKat
 .dv GEN_TITLE 1
 .dv doc_title Release Notes
 
-.im setup.im
-.dh 1 u=off
+.im ../lib/setup.im
+.im ../lib/front_junk.im
+.dh 1 u=off s=1,0
+.dh 2 u=off s=1,0
 
 &h1(C++ Framework Release Notes)
 The following is a list of release highlights for the C++ xAPP Framework.
@@ -44,8 +46,12 @@ do
 	awk '
 		/^#/ { next }		# ditch all comments
 
-		# tag project releases by matching release tag associated
-		/1\.0\.0$/  { printf( "&h1(Bronze Release)\n" ) }
+		# tag project releases by matching release tag in CHANGES file
+		/^release=/ || /^release =/ {
+			n = split( $0, a, "=" )
+			printf( "&h1(%s Release)\n", a[n] )
+			next
+		}
 
 		print_raw && /^$/ {				# include blank lines after first real stuff
 			printf( "&space\n\n" );

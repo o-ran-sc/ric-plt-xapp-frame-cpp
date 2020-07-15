@@ -22,7 +22,7 @@
 	Mnemonic:	rmr_em.c
 	Abstract:	RMR emulation for testing
 
-	Date:		20 March	
+	Date:		20 March
 	Author:		E. Scott Daniels
 */
 
@@ -115,7 +115,7 @@ char* rmr_get_meid( rmr_mbuf_t* mbuf, char* m ) {
 
 	if( mbuf != NULL ) {
 		if( m == NULL ) {
-			m = (char *) malloc( sizeof( char ) * 32 );		
+			m = (char *) malloc( sizeof( char ) * 32 );	
 		}
 		h = (header_t *) mbuf->tp_buf;
 		memcpy( m, h->meid, 32 );
@@ -138,7 +138,7 @@ char *rmr_get_src( rmr_mbuf_t* mbuf, char *m ) {
 
 	if( mbuf != NULL ) {
 		if( m == NULL ) {
-			m = (char *) malloc( sizeof( char ) * 32 );		
+			m = (char *) malloc( sizeof( char ) * 32 );	
 		}
 		h = (header_t *) mbuf->tp_buf;
 		memcpy( m, h->src, 32 );
@@ -170,18 +170,18 @@ int rmr_str2meid( rmr_mbuf_t* mbuf, unsigned char* s ) {
 rmr_mbuf_t* rmr_send_msg( void* mrc, rmr_mbuf_t* mbuf ) {
 
 	if( mbuf != NULL ) {
-		mbuf->state = 0;	
+		mbuf->state = 0;
 	}
-	
+
 	return mbuf;
 }
 
 rmr_mbuf_t* rmr_rts_msg( void* mrc, rmr_mbuf_t* mbuf ) {
 
 	if( mbuf != NULL ) {
-		mbuf->state = 0;	
+		mbuf->state = 0;
 	}
-	
+
 	return mbuf;
 }
 
@@ -248,8 +248,43 @@ int rmr_ready( void* mrc ) {
 	if( ! state )  {
 		state = 1;
 		return 0;
-	} 
+	}
 
 	return 1;
+}
+
+// ----------------------- wormhole dummies ---------------------------------------------
+
+typedef int rmr_whid_t;
+
+extern rmr_whid_t rmr_wh_open( void* vctx, char const* target ) {
+	static int whid = 0;
+
+	if( vctx == NULL ) {
+		return -1;
+	}
+	return whid++;
+}
+
+//extern rmr_mbuf_t* rmr_wh_call( void* vctx, rmr_whid_t whid, rmr_mbuf_t* msg, int call_id, int max_wait );
+
+extern rmr_mbuf_t* rmr_wh_send_msg( void* vctx, rmr_whid_t whid, rmr_mbuf_t* mbuf ) {
+	if( mbuf != NULL ) {
+		if( whid >= 0 ) {
+			mbuf->state = 0;
+		}
+
+		mbuf->state = 7;
+	}
+
+	return mbuf;
+}
+
+extern int rmr_wh_state( void* vctx, rmr_whid_t whid ) {
+	return whid >= 0;
+}
+
+extern void rmr_wh_close( void* vctx, int whid ){
+	return;
 }
 

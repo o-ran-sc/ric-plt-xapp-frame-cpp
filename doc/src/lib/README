@@ -1,0 +1,4 @@
+
+This directory contains imbed files (headers) for the various
+documentation source in other directories. These imbed files
+provide common macros, variables, etc.

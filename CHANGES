@@ -1,4 +1,17 @@
 # This file contains a brief summary of each version bump.
+# Its contents are parsed by a document builder and the rel-notes.rst
+# file for the RTD site is generated. Changes must start with a date
+# and version string. Blank are used to separate items when a version
+# has several changes.  Multiple blank lines between versions are
+# squished to one.
+
+release = Cherry
+2020 July 17; version 2.0.0
+	Add alarm support.
+
+	Add xapp namespace for Message, Msg_component, Alarm and Jhah
+	objects.  This is a BREAKING change and thus the major version
+	number was bumped to 2.
 
 2020 June 29; version 1.2.0
 	Add support for json parsing
@@ -9,6 +22,8 @@
 	Version bump to 1.1.0 to allow patches to bronze code to
 	continue to be done on the 1.0.* level.
 
+
+release= Bronze
 2020 April 28; version 1.0.0
 	Bump version to force package build (old CI version added
 	incorrect install prefix). Bump to 1.0.0 for release.

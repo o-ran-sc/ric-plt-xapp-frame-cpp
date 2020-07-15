@@ -28,9 +28,9 @@
 project( ricxfcpp )
 cmake_minimum_required( VERSION 3.5 )
 
-set( major_version "1" )		# should be automatically populated from git tag later, but until CI process sets a tag we use this
-set( minor_version "2" )
-set( patch_level "1" )
+set( major_version "2" )		# should be automatically populated from git tag later, but until CI process sets a tag we use this
+set( minor_version "0" )
+set( patch_level "0" )
 
 set( install_root "${CMAKE_INSTALL_PREFIX}" )
 set( install_inc "include/ricxfcpp" )
@@ -149,17 +149,21 @@ endif()
 
 
 
+# bleeding cmake names are short novels; and when lines cannot be split they're a pain
+set ( srcd "${CMAKE_CURRENT_SOURCE_DIR}" )
+
 # this gets us round a chicken/egg problem. include files don't exist until make is run
 # but Cmake insists on having these exist when we add them to include directories to
 # enable code to find them after we build them.
 #
-include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/src/messaging;${CMAKE_CURRENT_SOURCE_DIR}/src/json;${CMAKE_CURRENT_SOURCE_DIR}/ext/jsmn" )
+include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/ext/jsmn" )
 
 # Compiler flags
 #
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 set( CMAKE_C_FLAGS "-g " )
 set( CMAKE_CPP_FLAGS "-g " )
+set( CMAKE_CXX_FLAGS "-g " )
 if( GPROF )					# if set, we'll set profiling flag on compiles
 	message( "+++ profiling is on" )
 	set( CMAKE_C_FLAGS "-pg " )
@@ -181,12 +185,13 @@ execute_process( COMMAND  git submodule update --init -- ext/jsmn
 add_subdirectory( src/json )
 add_subdirectory( src/messaging )
 add_subdirectory( src/xapp )
+add_subdirectory( src/alarm )
 #add_subdirectory( doc )				# this will auto skip if {X}fm is not available
 
 # shared and static libraries are built from the same object files.
 #
 add_library( ricxfcpp_shared SHARED
-	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:xapp_objects>"
+	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:xapp_objects>"
 )
 set_target_properties( ricxfcpp_shared
 	PROPERTIES
@@ -232,9 +237,9 @@ else()
 endif()
 
 install( TARGETS ${target_list} EXPORT LibraryConfig
-   	LIBRARY  DESTINATION ${install_lib}
-   	ARCHIVE  DESTINATION ${install_lib}
-   	PUBLIC_HEADER DESTINATION ${install_inc}
+	LIBRARY  DESTINATION ${install_lib}
+	ARCHIVE  DESTINATION ${install_lib}
+	PUBLIC_HEADER DESTINATION ${install_inc}
 )
 
 unset( DEV_PKG  CACHE )			# prevent from being a hidden setting if user redoes things

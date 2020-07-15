@@ -55,6 +55,7 @@
 .**  ------ major sections --------
 .im cpp_frame.im
 .im jhash.im
+.im alarm.im
 
 &h1(Example Programmes)
 The following sections contain several example programmes which are written on
@@ -63,3 +64,4 @@ top of the C++ framework.
 .im example1.im
 .im example2.im
 .im example3.im
+.im example4.im

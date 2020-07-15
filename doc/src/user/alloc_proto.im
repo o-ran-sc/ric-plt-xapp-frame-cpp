@@ -1,8 +1,8 @@
-// vi: ts=4 sw=4 noet:
-/*
+.** vim: sw=4 ts=4 et :
+.if false
 ==================================================================================
-	Copyright (c) 2020 Nokia
-	Copyright (c) 2020 AT&T Intellectual Property.
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,28 +16,36 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================================
-*/
-
-/*
-	Mnemonic:	default_cb.hpp
-	Abstract:	Headers/prototypes for the default callbacks. The
-				default callbacks are those which we install when
-				the messenger is created and handles things that
-				the application might not want to (e.g. health check).
-
-	Date:		11 March 2020
-	Author:		E. Scott Daniels
-*/
-
-#ifndef _DEF_CB_H
-#define _DEF_CB_H
-
-namespace xapp {
-
-void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data );
+.fi
 
 
+.** for now we have to sort out based on pfm vs tfm since table
+.** constuction for any of the "mark*" parsers sucks.
 
-} // namespace
+.ca start proto.ca
+&ex_start
+  std::unique_ptr<xapp::Alarm> Alloc_alarm( );
+  std::unique_ptr<xapp::Alarm> Alloc_alarm( std::string meid );
+  std::unique_ptr<xapp::Alarm> Alloc_alarm( int prob_id, std::string meid );
+&ex_end
+.ca end
 
-#endif
+.if pfm
+&beg_table( 5.25i .3i  b=0 : 80,15 )
+.im proto.ca
+&col
+&ex_start
+(1)
+(2)
+(3)
+&ex_end
+&end_table
+
+.ei
+
+.im proto.ca
+
+.fi
+
+&fig_cen(Alarm allocation prototypes.)
+&space

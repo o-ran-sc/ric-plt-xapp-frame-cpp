@@ -1,7 +1,17 @@
+# don't stash generated things
 *.ps
 *.rst
 *.txt
+*.md
 *.html
+*.eps
+
+# don't stash intermediate things
 *.sp
 *.ca
 *.toc
+*.bcnfile
+
+# don't stash backups
+*-
+*.bak

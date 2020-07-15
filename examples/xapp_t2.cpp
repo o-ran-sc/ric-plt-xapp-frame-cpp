@@ -45,8 +45,8 @@
 
 extern int main( int argc, char** argv ) {
 	std::unique_ptr<Xapp> xfw;
-	std::unique_ptr<Message> msg;
-	Msg_component payload;				// special type of unique pointer to the payload
+	std::unique_ptr<xapp::Message> msg;
+	xapp::Msg_component payload;				// special type of unique pointer to the payload
 
 	int	sz;
 	int len;
@@ -108,7 +108,7 @@ extern int main( int argc, char** argv ) {
 		len = snprintf( (char *) payload.get(), sz, "This is message %d\n", i );
 
 		// payload updated in place, prevent copy by passing nil
-		if ( ! msg->Send_msg( mtype, Message::NO_SUBID,  len, NULL )) {
+		if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
 			fprintf( stderr, "<SNDR> send failed: %d\n", i );
 		}
 
