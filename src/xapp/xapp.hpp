@@ -42,7 +42,7 @@
 #include "callback.hpp"
 #include "messenger.hpp"
 
-class Xapp : public Messenger {
+class Xapp : public xapp::Messenger {
 
 	private:
 		std::string name;

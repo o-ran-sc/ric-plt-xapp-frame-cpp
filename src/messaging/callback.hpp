@@ -31,11 +31,15 @@
 
 #include <memory>
 
+#include "msg_component.hpp"
+
+namespace xapp {
+
+
 class Messenger;
 class Message;
-#include "message.hpp"
 
-typedef void(*user_callback)( Message& m, int mtype, int subid, int payload_len, Msg_component payload, void* usr_data );
+typedef void(*user_callback)( xapp::Message& m, int mtype, int subid, int payload_len, xapp::Msg_component payload, void* usr_data );
 
 class Callback {
 
@@ -48,5 +52,7 @@ class Callback {
 		void Drive_cb( Message& m );							// invoker
 };
 
+} // namespace
 
 #endif
+

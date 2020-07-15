@@ -20,9 +20,9 @@
 
 /*
 	Mnemonic:	Unit_test.cpp
-	Abstract:	This is the unit test driver for the C++ xAPP framework. It 
+	Abstract:	This is the unit test driver for the C++ xAPP framework. It
 				operates by including all of the modules directly (in order
-				to build them with the necessary coverage flags), then 
+				to build them with the necessary coverage flags), then
 				drives all that it can.  The RMR emulation module provides
 				emulated RMR functions which simulate the creation, sending
 				and receiving of messages etc.
@@ -60,25 +60,25 @@ int good_cb2 = 0;
 int good_cbd = 0;
 
 /*
-	callback functions to register; driven as we "receive" messages (the RMR emulation package 
+	callback functions to register; driven as we "receive" messages (the RMR emulation package
 	will generate a message every time the receive function is called).
 */
-void cb1( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cb1( xapp::Message& mbuf, int mtype, int subid, int len, xapp::Msg_component payload,  void* data ) {
 	if( mtype != 1 ) {	// should only be driven for type 1 messages
 		err_cb1++;
 	} else {
 		good_cb1++;
 	}
 }
-void cb2( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
+void cb2( xapp::Message& mbuf, int mtype, int subid, int len, xapp::Msg_component payload,  void* data ) {
 	if( mtype != 2 ) {	// should only be driven for type 2 messages
 		err_cb2++;
 	} else {
 		good_cb2++;
 	}
 }
-void cbd( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  void* data ) {
-	if( mtype > 0 && mtype < 3 ) {				// should only be driven for types that arent 1 or 2 
+void cbd( xapp::Message& mbuf, int mtype, int subid, int len, xapp::Msg_component payload,  void* data ) {
+	if( mtype > 0 && mtype < 3 ) {				// should only be driven for types that arent 1 or 2
 		if( err_cbd < 10 ) {
 			fprintf( stderr, "<FAIL> cbd: bad message type: %d\n", mtype );
 		}
@@ -90,8 +90,8 @@ void cbd( Message& mbuf, int mtype, int subid, int len, Msg_component payload,  
 
 /*
 	The Xapp Run() function only returns when Xapp is asked to stop, and that
-	isn't supported from inside any of the callbacks.  This funciton is 
-	started in a thread and after a few seconds it will drive the halt 
+	isn't supported from inside any of the callbacks.  This funciton is
+	started in a thread and after a few seconds it will drive the halt
 	function in the Xapp instance to stop the run function and allow the
 	unit test to finish.
 */
@@ -104,9 +104,9 @@ void killer( std::shared_ptr<Xapp> x ) {
 
 int main( int argc, char** argv ) {
 	std::thread* tinfo;					// we'll start a thread that will shut things down after a few seconds
-	std::unique_ptr<Message> msg;
+	std::unique_ptr<xapp::Message> msg;
 	std::shared_ptr<Xapp> x;
-	Msg_component payload;
+	xapp::Msg_component payload;
 	std::unique_ptr<unsigned char> ucs;
 	unsigned char* new_payload;
 	std::shared_ptr<unsigned char> new_p_ref;	// reference to payload to pass to send functions
@@ -125,8 +125,8 @@ int main( int argc, char** argv ) {
 		}
 
 		switch( argv[ai][1] ) {			// we only support -x so -xy must be -x -y
-			case 'p': 
-				port = argv[ai+1];	
+			case 'p':
+				port = argv[ai+1];
 				ai++;
 				break;
 
@@ -138,7 +138,7 @@ int main( int argc, char** argv ) {
 
 		ai++;
 	}
-	
+
 	x = std::shared_ptr<Xapp>( new Xapp( port, true ) );
 	x->Add_msg_cb( 1, cb1, NULL );
 	x->Add_msg_cb( 2, cb2, NULL );
@@ -243,21 +243,21 @@ int main( int argc, char** argv ) {
 	}
 
 	// -----  specific move/copy coverage drivers ---------------------------
-	
-	Messenger m1( (char *) "1234", false );		// messenger class does NOT permit copies, so no need to test
-	Messenger m2( (char *) "9999", false );
-	m1 = std::move( m2 );						// drives move operator= function
-	Messenger m3 = std::move( m1 );				// drives move constructor function
 
-	std::unique_ptr<Message> msg2 = x->Alloc_msg( 2048 );
-	std::unique_ptr<Message> msg3 = x->Alloc_msg( 4096 );
+	xapp::Messenger m1( (char *) "1234", false );		// messenger class does NOT permit copies, so no need to test
+	xapp::Messenger m2( (char *) "9999", false );
+	m1 = std::move( m2 );						// drives move operator= function
+	xapp::Messenger m3 = std::move( m1 );				// drives move constructor function
+
+	std::unique_ptr<xapp::Message> msg2 = x->Alloc_msg( 2048 );
+	std::unique_ptr<xapp::Message> msg3 = x->Alloc_msg( 4096 );
 
 	snprintf( wbuf, sizeof( wbuf ), "Stand up and cheer!!" );
 	msg3->Set_len( strlen( wbuf ) );
 	strcpy( (char *) (msg3->Get_payload()).get(), wbuf );			// populate the payload to vet copy later
 	fprintf( stderr, "<DBUG> set string (%s) \n", (char *) (msg3->Get_payload()).get() );
 
-	Message msg4 = *(msg3.get());									// drive copy builder; msg4 should have a 4096 byte payload
+	xapp::Message msg4 = *(msg3.get());									// drive copy builder; msg4 should have a 4096 byte payload
 	fprintf( stderr, "<DBUG> copy string (%s) \n", (char *) (msg4.Get_payload()).get() );	// and payload should be coppied
 	if( msg4.Get_available_size() != 4096 ) {
 		errors++;
@@ -281,7 +281,7 @@ int main( int argc, char** argv ) {
 		fprintf( stderr, "<FAIL> message copy builder payload of copy not the expected string\n" );
 	}
 
-	Message msg5 = std::move( *(msg3.get()) );					// drive move constructor
+	xapp::Message msg5 = std::move( *(msg3.get()) );					// drive move constructor
 	if( msg5.Get_available_size() != 2048 ) {
 		errors++;
 		fprintf( stderr, "<FAIL> message copy operator payload size smells: expected 2048, got %d\n", msg5.Get_available_size() );

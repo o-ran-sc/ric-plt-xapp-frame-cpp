@@ -7,11 +7,23 @@
 .dv GEN_TITLE 1
 .dv doc_title Release Notes
 
-.im setup.im
-.dh 1 u=off
+.im ../lib/setup.im
+.im ../lib/front_junk.im
+.dh 1 u=off s=1,0
+.dh 2 u=off s=1,0
 
 &h1(C++ Framework Release Notes)
 The following is a list of release highlights for the C++ xAPP Framework.
+
+&h1( Cherry Relasee)
+&h2(2020 July 17; version 2.0.0)
+	Add alarm support.
+&space
+
+	Add xapp namespace for Message, Msg_component, Alarm and Jhah
+	objects.  This is a BREAKING change and thus the major version
+	number was bumped to 2.
+&space
 
 &h2(2020 June 29; version 1.2.0)
 	Add support for json parsing
@@ -25,7 +37,9 @@ The following is a list of release highlights for the C++ xAPP Framework.
 	continue to be done on the 1.0.* level.
 &space
 
-&h1(Bronze Release)
+&space
+
+&h1( Bronze Relasee)
 &h2(2020 April 28; version 1.0.0)
 	Bump version to force package build (old CI version added
 	incorrect install prefix). Bump to 1.0.0 for release.

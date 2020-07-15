@@ -40,11 +40,15 @@
 #include <rmr/rmr.h>
 
 #include "message.hpp"
+#include "alarm.hpp"
 
 #ifndef RMR_FALSE
 	#define RMR_FALSE	0
 	#define RMR_TRUE	1
 #endif
+
+namespace xapp {
+
 
 class Messenger {
 
@@ -57,7 +61,7 @@ class Messenger {
 		char*		listen_port;			// port we ask msg router to listen on
 
 		// copy and assignment are PRIVATE so that they fail if xapp tries; messenger cannot be copied!
-		Messenger( const Messenger& soi );	
+		Messenger( const Messenger& soi );
 		Messenger& operator=( const Messenger& soi );
 
 	public:
@@ -71,12 +75,21 @@ class Messenger {
 		~Messenger();								// destroyer
 
 		void Add_msg_cb( int mtype, user_callback fun_name, void* data );
+
 		std::unique_ptr<Message> Alloc_msg( int payload_size );			// message allocation
+
+		std::unique_ptr<xapp::Alarm> Alloc_alarm( );					// alarm allocation
+		std::unique_ptr<xapp::Alarm> Alloc_alarm( std::string meid );
+		std::unique_ptr<xapp::Alarm> Alloc_alarm( int prob_id, std::string meid );
+
 		void Listen( );													// lisen driver
 		std::unique_ptr<Message> Receive( int timeout );				// receive 1 message
 		void Stop( );													// force to stop
-		//void Release_mbuf( void* vmbuf );
 		bool Wait_for_cts( int max_wait );
+
+		int	Wormhole_open( std::string endpoint );
 };
 
+
+} // namespace
 #endif

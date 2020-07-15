@@ -36,6 +36,23 @@ involved to create an xApp instance, wait for a route table
 to arrive, send a message, and wait for messages to arrive.
 
 
+The Namespace
+-------------
+
+Starting with version 2.0.0 the framwork introduces a
+*namespace* of ``xapp`` for the following classes and types:
+
+
+   * Alarm
+   * Jhash
+   * Message
+   * Msg_component
+
+
+This is a breaking change and as such the major version was
+bumpped from 1 to 2.
+
+
 Creating the xApp instance
 --------------------------
 
@@ -43,27 +60,27 @@ The creation of the xApp instance is as simple as invoking
 the object's constructor with two required parameters:
 
 
-      .. list-table::
-        :widths: auto
-        :header-rows: 0
-        :class: borderless
+       .. list-table::
+         :widths: auto
+         :header-rows: 0
+         :class: borderless
 
-        * - **port**
-          -
-            A C string (pointer to char) which defines the port that
-            RMR will open to listen for connections.
+         * - **port**
+           -
+             A C string (pointer to char) which defines the port that
+             RMR will open to listen for connections.
 
 
-            |
+             |
 
-        * - **wait**
-          -
-            A Boolean value which indicates whether or not the
-            initialization process should wait for the arrival of a
-            valid route table before completing. When true is
-            supplied, the initialization will not complete until RMR
-            has received a valid route table (or one is located via
-            the ``RMR_SEED_RT`` environment variable).
+         * - **wait**
+           -
+             A Boolean value which indicates whether or not the
+             initialization process should wait for the arrival of a
+             valid route table before completing. When true is
+             supplied, the initialization will not complete until RMR
+             has received a valid route table (or one is located via
+             the ``RMR_SEED_RT`` environment variable).
 
 
 
@@ -73,16 +90,16 @@ creating the instance of the xApp object.
 
 ::
 
-     #include <memory>
-     #include <ricxfcpp/xapp.hpp>
-     int main( ) {
-         std::unique_ptr<Xapp> xapp;
-         char* listen_port = (char *) "4560";    //RMR listen port
-         bool  wait4table = true;            // wait for a route table
+      #include <memory>
+      #include <ricxfcpp/xapp.hpp>
+      int main( ) {
+          std::unique_ptr<Xapp> xapp;
+          char* listen_port = (char *) "4560";    //RMR listen port
+          bool  wait4table = true;            // wait for a route table
 
-         xapp = std::unique_ptr<Xapp>(
-               new Xapp( listen_port, wait4table ) );
-     }
+          xapp = std::unique_ptr<Xapp>(
+                new Xapp( listen_port, wait4table ) );
+      }
 
 Figure 1: Creating an xAPP instance.
 
@@ -94,7 +111,7 @@ called ``man_ex1.cpp``.
 
 ::
 
-    g++ man_ex1.cpp -o man_ex1 -lricxfcpp -lrmr_si -lpthread
+     g++ man_ex1.cpp -o man_ex1 -lricxfcpp -lrmr_si -lpthread
 
 
 The above program, while complete and capable of being
@@ -131,9 +148,9 @@ which callback functions must be defined with:
 
 ::
 
-     void cb_name( Message& m, int mtype, int subid,
-           int payload_len, Msg_component payload,
-           void* usr_data );
+      void cb_name( xapp::Message& m, int mtype, int subid,
+            int payload_len, xapp::Msg_component payload,
+            void* usr_data );
 
 Figure 2: Callback function signature
 
@@ -141,55 +158,55 @@ The parameters passed to the callback function are as
 follows:
 
 
-      .. list-table::
-        :widths: auto
-        :header-rows: 0
-        :class: borderless
+       .. list-table::
+         :widths: auto
+         :header-rows: 0
+         :class: borderless
 
-        * - **m**
-          -
-            A reference to the Message that was received.
-
-
-            |
-
-        * - **mtype**
-          -
-            The message type (allows for disambiguation if the
-            callback is registered for multiple message types).
+         * - **m**
+           -
+             A reference to the Message that was received.
 
 
-            |
+             |
 
-        * - **subid**
-          -
-            The subscription ID from the message.
-
-
-            |
-
-        * - **payload len**
-          -
-            The number of bytes which the sender has placed into the
-            payload.
+         * - **mtype**
+           -
+             The message type (allows for disambiguation if the
+             callback is registered for multiple message types).
 
 
-            |
+             |
 
-        * - **payload**
-          -
-            A direct reference (smart pointer) to the payload. (The
-            smart pointer is wrapped in a special class in order to
-            provide a custom destruction function without burdening
-            the xApp developer with that knowledge.)
+         * - **subid**
+           -
+             The subscription ID from the message.
 
 
-            |
+             |
 
-        * - **user data**
-          -
-            A pointer to user data. This is the pointer that was
-            provided when the function was registered.
+         * - **payload len**
+           -
+             The number of bytes which the sender has placed into the
+             payload.
+
+
+             |
+
+         * - **payload**
+           -
+             A direct reference (smart pointer) to the payload. (The
+             smart pointer is wrapped in a special class in order to
+             provide a custom destruction function without burdening
+             the xApp developer with that knowledge.)
+
+
+             |
+
+         * - **user data**
+           -
+             A pointer to user data. This is the pointer that was
+             provided when the function was registered.
 
 
 
@@ -201,35 +218,35 @@ section).
 
 ::
 
-     #include <memory>
-     #include <ricxfcpp/xapp.hpp>
-     long m1000_count = 0;    // message counters, one for each type
-     long m1001_count = 0;
+      #include <memory>
+      #include <ricxfcpp/xapp.hpp>
+      long m1000_count = 0;    // message counters, one for each type
+      long m1001_count = 0;
 
-     // callback function that will increase the appropriate counter
-     void cbf( Message& mbuf, int mtype, int subid, int len,
-                 Msg_component payload,  void* data ) {
-         long* counter;
+      // callback function that will increase the appropriate counter
+      void cbf( xapp::Message& mbuf, int mtype, int subid, int len,
+                  xapp::Msg_component payload,  void* data ) {
+          long* counter;
 
-         if( (counter = (long *) data) != NULL ) {
-             (*counter)++;
-         }
-     }
+          if( (counter = (long *) data) != NULL ) {
+              (*counter)++;
+          }
+      }
 
-     int main( ) {
-         std::unique_ptr<Xapp> xapp;
-         char* listen_port = (char *) "4560";
-         bool  wait4table = false;
+      int main( ) {
+          std::unique_ptr<Xapp> xapp;
+          char* listen_port = (char *) "4560";
+          bool  wait4table = false;
 
-         xapp = std::unique_ptr<Xapp>(
-               new Xapp( listen_port, wait4table ) );
+          xapp = std::unique_ptr<Xapp>(
+                new Xapp( listen_port, wait4table ) );
 
-         // register the same callback function for both msg types
-         xapp->Add_msg_cb( 1000, cbf, (void *) &m1000_count );
-         xapp->Add_msg_cb( 1001, cbf, (void *) &m1001_count );
+          // register the same callback function for both msg types
+          xapp->Add_msg_cb( 1000, cbf, (void *) &m1000_count );
+          xapp->Add_msg_cb( 1001, cbf, (void *) &m1001_count );
 
-         xapp->Run( 1 );        // start the callback driver
-     }
+          xapp->Run( 1 );        // start the callback driver
+      }
 
 Figure 3: Callback function example.
 
@@ -283,10 +300,10 @@ message is a function of the message object itself and can
 take one of two forms:
 
 
-  * Replying to the sender of a received message
+   * Replying to the sender of a received message
 
-  * Sending a message (routed based on the message type and
-    subscription ID)
+   * Sending a message (routed based on the message type and
+     subscription ID)
 
 
 When replying to the sender, the message type and
@@ -303,10 +320,10 @@ following prototypes.
 
 ::
 
-    bool Send_response(  int mtype, int subid, int response_len,
-         std:shared_ptr<unsigned char> response );
+     bool Send_response(  int mtype, int subid, int response_len,
+          std:shared_ptr<unsigned char> response );
 
-    bool Send_response(  int response_len, std::shared_ptr<unsigned char> response );
+     bool Send_response(  int response_len, std::shared_ptr<unsigned char> response );
 
 Figure 4: Reply function prototypes.
 
@@ -324,8 +341,8 @@ message type, or the subscription ID, but not both, the
 
 ::
 
-     msg->Send_response( Message::NO_CHANGE, Message::NO_SUBID,
-         pl_length, (unsigned char *) payload );
+      msg->Send_response( xapp::Message::NO_CHANGE, xapp::Message::NO_SUBID,
+          pl_length, (unsigned char *) payload );
 
 Figure 5: Send response prototype.
 
@@ -343,16 +360,16 @@ are shown below.
 
 ::
 
-     bool Send_msg( int mtype, int subid, int payload_len,
-         std::shared_ptr<unsigned char> payload );
+      bool Send_msg( int mtype, int subid, int payload_len,
+          std::shared_ptr<unsigned char> payload );
 
-     bool Send_msg( int mtype, int subid, int payload_len,
-         unsigned char* payload );
+      bool Send_msg( int mtype, int subid, int payload_len,
+          unsigned char* payload );
 
-     bool Send_msg( int payload_len,
-         std::shared_ptr<unsigned char> payload );
+      bool Send_msg( int payload_len,
+          std::shared_ptr<unsigned char> payload );
 
-     bool Send_msg( int payload_len, unsigned char* payload );
+      bool Send_msg( int payload_len, unsigned char* payload );
 
 Figure 6: Send function prototypes.
 
@@ -397,15 +414,15 @@ not sent).
 
 ::
 
-     Msg_component payload;  // smart reference
-     int pl_size;            // max size of payload
+      Msg_component payload;  // smart reference
+      int pl_size;            // max size of payload
 
-     payload = msg->Get_payload();
-     pl_size = msg->Get_available_size();
-     if( snprintf( (char *) payload.get(), pl_size,
-         "Msg Received\\n" ) < pl_size ) {
-       msg->Send_response( M_TYPE, SID, strlen( raw_pl ), NULL );
-     }
+      payload = msg->Get_payload();
+      pl_size = msg->Get_available_size();
+      if( snprintf( (char *) payload.get(), pl_size,
+          "Msg Received\\n" ) < pl_size ) {
+        msg->Send_response( M_TYPE, SID, strlen( raw_pl ), NULL );
+      }
 
 Figure 7: Send message without buffer copy.
 
@@ -474,12 +491,12 @@ to the constructor.
 
 ::
 
-     #include <ricxfcpp/Jhash>
+      #include <ricxfcpp/Jhash>
 
-     std::string jstring = "{ \\"tag\\": \\"Hello World\\" }";
-     Jhash*  jh;
+      std::string jstring = "{ \\"tag\\": \\"Hello World\\" }";
+      Jhash*  jh;
 
-     jh =  new Jhash( jstring.c_str() );
+      jh =  new Jhash( jstring.c_str() );
 
 Figure 8: The creation of the Jhash object.
 
@@ -496,44 +513,44 @@ this representation. The approach taken by Jhash is a
 "directory view" approach, where the "current directory," or
 current *blob,* limits the scope of visible fields.
 
-As an example, the json contained in figure jblob_fig,
-contains a "root" blob and two *sub-blobs* (address and
-lease_info).
+As an example, the json contained in figure 9, contains a
+"root" blob and two *sub-blobs* (address and lease_info).
+
 
 ::
 
-     {
-         "lodge_name": "Water Buffalo Lodge 714",
-         "member_count": 41,
-         "grand_poobah": "Larry K. Slate",
-         "attendance":   [ 23, 14, 41, 38, 24 ],
-         "address": {
-             "street":    "16801 Stonway Lane",
-             "suite":     null,
-             "city":      "Bedrock",
-             "post_code": "45701"
-         },
-         "lease_info": {
-             "owner":    "Stonegate Properties",
-             "amount":   216.49,
-             "due":      "monthly",
-             "contact:"  "Kyle Limestone"
-         }
-     }
+      {
+          "lodge_name": "Water Buffalo Lodge 714",
+          "member_count": 41,
+          "grand_poobah": "Larry K. Slate",
+          "attendance":   [ 23, 14, 41, 38, 24 ],
+          "address": {
+              "street":    "16801 Stonway Lane",
+              "suite":     null,
+              "city":      "Bedrock",
+              "post_code": "45701"
+          },
+          "lease_info": {
+              "owner":    "Stonegate Properties",
+              "amount":   216.49,
+              "due":      "monthly",
+              "contact:"  "Kyle Limestone"
+          }
+      }
 
-Figure 9: Sample json with a root and too blobs.
+Figure 9: Sample json with a root and two blobs.
 
 Upon creation of the Jhash object, the *root* fields,
 ``lodge_name,`` ``member_count,`` and ``grand_poobah`` are
 immediately available. The fields in the *sub-blobs* are
-avalable only when the correct blob is selected. The code
+available only when the correct blob is selected. The code
 sample in figure 10 illustrates how a *sub-blob* is selected.
 
 ::
 
-     jh->Set_blob( (char *) "address" );     // select address
-     jh->Unset_blob();                       // return to root
-     jh->Set_blob( (char *) "lease_info" );  // slect the lease blob
+      jh->Set_blob( (char *) "address" );     // select address
+      jh->Unset_blob();                       // return to root
+      jh->Set_blob( (char *) "lease_info" );  // select the lease blob
 
 Figure 10: Blob selection example.
 
@@ -560,36 +577,36 @@ extracted:
 
 ::
 
-     std::string String( const char* name );
-     float Value( const char* name );
-     bool Bool( const char* name );
+      std::string String( const char* name );
+      float Value( const char* name );
+      bool Bool( const char* name );
 
 
-Each of these funcitons returns the value associated with the
+Each of these functions returns the value associated with the
 field with the given *name.* If the value is missing, the
 following default values are returned:
 
 
-      .. list-table::
-        :widths: 15,80
-        :header-rows: 0
-        :class: borderless
+       .. list-table::
+         :widths: 15,80
+         :header-rows: 0
+         :class: borderless
 
-        * - **String**
-          -
-            An empty string (.e.g "").
+         * - **String**
+           -
+             An empty string (.e.g "").
 
-            |
+             |
 
-        * - **Value**
-          -
-            Zero (e.g 0.0)
+         * - **Value**
+           -
+             Zero (e.g 0.0)
 
-            |
+             |
 
-        * - **bool**
-          -
-            false
+         * - **bool**
+           -
+             false
 
 
 
@@ -605,17 +622,17 @@ Two functions allow the developer to determine whether or not
 a field is included in the json. Both of these functions work
 on the current *blob,* therefore it is important to ensure
 that the correct blob is selected before using either of
-these funcitons. The prototpyes for the ``Exists`` and
+these functions. The prototypes for the ``Exists`` and
 ``Missing`` functions are below:
 
 ::
 
-     bool Exists( const char* name );
-     bool Is_missing( const char* name );
+      bool Exists( const char* name );
+      bool Is_missing( const char* name );
 
 The ``Exists`` function returns *true* if the field name
-exists in the json and *false* otherwise. Conversly, the
-``Missing`` funciton returns *true* when the field name does
+exists in the json and *false* otherwise. Conversely, the
+``Missing`` function returns *true* when the field name does
 not exist in the json.
 
 
@@ -630,13 +647,13 @@ for these functions:
 
 ::
 
-     bool Is_bool( const char* name );
-     bool Is_null( const char* name );
-     bool Is_string( const char* name );
-     bool Is_value( const char* name );
+      bool Is_bool( const char* name );
+      bool Is_null( const char* name );
+      bool Is_string( const char* name );
+      bool Is_value( const char* name );
 
 
-Each of these funcitons return *true* if the field with the
+Each of these functions return *true* if the field with the
 given name is of the type being tested for.
 
 
@@ -652,16 +669,16 @@ based functions are below:
 
 ::
 
-     int Array_len( const char* name );
+      int Array_len( const char* name );
 
-     bool Is_bool_ele( const char* name, int eidx );
-     bool Is_null_ele( const char* name, int eidx );
-     bool Is_string_ele( const char* name, int eidx );
-     bool Is_value_ele( const char* name, int eidx );
+      bool Is_bool_ele( const char* name, int eidx );
+      bool Is_null_ele( const char* name, int eidx );
+      bool Is_string_ele( const char* name, int eidx );
+      bool Is_value_ele( const char* name, int eidx );
 
-     bool Bool_ele( const char* name, int eidx );
-     std::string String_ele( const char* name, int eidx );
-     float Value_ele( const char* name, int eidx );
+      bool Bool_ele( const char* name, int eidx );
+      std::string String_ele( const char* name, int eidx );
+      float Value_ele( const char* name, int eidx );
 
 
 For each of these functions the ``eidx`` is the zero based
@@ -671,51 +688,246 @@ element index which is to be tested or selected.
 Arrays of Blobs
 ---------------
 
-An array containing blobs, rather than simiple field value
+An array containing blobs, rather than simple field value
 pairs, the blob must be selected prior to using it, just as a
 sub-blob needed to be selected. The ``Set_blob_ele`` function
 is used to do this and has the following prototype:
 
 ::
 
-     bool Set_blob_ele( const char* name, int eidx );
+      bool Set_blob_ele( const char* name, int eidx );
 
 
-As with selecting a sub-blob, an unset must be preformed
+As with selecting a sub-blob, an unset must be performed
 before selecting the next blob. Figure 11 illustrates how
 these functions can be used to read and print values from the
 json in figure 12.
 
 ::
 
-     "members": [
-         { "name": "Fred Flinstone", "member_num": 42 },
-         { "name": "Barney Rubble", "member_num": 48 },
-         { "name": "Larry K Slate", "member_num": 22 },
-         { "name": "Kyle Limestone", "member_num": 49 }
-     ]
+      "members": [
+          { "name": "Fred Flinstone", "member_num": 42 },
+          { "name": "Barney Rubble", "member_num": 48 },
+          { "name": "Larry K Slate", "member_num": 22 },
+          { "name": "Kyle Limestone", "member_num": 49 }
+      ]
 
 Figure 11: Json array containing blobs.
 
 
 ::
 
-     std::string mname;
-     float mnum;
-     int len;
+      std::string mname;
+      float mnum;
+      int len;
 
-     len = jh->Array_len( (char *) "members" );
-     for( i = 0; i < len; i++ ) {
-         jh->Set_blob_ele( (char *) "members", i );  // select blob
+      len = jh->Array_len( (char *) "members" );
+      for( i = 0; i < len; i++ ) {
+          jh->Set_blob_ele( (char *) "members", i );  // select blob
 
-         mname = jh->String( (char *) "name" );      // read values
-         mnum = jh->Value( (char *) "member_num" );
-         fprintf( stdout, "%s is member %d\\n", mname.c_str(), (int) mnum );
+          mname = jh->String( (char *) "name" );      // read values
+          mnum = jh->Value( (char *) "member_num" );
+          fprintf( stdout, "%s is member %d\\n", mname.c_str(), (int) mnum );
 
-         jh->Unset_blob();                           // back to root
-     }
+          jh->Unset_blob();                           // back to root
+      }
 
 Figure 12: Code to process the array of blobs.
+
+
+
+ALARM MANAGER INTERFACE
+=======================
+
+The C++ framework provides an API which allows the xAPP to
+easily construct and generate alarm messages. Alarm messages
+are a special class of RMR message, allocated in a similar
+fashion as an RMR message through the framework's
+``Alloc_alarm()`` function.
+
+The API consists of the following function types:
+
+
+       .. list-table::
+         :widths:
+         :header-rows: 0
+         :class: borderless
+
+         * - **Raise**
+           -
+             Cause the alarm to be assigned a severity and and sent via
+             RMR message to the alarm collector process.
+
+
+             |
+
+         * - **Clear**
+           -
+             Cause a clear message to be sent to the alarm collector.
+
+
+             |
+
+         * - **Raise Again**
+           -
+             Cause a clear followed by a raise message to be sent to
+             the alarm collector.
+
+
+
+
+
+Allocating Alarms
+-----------------
+
+The ``xapp`` function provided by the framework is used to
+create an alarm object. Once the xAPP has an alarm object it
+can be used to send one, or more, alarm messages to the
+collector.
+
+The allocation function has three prototypes which allow the
+xAPP to create an alarm with an initial set of information as
+is appropriate. The following are the prototypes for the
+allocate functions:
+
+
+::
+
+    std::unique_ptr<xapp::Alarm> Alloc_alarm( );
+    std::unique_ptr<xapp::Alarm> Alloc_alarm( std::string meid );
+    std::unique_ptr<xapp::Alarm> Alloc_alarm( int prob_id, std::string meid );
+
+Figure 13: Alarm allocation prototypes.
+
+Each of the allocation functions returns a unique pointer to
+the alarm. In the simplest form (1) the alarm is initialised
+with an empty meid (managed element ID) string, and unset
+problem ID (-1). The second prototype allows the xAPP to
+supply the meid, and in the third form both the problem ID
+and the meid are used to initialise the alarm.
+
+
+Raising An Alarm
+----------------
+
+Once an alarm has been allocated, its ``Raise()`` function
+can be used to cause the alarm to be sent to the collector.
+The raise process allows the xAPP to perform the following
+modifications to the alarm before sending the message:
+
+
+   * Set the alarm severity
+
+   * Set the problem ID value
+
+   * Set the alarm information string
+
+   * Set the additional information string
+
+
+The following are the prototypes for the ``Raise()``
+functions of an alarm object: ..... In its simplest form (1)
+the ``Raise()`` function will send the alarm without making
+any changes to the data. The final two forms allow the xAPP
+to supply additional data which is added to the alarm before
+sending the message. Each of the raise functions returns
+``true`` on success and ``false`` if the alarm message could
+not be sent.
+
+
+Severity
+--------
+
+The severity is one of the ``SEV_`` constants listed below.
+These map to alarm collector strings and insulate the xAPP
+from any future alarm collector changes. The specific meaning
+of these severity types are defined by the alarm collector
+and thus no attempt is made to guess what their actual
+meaning is. These constants are available by including
+``alarm.hpp.``
+
+
+   ::
+
+         SEV_MAJOR
+         SEV_MINOR
+         SEV_WARN
+         SEV_DEFAULT
+
+Figure 14: Severity constants available in alarm.hpp.
+
+
+The Problem ID
+--------------
+
+The problem ID is an integer which is assigned by the xAPP.
+The framework makes no attempt to verify that it has been se,
+nor does it attempt to validate the value. If the xAPP does
+not set the value, ``-1`` is used.
+
+
+Information Strings
+-------------------
+
+The two information strings are also xAPP defined and provide
+the information that the xAPP deems necessary and related to
+the alarm. What the collector expects, and how these strings
+are used, is beyond the scope of the framework to describe or
+validate. If not supplied, empty strings are sent in the
+alarm message.
+
+
+Clearing An Alarm
+-----------------
+
+The ``Clear()`` function of an alarm may be used to send a
+clear message. In a manner similar to the ``Raise()``
+functions, the ``Clear()`` functions allow the existing alarm
+data to be sent without change, or for the xAPP to modify the
+data before the message is sent to the collector. The
+following are the prototype for these functions.
+
+::
+
+     bool Clear( );
+     bool Clear( int severity, int problem, std::string info );
+     bool Clear( int severity, int problem, std::string info, std::string addional_info );
+     bool Clear_all( );
+
+
+Figure 15: Clear function prototypes.
+
+Each of the clear functions returns ``true`` on success and
+``false`` if the alarm message could not be sent.
+
+The ``Clear_all()`` function sends a special action code to
+the collector which is assumed to clear all alarms. However,
+it is unknown whether that implies **all** alarms, or all
+alarms matching the ``problem_id,`` or some other
+interpretation. Please consult the alarm collector
+documentation for these specifics.
+
+
+Adjusting Alarm Contents
+------------------------
+
+It might be necessary for the xAPP to adjust the alarm
+contents outside of the scope of the ``Raise()`` function, or
+to adjust data that cannot be manipulated by ``Raise().`` The
+following are the (self explanatory) prototypes for the
+*setter* functions which are available to the xAPP.
+
+
+::
+
+    void Set_additional( std::string new_info );
+    void Set_appid( std::string new_id );
+    void Set_info( std::string new_info );
+    void Set_meid( std::string new_meid );
+    void Set_problem( int new_id );
+    void Set_severity( int new_sev );
+
+Figure 16: Alarm Setters
 
 
 
@@ -762,233 +974,233 @@ omitted. The full code is in the framework repository.
 
 
 
-  ::
+   ::
 
-    #include <stdio.h>
-    #include <unistd.h>
-    #include <atomic>
+     #include <stdio.h>
+     #include <unistd.h>
+     #include <atomic>
 
-    #include "ricxfcpp/xapp.hpp"
+     #include "ricxfcpp/xapp.hpp"
 
-    /*
-        Information that the callback needs outside
-        of what is given to it via parms on a call
-        by the framework.
-    */
-    typedef struct {
-        int        vlevel;             // verbosity level
-        bool    forward;            // if true, message is forwarded
-        int        stats_freq;         // header/stats after n messages
-        std::atomic<long>    pcount; // messages processed
-        std::atomic<long>    icount; // messages ignored
-        std::atomic<int>    hdr;    // number of messages before next header
-    } cb_info_t;
+     /*
+         Information that the callback needs outside
+         of what is given to it via parms on a call
+         by the framework.
+     */
+     typedef struct {
+         int        vlevel;             // verbosity level
+         bool    forward;            // if true, message is forwarded
+         int        stats_freq;         // header/stats after n messages
+         std::atomic<long>    pcount; // messages processed
+         std::atomic<long>    icount; // messages ignored
+         std::atomic<int>    hdr;    // number of messages before next header
+     } cb_info_t;
 
-    // ----------------------------------------------------------------------
+     // ----------------------------------------------------------------------
 
-    /*
-        Dump bytes to tty.
-    */
-    void dump( unsigned const char* buf, int len ) {
-        int        i;
-        int        j;
-        char    cheater[17];
+     /*
+         Dump bytes to tty.
+     */
+     void dump( unsigned const char* buf, int len ) {
+         int        i;
+         int        j;
+         char    cheater[17];
 
-        fprintf( stdout, "<RD> 0000 | " );
-        j = 0;
-        for( i = 0; i < len; i++ ) {
-            cheater[j++] =  isprint( buf[i] ) ? buf[i] : '.';
-            fprintf( stdout, "%02x ", buf[i] );
+         fprintf( stdout, "<RD> 0000 | " );
+         j = 0;
+         for( i = 0; i < len; i++ ) {
+             cheater[j++] =  isprint( buf[i] ) ? buf[i] : '.';
+             fprintf( stdout, "%02x ", buf[i] );
 
-            if( j == 16 ) {
-                cheater[j] = 0;
-                fprintf( stdout, " | %s\\n<RD> %04x | ", cheater, i+1 );
-                j = 0;
-            }
-        }
+             if( j == 16 ) {
+                 cheater[j] = 0;
+                 fprintf( stdout, " | %s\\n<RD> %04x | ", cheater, i+1 );
+                 j = 0;
+             }
+         }
 
-        if( j ) {
-            i = 16 - (i % 16);
-            for( ; i > 0; i-- ) {
-                fprintf( stdout, "   " );
-            }
-            cheater[j] = 0;
-            fprintf( stdout, " | %s\\n", cheater );
-        }
-    }
+         if( j ) {
+             i = 16 - (i % 16);
+             for( ; i > 0; i-- ) {
+                 fprintf( stdout, "   " );
+             }
+             cheater[j] = 0;
+             fprintf( stdout, " | %s\\n", cheater );
+         }
+     }
 
-    /*
-        generate stats when the hdr count reaches 0. Only one active
-        thread will ever see it be exactly 0, so this is thread safe.
-    */
-    void stats( cb_info_t& cbi ) {
-        int curv;                    // current stat trigger value
+     /*
+         generate stats when the hdr count reaches 0. Only one active
+         thread will ever see it be exactly 0, so this is thread safe.
+     */
+     void stats( cb_info_t& cbi ) {
+         int curv;                    // current stat trigger value
 
-        curv = cbi.hdr--;
+         curv = cbi.hdr--;
 
-        if( curv == 0 ) {                    // stats when we reach 0
-            fprintf( stdout, "ignored: %ld  processed: %ld\\n",
-                cbi.icount.load(), cbi.pcount.load() );
-            if( cbi.vlevel > 0 ) {
-                fprintf( stdout, "\\n     %5s %5s %2s %5s\\n",
-                    "MTYPE", "SUBID", "ST", "PLLEN" );
-            }
+         if( curv == 0 ) {                    // stats when we reach 0
+             fprintf( stdout, "ignored: %ld  processed: %ld\\n",
+                 cbi.icount.load(), cbi.pcount.load() );
+             if( cbi.vlevel > 0 ) {
+                 fprintf( stdout, "\\n     %5s %5s %2s %5s\\n",
+                     "MTYPE", "SUBID", "ST", "PLLEN" );
+             }
 
-            cbi.hdr = cbi.stats_freq;        // reset must be last
-        }
-    }
+             cbi.hdr = cbi.stats_freq;        // reset must be last
+         }
+     }
 
-    void cb1( Message& mbuf, int mtype, int subid, int len,
-                    Msg_component payload,  void* data ) {
-        cb_info_t*    cbi;
-        long total_count;
+     void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
+                     xapp::Msg_component payload,  void* data ) {
+         cb_info_t*    cbi;
+         long total_count;
 
-        if( (cbi = (cb_info_t *) data) == NULL ) {
-            return;
-        }
+         if( (cbi = (cb_info_t *) data) == NULL ) {
+             return;
+         }
 
-        cbi->pcount++;
-        stats( *cbi );            // gen stats & header if needed
+         cbi->pcount++;
+         stats( *cbi );            // gen stats & header if needed
 
-        if( cbi->vlevel > 0 ) {
-            fprintf( stdout, "<RD> %-5d %-5d %02d %-5d \\n",
-                    mtype, subid, mbuf.Get_state(), len );
+         if( cbi->vlevel > 0 ) {
+             fprintf( stdout, "<RD> %-5d %-5d %02d %-5d \\n",
+                     mtype, subid, mbuf.Get_state(), len );
 
-            if( cbi->vlevel > 1 ) {
-                dump(  payload.get(), len > 64 ? 64 : len );
-            }
-        }
+             if( cbi->vlevel > 1 ) {
+                 dump(  payload.get(), len > 64 ? 64 : len );
+             }
+         }
 
-        if( cbi->forward ) {
-            // forward with no change to len or payload
-            mbuf.Send_msg( Message::NO_CHANGE, NULL );
-        }
-    }
+         if( cbi->forward ) {
+             // forward with no change to len or payload
+             mbuf.Send_msg( xapp::Message::NO_CHANGE, NULL );
+         }
+     }
 
-    /*
-        registered as the default callback; it counts the
-        messages that we aren't giving details about.
-    */
-    void cbd( Message& mbuf, int mtype, int subid, int len,
-                    Msg_component payload,  void* data ) {
-        cb_info_t*    cbi;
+     /*
+         registered as the default callback; it counts the
+         messages that we aren't giving details about.
+     */
+     void cbd( xapp::Message& mbuf, int mtype, int subid, int len,
+                     xapp::Msg_component payload,  void* data ) {
+         cb_info_t*    cbi;
 
-        if( (cbi = (cb_info_t *) data) == NULL ) {
-            return;
-        }
+         if( (cbi = (cb_info_t *) data) == NULL ) {
+             return;
+         }
 
-        cbi->icount++;
-        stats( *cbi );
+         cbi->icount++;
+         stats( *cbi );
 
-        if( cbi->forward ) {
-            // forward with no change to len or payload
-            mbuf.Send_msg( Message::NO_CHANGE, NULL );
-        }
-    }
+         if( cbi->forward ) {
+             // forward with no change to len or payload
+             mbuf.Send_msg( xapp::Message::NO_CHANGE, NULL );
+         }
+     }
 
-    int main( int argc, char** argv ) {
-        std::unique_ptr<Xapp> x;
-        char*    port = (char *) "4560";
-        int ai = 1;                    // arg processing index
-        cb_info_t*    cbi;
-        int        ncb = 0;            // number of callbacks registered
-        int        mtype;
-        int        nthreads = 1;
+     int main( int argc, char** argv ) {
+         std::unique_ptr<Xapp> x;
+         char*    port = (char *) "4560";
+         int ai = 1;                    // arg processing index
+         cb_info_t*    cbi;
+         int        ncb = 0;            // number of callbacks registered
+         int        mtype;
+         int        nthreads = 1;
 
-        cbi = (cb_info_t *) malloc( sizeof( *cbi ) );
-        cbi->pcount = 0;
-        cbi->icount = 0;
-        cbi->stats_freq = 10;
+         cbi = (cb_info_t *) malloc( sizeof( *cbi ) );
+         cbi->pcount = 0;
+         cbi->icount = 0;
+         cbi->stats_freq = 10;
 
-        ai = 1;
-        // very simple flag parsing (no error/bounds checking)
-        while( ai < argc ) {
-            if( argv[ai][0] != '-' )  {        // break on first non-flag
-                break;
-            }
+         ai = 1;
+         // very simple flag parsing (no error/bounds checking)
+         while( ai < argc ) {
+             if( argv[ai][0] != '-' )  {        // break on first non-flag
+                 break;
+             }
 
-            // very simple arg parsing; each must be separate -x -y not -xy.
-            switch( argv[ai][1] ) {
-                case 'f':                    // enable packet forwarding
-                    cbi->forward = true;
-                    break;
+             // very simple arg parsing; each must be separate -x -y not -xy.
+             switch( argv[ai][1] ) {
+                 case 'f':                    // enable packet forwarding
+                     cbi->forward = true;
+                     break;
 
-                case 'p':                     // define port
-                    port = argv[ai+1];
-                    ai++;
-                    break;
+                 case 'p':                    // define port
+                     port = argv[ai+1];
+                     ai++;
+                     break;
 
-                case 's':                        // stats frequency
-                    cbi->stats_freq = atoi( argv[ai+1] );
-                    if( cbi->stats_freq < 5 ) {    // enforce sanity
-                        cbi->stats_freq = 5;
-                    }
-                    ai++;
-                    break;
+                 case 's':                        // stats frequency
+                     cbi->stats_freq = atoi( argv[ai+1] );
+                     if( cbi->stats_freq < 5 ) {    // enforce sanity
+                         cbi->stats_freq = 5;
+                     }
+                     ai++;
+                     break;
 
-                case 't':                        // thread count
-                    nthreads = atoi( argv[ai+1] );
-                    if( nthreads < 1 ) {
-                        nthreads = 1;
-                    }
-                    ai++;
-                    break;
+                 case 't':                        // thread count
+                     nthreads = atoi( argv[ai+1] );
+                     if( nthreads < 1 ) {
+                         nthreads = 1;
+                     }
+                     ai++;
+                     break;
 
-                case 'v':            // simple verbose bump
-                    cbi->vlevel++;
-                    break;
+                 case 'v':            // simple verbose bump
+                     cbi->vlevel++;
+                     break;
 
-                case 'V':            // explicit verbose level
-                    cbi->vlevel = atoi( argv[ai+1] );
-                    ai++;
-                    break;
+                 case 'V':            // explicit verbose level
+                     cbi->vlevel = atoi( argv[ai+1] );
+                     ai++;
+                     break;
 
-                default:
-                    fprintf( stderr, "unrecognised option: %s\\n", argv[ai] );
-                    fprintf( stderr, "usage: %s [-f] [-p port] "
-                                    "[-s stats-freq]  [-t thread-count] "
-                                    "[-v | -V n] msg-type1 ... msg-typen\\n",
-                                    argv[0] );
-                    fprintf( stderr, "\\tstats frequency is based on # of messages received\\n" );
-                    fprintf( stderr, "\\tverbose levels (-V) 0 counts only, "
-                                    "1 message info 2 payload dump\\n" );
-                    exit( 1 );
-            }
+                 default:
+                     fprintf( stderr, "unrecognised option: %s\\n", argv[ai] );
+                     fprintf( stderr, "usage: %s [-f] [-p port] "
+                                     "[-s stats-freq]  [-t thread-count] "
+                                     "[-v | -V n] msg-type1 ... msg-typen\\n",
+                                     argv[0] );
+                     fprintf( stderr, "\\tstats frequency is based on # of messages received\\n" );
+                     fprintf( stderr, "\\tverbose levels (-V) 0 counts only, "
+                                     "1 message info 2 payload dump\\n" );
+                     exit( 1 );
+             }
 
-            ai++;
-        }
+             ai++;
+         }
 
-        cbi->hdr = cbi->stats_freq;
-        fprintf( stderr, "<RD> listening on port: %s\\n", port );
+         cbi->hdr = cbi->stats_freq;
+         fprintf( stderr, "<RD> listening on port: %s\\n", port );
 
-        // create xapp, wait for route table if forwarding
-        x = std::unique_ptr<Xapp>( new Xapp( port, cbi->forward ) );
+         // create xapp, wait for route table if forwarding
+         x = std::unique_ptr<Xapp>( new Xapp( port, cbi->forward ) );
 
-        // register callback for each type on the command line
-        while( ai < argc ) {
-            mtype = atoi( argv[ai] );
-            ai++;
-            fprintf( stderr, "<RD> capturing messages for type %d\\n", mtype );
-            x->Add_msg_cb( mtype, cb1, cbi );
-            ncb++;
-        }
+         // register callback for each type on the command line
+         while( ai < argc ) {
+             mtype = atoi( argv[ai] );
+             ai++;
+             fprintf( stderr, "<RD> capturing messages for type %d\\n", mtype );
+             x->Add_msg_cb( mtype, cb1, cbi );
+             ncb++;
+         }
 
-        if( ncb < 1 ) {
-            fprintf( stderr, "<RD> no message types specified on the command line\\n" );
-            exit( 1 );
-        }
+         if( ncb < 1 ) {
+             fprintf( stderr, "<RD> no message types specified on the command line\\n" );
+             exit( 1 );
+         }
 
-        x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, cbi );        // register default cb
+         x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, cbi );        // register default cb
 
-        fprintf( stderr, "<RD> starting driver\\n" );
-        x->Run( nthreads );
+         fprintf( stderr, "<RD> starting driver\\n" );
+         x->Run( nthreads );
 
-        // return from run() is not expected, but some compilers might
-        // compilain if there isn't a return value here.
-        return 0;
-    }
+         // return from run() is not expected, but some compilers might
+         // compilain if there isn't a return value here.
+         return 0;
+     }
 
-  Figure 13: Simple callback application.
+   Figure 17: Simple callback application.
 
 
 Callback Receiver
@@ -1010,87 +1222,87 @@ this example as simple as possible, the counters are not
 locked when incremented.
 
 
-  ::
+   ::
 
-    #include <stdio.h>
+     #include <stdio.h>
 
-    #include "ricxfcpp/message.hpp"
-    #include "ricxfcpp/msg_component.hpp"
-    #include "ricxfcpp/xapp.hpp"
+     #include "ricxfcpp/message.hpp"
+     #include "ricxfcpp/msg_component.hpp"
+     #include "ricxfcpp/xapp.hpp"
 
-    // counts; not thread safe
-    long cb1_count = 0;
-    long cb2_count = 0;
-    long cbd_count = 0;
+     // counts; not thread safe
+     long cb1_count = 0;
+     long cb2_count = 0;
+     long cbd_count = 0;
 
-    long cb1_lastts = 0;
-    long cb1_lastc = 0;
+     long cb1_lastts = 0;
+     long cb1_lastc = 0;
 
-    // respond with 2 messages for each type 1 received
-    void cb1( Message& mbuf, int mtype, int subid, int len,
-                Msg_component payload,  void* data ) {
-        long now;
-        long total_count;
+     // respond with 2 messages for each type 1 received
+     void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
+                 xapp::Msg_component payload,  void* data ) {
+         long now;
+         long total_count;
 
-        // illustrate that we can use the same buffer for 2 rts calls
-        mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK1\\n" );
-        mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK2\\n" );
+         // illustrate that we can use the same buffer for 2 rts calls
+         mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK1\\n" );
+         mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK2\\n" );
 
-        cb1_count++;
-    }
+         cb1_count++;
+     }
 
-    // just count messages
-    void cb2( Message& mbuf, int mtype, int subid, int len,
-                Msg_component payload,  void* data ) {
-        cb2_count++;
-    }
+     // just count messages
+     void cb2( xapp::Message& mbuf, int mtype, int subid, int len,
+                 xapp::Msg_component payload,  void* data ) {
+         cb2_count++;
+     }
 
-    // default to count all unrecognised messages
-    void cbd( Message& mbuf, int mtype, int subid, int len,
-                Msg_component payload,  void* data ) {
-        cbd_count++;
-    }
+     // default to count all unrecognised messages
+     void cbd( xapp::Message& mbuf, int mtype, int subid, int len,
+                 xapp::Msg_component payload,  void* data ) {
+         cbd_count++;
+     }
 
-    int main( int argc, char** argv ) {
-        Xapp* x;
-        char*    port = (char *) "4560";
-        int ai = 1;                            // arg processing index
-        int nthreads = 1;
+     int main( int argc, char** argv ) {
+         Xapp* x;
+         char*    port = (char *) "4560";
+         int ai = 1;                            // arg processing index
+         int nthreads = 1;
 
-        // very simple flag processing (no bounds/error checking)
-        while( ai < argc ) {
-            if( argv[ai][0] != '-' )  {
-                break;
-            }
+         // very simple flag processing (no bounds/error checking)
+         while( ai < argc ) {
+             if( argv[ai][0] != '-' )  {
+                 break;
+             }
 
-            switch( argv[ai][1] ) {            // we only support -x so -xy must be -x -y
-                case 'p':
-                    port = argv[ai+1];
-                    ai++;
-                    break;
+             switch( argv[ai][1] ) {            // we only support -x so -xy must be -x -y
+                 case 'p':
+                     port = argv[ai+1];
+                     ai++;
+                     break;
 
-                case 't':
-                    nthreads = atoi( argv[ai+1] );
-                    ai++;
-                    break;
-            }
+                 case 't':
+                     nthreads = atoi( argv[ai+1] );
+                     ai++;
+                     break;
+             }
 
-            ai++;
-        }
+             ai++;
+         }
 
-        fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
-        fprintf( stderr, "<XAPP> starting %d threads\\n", nthreads );
+         fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
+         fprintf( stderr, "<XAPP> starting %d threads\\n", nthreads );
 
-        x = new Xapp( port, true );
-        x->Add_msg_cb( 1, cb1, NULL );                // register callbacks
-        x->Add_msg_cb( 2, cb2, NULL );
-        x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, NULL );
+         x = new Xapp( port, true );
+         x->Add_msg_cb( 1, cb1, NULL );                // register callbacks
+         x->Add_msg_cb( 2, cb2, NULL );
+         x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, NULL );
 
-        x->Run( nthreads );                // let framework drive
-        // control should not return
-    }
+         x->Run( nthreads );                // let framework drive
+         // control should not return
+     }
 
-  Figure 14: Simple callback application.
+   Figure 18: Simple callback application.
 
 
 
@@ -1104,103 +1316,229 @@ checking is skipped, and short cuts have been made in order
 to keep the example small and to the point.
 
 
-  ::
+   ::
 
 
-    #include <stdio.h>
-    #include <string.h>
-    #include <unistd.h>
+     #include <stdio.h>
+     #include <string.h>
+     #include <unistd.h>
 
-    #include <iostream>
-    #include <memory>
+     #include <iostream>
+     #include <memory>
 
-    #include "ricxfcpp/xapp.hpp"
+     #include "ricxfcpp/xapp.hpp"
 
-    extern int main( int argc, char** argv ) {
-        std::unique_ptr<Xapp> xfw;
-        std::unique_ptr<Message> msg;
-        Msg_component payload;                // special type of unique pointer to the payload
+     extern int main( int argc, char** argv ) {
+         std::unique_ptr<Xapp> xfw;
+         std::unique_ptr<xapp::Message> msg;
+         xapp::Msg_component payload;                // special type of unique pointer to the payload
 
-        int    sz;
-        int len;
-        int i;
-        int ai;
-        int response_to = 0;                // max timeout wating for a response
-        char*    port = (char *) "4555";
-        int    mtype = 0;
-        int rmtype;                            // received message type
-        int delay = 1000000;                // mu-sec delay; default 1s
+         int    sz;
+         int len;
+         int i;
+         int ai;
+         int response_to = 0;                // max timeout wating for a response
+         char*    port = (char *) "4555";
+         int    mtype = 0;
+         int rmtype;                            // received message type
+         int delay = 1000000;                // mu-sec delay; default 1s
 
 
-        // very simple flag processing (no bounds/error checking)
-        while( ai < argc ) {
-            if( argv[ai][0] != '-' )  {
-                break;
-            }
+         // very simple flag processing (no bounds/error checking)
+         while( ai < argc ) {
+             if( argv[ai][0] != '-' )  {
+                 break;
+             }
 
-            // we only support -x so -xy must be -x -y
-            switch( argv[ai][1] ) {
-                // delay between messages (mu-sec)
-                case 'd':
-                    delay = atoi( argv[ai+1] );
-                    ai++;
+             // we only support -x so -xy must be -x -y
+             switch( argv[ai][1] ) {
+                 // delay between messages (mu-sec)
+                 case 'd':
+                     delay = atoi( argv[ai+1] );
+                     ai++;
+                     break;
+
+                 case 'p':
+                     port = argv[ai+1];
+                     ai++;
+                     break;
+
+                 // timeout in seconds; we need to convert to ms for rmr calls
+                 case 't':
+                     response_to = atoi( argv[ai+1] ) * 1000;
+                     ai++;
+                     break;
+             }
+             ai++;
+         }
+
+         fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
+         fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
+
+         // get an instance and wait for a route table to be loaded
+         xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
+         msg = xfw->Alloc_msg( 2048 );
+
+         for( i = 0; i < 100; i++ ) {
+             mtype++;
+             if( mtype > 10 ) {
+                 mtype = 0;
+             }
+
+             // we'll reuse a received message; get max size
+             sz = msg->Get_available_size();
+
+             // direct access to payload; add something silly
+             payload = msg->Get_payload();
+             len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
+
+             // payload updated in place, prevent copy by passing nil
+             if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
+                 fprintf( stderr, "<SNDR> send failed: %d\\n", i );
+             }
+
+             // receive anything that might come back
+             msg = xfw->Receive( response_to );
+             if( msg != NULL ) {
+                 rmtype = msg->Get_mtype();
+                 payload = msg->Get_payload();
+                 fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
+                     rmtype, (char *) payload.get() );
+             } else {
+                 msg = xfw->Alloc_msg( 2048 );
+             }
+
+             if( delay > 0 ) {
+                 usleep( delay );
+             }
+         }
+     }
+
+   Figure 19: Simple looping sender application.
+
+
+
+Alarm Example
+-------------
+
+   This is an extension of a previous example which sends an
+   alarm during initialisation and clears the alarm as soon
+   as messages are being received. It is unknown if this is
+   the type of alarm that is expected at the collector, but
+   illustrates how an alarm is allocated, raised and cleared.
+
+
+      ::
+
+
+        #include <stdio.h>
+        #include <string.h>
+        #include <unistd.h>
+
+        #include <iostream>
+        #include <memory>
+
+        #include "ricxfcpp/xapp.hpp"
+        #include "ricxfcpp/alarm.hpp"
+
+        extern int main( int argc, char** argv ) {
+            std::unique_ptr<Xapp> xfw;
+            std::unique_ptr<xapp::Message> msg;
+            xapp::Msg_component payload;                // special type of unique pointer to the payload
+            std::unique_ptr<xapp::Alarm>    alarm;
+
+            bool received = false;                // false until we've received a message
+            int    sz;
+            int len;
+            int i;
+            int ai = 1;
+            int response_to = 0;                // max timeout wating for a response
+            char*    port = (char *) "4555";
+            int    mtype = 0;
+            int rmtype;                            // received message type
+            int delay = 1000000;                // mu-sec delay; default 1s
+
+
+            // very simple flag processing (no bounds/error checking)
+            while( ai < argc ) {
+                if( argv[ai][0] != '-' )  {
                     break;
+                }
 
-                case 'p':
-                    port = argv[ai+1];
-                    ai++;
-                    break;
+                // we only support -x so -xy must be -x -y
+                switch( argv[ai][1] ) {
+                    // delay between messages (mu-sec)
+                    case 'd':
+                        delay = atoi( argv[ai+1] );
+                        ai++;
+                        break;
 
-                // timeout in seconds; we need to convert to ms for rmr calls
-                case 't':
-                    response_to = atoi( argv[ai+1] ) * 1000;
-                    ai++;
-                    break;
-            }
-            ai++;
-        }
+                    case 'p':
+                        port = argv[ai+1];
+                        ai++;
+                        break;
 
-        fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
-        fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
-
-        // get an instance and wait for a route table to be loaded
-        xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
-        msg = xfw->Alloc_msg( 2048 );
-
-        for( i = 0; i < 100; i++ ) {
-            mtype++;
-            if( mtype > 10 ) {
-                mtype = 0;
+                    // timeout in seconds; we need to convert to ms for rmr calls
+                    case 't':
+                        response_to = atoi( argv[ai+1] ) * 1000;
+                        ai++;
+                        break;
+                }
+                ai++;
             }
 
-            // we'll reuse a received message; get max size
-            sz = msg->Get_available_size();
+            fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
+            fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
 
-            // direct access to payload; add something silly
-            payload = msg->Get_payload();
-            len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
+            // get an instance and wait for a route table to be loaded
+            xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
+            msg = xfw->Alloc_msg( 2048 );
 
-            // payload updated in place, prevent copy by passing nil
-            if ( ! msg->Send_msg( mtype, Message::NO_SUBID,  len, NULL )) {
-                fprintf( stderr, "<SNDR> send failed: %d\\n", i );
-            }
 
-            // receive anything that might come back
-            msg = xfw->Receive( response_to );
-            if( msg != NULL ) {
-                rmtype = msg->Get_mtype();
+            // raise an unavilable alarm which we'll clear on the first recevied message
+            alarm =  xfw->Alloc_alarm( "meid-1234"  );
+            alarm->Raise( xapp::Alarm::SEV_MINOR, 13, "unavailable", "no data recevied" );
+
+            for( i = 0; i < 100; i++ ) {
+                mtype++;
+                if( mtype > 10 ) {
+                    mtype = 0;
+                }
+
+                // we'll reuse a received message; get max size
+                sz = msg->Get_available_size();
+
+                // direct access to payload; add something silly
                 payload = msg->Get_payload();
-                fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
-                    rmtype, (char *) payload.get() );
-            } else {
-                msg = xfw->Alloc_msg( 2048 );
-            }
+                len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
 
-            if( delay > 0 ) {
-                usleep( delay );
+                // payload updated in place, prevent copy by passing nil
+                if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
+                    fprintf( stderr, "<SNDR> send failed: %d\\n", i );
+                }
+
+                // receive anything that might come back
+                msg = xfw->Receive( response_to );
+                if( msg != NULL ) {
+                    if( ! received ) {
+                        alarm->Clear( xapp::Alarm::SEV_MINOR, 13, "messages flowing", "" );                // clear the alarm on first received message
+                        received = true;
+                    }
+
+                    rmtype = msg->Get_mtype();
+                    payload = msg->Get_payload();
+                    fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
+                        rmtype, (char *) payload.get() );
+                } else {
+                    msg = xfw->Alloc_msg( 2048 );
+                }
+
+                if( delay > 0 ) {
+                    usleep( delay );
+                }
             }
         }
-    }
 
-  Figure 15: Simple looping sender application.
+      Figure 20: Simple looping sender application with alarm
+      generation.
 

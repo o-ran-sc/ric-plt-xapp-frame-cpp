@@ -56,8 +56,8 @@ long cb1_lastts = 0;
 long cb1_lastc = 0;
 
 // respond with 2 messages for each type 1 received
-void cb1( Message& mbuf, int mtype, int subid, int len,
-			Msg_component payload,  void* data ) {
+void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
+			xapp::Msg_component payload,  void* data ) {
 	long now;
 	long total_count;
 
@@ -69,14 +69,14 @@ void cb1( Message& mbuf, int mtype, int subid, int len,
 }
 
 // just count messages
-void cb2( Message& mbuf, int mtype, int subid, int len, 
-			Msg_component payload,  void* data ) {
+void cb2( xapp::Message& mbuf, int mtype, int subid, int len,
+			xapp::Msg_component payload,  void* data ) {
 	cb2_count++;
 }
 
 // default to count all unrecognised messages
-void cbd( Message& mbuf, int mtype, int subid, int len, 
-			Msg_component payload,  void* data ) {
+void cbd( xapp::Message& mbuf, int mtype, int subid, int len,
+			xapp::Msg_component payload,  void* data ) {
 	cbd_count++;
 }
 
