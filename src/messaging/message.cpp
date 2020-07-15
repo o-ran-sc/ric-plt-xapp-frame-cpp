@@ -41,6 +41,10 @@
 
 #include "message.hpp"
 
+namespace xapp {
+
+
+
 // --------------- private ------------------------------------------------
 
 // --------------- builders/operators  -------------------------------------
@@ -48,12 +52,12 @@
 /*
 	Create a new message wrapper for an existing RMR msg buffer.
 */
-Message::Message( rmr_mbuf_t* mbuf, void* mrc ) {
+xapp::Message::Message( rmr_mbuf_t* mbuf, void* mrc ) {
 	this->mrc = mrc;			// the message router context for sends
 	this->mbuf = mbuf;
 }
 
-Message::Message( void* mrc, int payload_len ) {
+xapp::Message::Message( void* mrc, int payload_len ) {
 	this->mrc = mrc;
 	this->mbuf = rmr_alloc_msg( mrc, payload_len );
 }
@@ -62,29 +66,29 @@ Message::Message( void* mrc, int payload_len ) {
 	Copy builder.  Given a source object instance (soi), create a copy.
 	Creating a copy should be avoided as it can be SLOW!
 */
-Message::Message( const Message& soi ) {
+xapp::Message::Message( const Message& soi ) {
 	int payload_size;
 
 	mrc = soi.mrc;
 	payload_size = rmr_payload_size( soi.mbuf );		// rmr can handle a nil pointer
-	mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );	
+	mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );
 }
 
 /*
 	Assignment operator. Simiolar to the copycat, but "this" object exists and
 	may have data that needs to be released prior to making a copy of the soi.
 */
-Message& Message::operator=( const Message& soi ) {
+Message& xapp::Message::operator=( const Message& soi ) {
 	int	payload_size;
 
 	if( this != &soi ) {				// cannot do self assignment
 		if( mbuf != NULL ) {
 			rmr_free_msg( mbuf );		// release the old one so we don't leak
 		}
-	
+
 		payload_size = rmr_payload_size( soi.mbuf );		// rmr can handle a nil pointer
 		mrc = soi.mrc;
-		mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );	
+		mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );
 	}
 
 	return *this;
@@ -95,7 +99,7 @@ Message& Message::operator=( const Message& soi ) {
 	the soi ensuring that the destriction of the soi doesn't trash things from
 	under us.
 */
-Message::Message( Message&& soi ) {
+xapp::Message::Message( Message&& soi ) {
 	mrc = soi.mrc;
 	mbuf = soi.mbuf;
 
@@ -108,12 +112,12 @@ Message::Message( Message&& soi ) {
 	ensure the object reference is cleaned up, and ensuring that the source
 	object references are removed.
 */
-Message& Message::operator=( Message&& soi ) {
+Message& xapp::Message::operator=( Message&& soi ) {
 	if( this != &soi ) {				// cannot do self assignment
 		if( mbuf != NULL ) {
 			rmr_free_msg( mbuf );		// release the old one so we don't leak
 		}
-	
+
 		mrc = soi.mrc;
 		mbuf = soi.mbuf;
 
@@ -128,7 +132,7 @@ Message& Message::operator=( Message&& soi ) {
 /*
 	Destroyer.
 */
-Message::~Message() {
+xapp::Message::~Message() {
 	if( mbuf != NULL ) {
 		rmr_free_msg( mbuf );
 	}
@@ -147,7 +151,7 @@ Message::~Message() {
 	This function will return a NULL pointer if malloc fails.
 */
 //char* Message::Copy_payload( ){
-std::unique_ptr<unsigned char> Message::Copy_payload( ){
+std::unique_ptr<unsigned char> xapp::Message::Copy_payload( ){
 	unsigned char*	new_payload = NULL;
 
 	if( mbuf != NULL ) {
@@ -161,7 +165,7 @@ std::unique_ptr<unsigned char> Message::Copy_payload( ){
 /*
 	Makes a copy of the MEID and returns a smart pointer to it.
 */
-std::unique_ptr<unsigned char> Message::Get_meid(){
+std::unique_ptr<unsigned char> xapp::Message::Get_meid(){
 	unsigned char* m = NULL;
 
 	m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_MEID );
@@ -176,11 +180,11 @@ std::unique_ptr<unsigned char> Message::Get_meid(){
 	If mbuf isn't valid (nil, or message has a broken header) the return
 	will be -1.
 */
-int Message::Get_available_size(){
+int xapp::Message::Get_available_size(){
 	return rmr_payload_size( mbuf );		// rmr can handle a nil pointer
 }
 
-int	Message::Get_mtype(){
+int	xapp::Message::Get_mtype(){
 	int rval = INVALID_MTYPE;
 
 	if( mbuf != NULL ) {
@@ -193,7 +197,7 @@ int	Message::Get_mtype(){
 /*
 	Makes a copy of the source field and returns a smart pointer to it.
 */
-std::unique_ptr<unsigned char> Message::Get_src(){
+std::unique_ptr<unsigned char> xapp::Message::Get_src(){
 	unsigned char* m = NULL;
 
 	m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_SRC );
@@ -206,7 +210,7 @@ std::unique_ptr<unsigned char> Message::Get_src(){
 	return std::unique_ptr<unsigned char>( m );
 }
 
-int	Message::Get_state( ){
+int	xapp::Message::Get_state( ){
 	int state = INVALID_STATUS;
 
 	if( mbuf != NULL ) {
@@ -216,7 +220,7 @@ int	Message::Get_state( ){
 	return state;
 }
 
-int	Message::Get_subid(){
+int	xapp::Message::Get_subid(){
 	int	rval = INVALID_SUBID;
 
 	if( mbuf != NULL ) {
@@ -230,7 +234,7 @@ int	Message::Get_subid(){
 	Return the amount of the payload (bytes) which is used. See
 	Get_available_size() to get the total usable space in the payload.
 */
-int	Message::Get_len(){
+int	xapp::Message::Get_len(){
 	int rval = 0;
 
 	if( mbuf != NULL ) {
@@ -248,7 +252,7 @@ int	Message::Get_len(){
 	length by calling Message:Get_available_size(), and ensuring that
 	writing beyond the indicated size does not happen.
 */
-Msg_component Message::Get_payload(){
+Msg_component xapp::Message::Get_payload(){
 	if( mbuf != NULL ) {
 		return std::unique_ptr<unsigned char, unfreeable>( mbuf->payload );
 	}
@@ -256,25 +260,25 @@ Msg_component Message::Get_payload(){
 	return NULL;
 }
 
-void Message::Set_meid( std::shared_ptr<unsigned char> new_meid ) {
+void xapp::Message::Set_meid( std::shared_ptr<unsigned char> new_meid ) {
 	if( mbuf != NULL ) {
 		rmr_str2meid( mbuf, (unsigned char *) new_meid.get() );
 	}
 }
 
-void Message::Set_mtype( int new_type ){
+void xapp::Message::Set_mtype( int new_type ){
 	if( mbuf != NULL ) {
 		mbuf->mtype = new_type;
 	}
 }
 
-void Message::Set_len( int new_len ){
+void xapp::Message::Set_len( int new_len ){
 	if( mbuf != NULL  && new_len >= 0 ) {
 		mbuf->len = new_len;
 	}
 }
 
-void Message::Set_subid( int new_subid ){
+void xapp::Message::Set_subid( int new_subid ){
 	if( mbuf != NULL ) {
 		mbuf->sub_id = new_subid;
 	}
@@ -288,7 +292,7 @@ void Message::Set_subid( int new_subid ){
 	failed with a retry and thus is ready to be processed by RMR.
 	Exposed to the user, but not expected to be frequently used.
 */
-bool Message::Send( ) {
+bool xapp::Message::Send( ) {
 	bool state = false;
 
 	if( mbuf != NULL ) {
@@ -303,7 +307,7 @@ bool Message::Send( ) {
 	Similar to Send(), this assumes that the message is already set up and this is a retry.
 	Exposed to the user, but not expected to be frequently used.
 */
-bool Message::Reply( ) {
+bool xapp::Message::Reply( ) {
 	bool state = false;
 
 	if( mbuf != NULL ) {
@@ -325,7 +329,7 @@ bool Message::Reply( ) {
 
 	This is public, but most users should use Send_msg or Send_response functions.
 */
-bool Message::Send( int mtype, int subid, int payload_len, unsigned char* payload, int stype ) {
+bool xapp::Message::Send( int mtype, int subid, int payload_len, unsigned char* payload, int stype, rmr_whid_t whid ) {
 	bool state = false;
 
 	if( mbuf != NULL ) {
@@ -349,10 +353,18 @@ bool Message::Send( int mtype, int subid, int payload_len, unsigned char* payloa
 			memcpy( mbuf->payload, payload, mbuf->len );
 		}
 
-		if( stype == RESPONSE ) {
-			mbuf = rmr_rts_msg( mrc, mbuf );
-		} else {
-			mbuf = rmr_send_msg( mrc, mbuf );
+		switch( stype ) {
+			case RESPONSE:
+				mbuf = rmr_rts_msg( mrc, mbuf );
+				break;
+
+			case MESSAGE:
+				mbuf = rmr_send_msg( mrc, mbuf );
+				break;
+
+			case WORMHOLE_MSG:
+				mbuf = rmr_wh_send_msg( mrc, whid,  mbuf );
+				break;
 		}
 
 		state = mbuf->state == RMR_OK;
@@ -370,23 +382,23 @@ bool Message::Send( int mtype, int subid, int payload_len, unsigned char* payloa
 	The second form of the call allows for a stack allocated buffer (e.g. char foo[120]) to
 	be passed as the payload.
 */
-bool Message::Send_response(  int mtype, int subid, int response_len, std::shared_ptr<unsigned char> response ) {
-	return Send( mtype, subid, response_len, response.get(), RESPONSE );
+bool xapp::Message::Send_response(  int mtype, int subid, int response_len, std::shared_ptr<unsigned char> response ) {
+	return Send( mtype, subid, response_len, response.get(), RESPONSE, NO_WHID );
 }
 
-bool Message::Send_response(  int mtype, int subid, int response_len, unsigned char* response ) {
-	return Send( mtype, subid, response_len, response, RESPONSE );
+bool xapp::Message::Send_response(  int mtype, int subid, int response_len, unsigned char* response ) {
+	return Send( mtype, subid, response_len, response, RESPONSE, NO_WHID );
 }
 
 /*
 	These allow a response message to be sent without changing the mtype/subid.
 */
-bool Message::Send_response(  int response_len, std::shared_ptr<unsigned char> response ) {
-	return Send( NO_CHANGE, NO_CHANGE, response_len, response.get(), RESPONSE );
+bool xapp::Message::Send_response(  int response_len, std::shared_ptr<unsigned char> response ) {
+	return Send( NO_CHANGE, NO_CHANGE, response_len, response.get(), RESPONSE, NO_WHID );
 }
 
-bool Message::Send_response(  int response_len, unsigned char* response ) {
-	return Send( NO_CHANGE, NO_CHANGE, response_len, response, RESPONSE );
+bool xapp::Message::Send_response(  int response_len, unsigned char* response ) {
+	return Send( NO_CHANGE, NO_CHANGE, response_len, response, RESPONSE, NO_WHID );
 }
 
 
@@ -399,21 +411,35 @@ bool Message::Send_response(  int response_len, unsigned char* response ) {
 	Return is a new mbuf suitable for sending another message, or the original buffer with
 	a bad state sent if there was a failure.
 */
-bool Message::Send_msg(  int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload ) {
-	return Send( mtype, subid, payload_len, payload.get(), MESSAGE );
+bool xapp::Message::Send_msg(  int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload ) {
+	return Send( mtype, subid, payload_len, payload.get(), MESSAGE, NO_WHID );
 }
 
-bool Message::Send_msg(  int mtype, int subid, int payload_len, unsigned char* payload ) {
-	return Send( mtype, subid, payload_len, payload, MESSAGE );
+bool xapp::Message::Send_msg(  int mtype, int subid, int payload_len, unsigned char* payload ) {
+	return Send( mtype, subid, payload_len, payload, MESSAGE, NO_WHID );
 }
 
 /*
 	Similar send functions that allow the message type/subid to remain unchanged
 */
-bool Message::Send_msg(  int payload_len, std::shared_ptr<unsigned char> payload ) {
-	return Send( NO_CHANGE, NO_CHANGE, payload_len, payload.get(), MESSAGE );
+bool xapp::Message::Send_msg(  int payload_len, std::shared_ptr<unsigned char> payload ) {
+	return Send( NO_CHANGE, NO_CHANGE, payload_len, payload.get(), MESSAGE, NO_WHID );
 }
 
-bool Message::Send_msg(  int payload_len, unsigned char* payload ) {
-	return Send( NO_CHANGE, NO_CHANGE, payload_len, payload, MESSAGE );
+bool xapp::Message::Send_msg(  int payload_len, unsigned char* payload ) {
+	return Send( NO_CHANGE, NO_CHANGE, payload_len, payload, MESSAGE, NO_WHID );
 }
+
+
+/*
+	Wormhole send allows an xAPP to send a message directly based on an existing
+	wormhole ID (use xapp::Wormhole_open() to get one). Wormholes should NOT be
+	used for reponse messages, but are intended for things like route tables and
+	alarm messages where routing doesn't exist/apply.
+*/
+bool xapp::Message::Wormhole_send( int whid, int mtype, int subid, int payload_len, std::shared_ptr<unsigned char> payload ) {
+	return Send( mtype, subid, payload_len, payload.get(), WORMHOLE_MSG, whid );
+}
+
+
+} // namespace

@@ -38,6 +38,9 @@
 
 #include "messenger.hpp"
 
+namespace xapp {
+
+
 /*
 	This is the default health check function that we provide (user
 	may override it).  It will respond to health check messages by
@@ -52,3 +55,6 @@ void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component pay
 	snprintf( (char* ) response, sizeof( response ), "OK\n" );
 	mbuf.Send_response( RIC_HEALTH_CHECK_RESP, sid, strlen( (char *) response )+1, response );
 }
+
+
+} // namespace

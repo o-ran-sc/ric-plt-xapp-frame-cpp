@@ -34,6 +34,10 @@
 #include "jwrapper.h"
 #include "jhash.hpp"
 
+
+namespace xapp {
+
+
 // ------------------------------------------------------------------------
 
 
@@ -44,7 +48,7 @@
 	after which the functions provided by the class can be used to
 	suss out the values.
 */
-Jhash::Jhash( const char* jbuf ) :
+xapp::Jhash::Jhash( const char* jbuf ) :
 	master_st( NULL ),
 	st( jw_new( jbuf ) )
 { /* empty body */ }
@@ -79,7 +83,7 @@ Jhash& Jhash::operator=( Jhash&& soi ) {
 /*
 	Blow it away.
 */
-Jhash::~Jhash() {
+xapp::Jhash::~Jhash() {
 	if( master_st != NULL ) {		// revert blob set if needed
 		st = master_st;
 	}
@@ -106,7 +110,7 @@ Jhash::~Jhash() {
 	overlays with the named root; unset needs only to be called to
 	return to the top level.
 */
-bool Jhash::Set_blob( const char* name ) {
+bool xapp::Jhash::Set_blob( const char* name ) {
 	void*	bst;						// blob symbol table
 
 	if( master_st == NULL ) {			// must capture master
@@ -124,7 +128,7 @@ bool Jhash::Set_blob( const char* name ) {
 /*
 	Return the suss root (blob root) to the root of the symtab.
 */
-void Jhash::Unset_blob( ) {
+void xapp::Jhash::Unset_blob( ) {
 	if( master_st != NULL ) {
 		st = master_st;
 	}
@@ -138,14 +142,14 @@ void Jhash::Unset_blob( ) {
 	Right now we don't have much to work with other than checking for a
 	nil table.
 */
-bool Jhash::Parse_errors( ) {
+bool xapp::Jhash::Parse_errors( ) {
 	return st == NULL;
 }
 
 /*
 	Dump the selected blob as much as we can.
 */
-void Jhash::Dump() {
+void xapp::Jhash::Dump() {
 	jw_dump( st );
 }
 
@@ -155,19 +159,19 @@ void Jhash::Dump() {
 	These funcitons return true if the named object in the current blob
 	is the indicated type
 */
-bool Jhash::Is_value( const char* name ) {
+bool xapp::Jhash::Is_value( const char* name ) {
 	return jw_is_value( st, name ) == 1;
 }
 
-bool Jhash::Is_bool( const char* name ) {
+bool xapp::Jhash::Is_bool( const char* name ) {
 	return jw_is_bool( st, name ) == 1;
 }
 
-bool Jhash::Is_null( const char* name ) {
+bool xapp::Jhash::Is_null( const char* name ) {
 	return jw_is_null( st, name ) == 1;
 }
 
-bool Jhash::Is_string( const char* name ) {
+bool xapp::Jhash::Is_string( const char* name ) {
 	return jw_is_string( st, name ) == 1;
 }
 
@@ -175,19 +179,19 @@ bool Jhash::Is_string( const char* name ) {
 	These functions return true if the indicated element in the array
 	<name> is the indicated type.
 */
-bool Jhash::Is_string_ele( const char* name, int eidx ) {
+bool xapp::Jhash::Is_string_ele( const char* name, int eidx ) {
 	return jw_is_string_ele( st, name, eidx ) == 1;
 }
 
-bool Jhash::Is_value_ele( const char* name, int eidx ) {
+bool xapp::Jhash::Is_value_ele( const char* name, int eidx ) {
 	return jw_is_value_ele( st, name, eidx ) == 1;
 }
 
-bool Jhash::Is_bool_ele( const char* name, int eidx ) {
+bool xapp::Jhash::Is_bool_ele( const char* name, int eidx ) {
 	return jw_is_bool_ele( st, name, eidx ) == 1;
 }
 
-bool Jhash::Is_null_ele( const char* name, int eidx ) {
+bool xapp::Jhash::Is_null_ele( const char* name, int eidx ) {
 	return jw_is_null_ele( st, name, eidx ) == 1;
 }
 
@@ -196,14 +200,14 @@ bool Jhash::Is_null_ele( const char* name, int eidx ) {
 /*
 	Returns true if the named element is in the hash.
 */
-bool Jhash::Exists( const char* name ) {
+bool xapp::Jhash::Exists( const char* name ) {
 	return jw_exists( st, name ) == 1;
 }
 
 /*
 	Returns true if the named element is not in the hash.
 */
-bool Jhash::Is_missing( const char* name ) {
+bool xapp::Jhash::Is_missing( const char* name ) {
 	return jw_missing( st, name ) == 1;
 }
 
@@ -215,7 +219,7 @@ bool Jhash::Is_missing( const char* name ) {
 	Symtab saves bool values as 1 for true and doesn't provide a bool fetch
 	function. So, fetch the value and return true if it is 1.
 */
-bool Jhash::Bool( const char* name ) {
+bool xapp::Jhash::Bool( const char* name ) {
 	int v;
 	v = (int) jw_value( st, name );
 	return v == 1;
@@ -225,7 +229,7 @@ bool Jhash::Bool( const char* name ) {
 	Returns a C++ string to the named object; If the element is not
 	in the hash an empty string is returned.
 */
-std::string Jhash::String( const char* name ) {
+std::string xapp::Jhash::String( const char* name ) {
 	std::string rv = "";
 	char*	hashv;
 
@@ -241,7 +245,7 @@ std::string Jhash::String( const char* name ) {
 	Returns the value assocated with the named object; If the element is not
 	in the hash 0 is returned.
 */
-double Jhash::Value( const char* name ) {
+double xapp::Jhash::Value( const char* name ) {
 	return jw_value( st, name );
 }
 
@@ -250,7 +254,7 @@ double Jhash::Value( const char* name ) {
 /*
 	Return the length of the named array, or -1 if it doesn't exist.
 */
-int Jhash::Array_len( const char* name ) {
+int xapp::Jhash::Array_len( const char* name ) {
 	return jw_array_len( st, name );
 }
 
@@ -258,7 +262,7 @@ int Jhash::Array_len( const char* name ) {
 /*
 	Sets the blob in the array <name>[eidx] to the current reference blob.
 */
-bool Jhash::Set_blob_ele( const char* name, int eidx ) {
+bool xapp::Jhash::Set_blob_ele( const char* name, int eidx ) {
 	void*	bst;
 
 	if( (bst = jw_obj_ele( st, name, eidx )) != NULL ) {
@@ -275,7 +279,7 @@ bool Jhash::Set_blob_ele( const char* name, int eidx ) {
 /*
 	Return the string at index eidx in the array <name>.
 */
-std::string Jhash::String_ele( const char* name, int eidx ) {
+std::string xapp::Jhash::String_ele( const char* name, int eidx ) {
 	std::string rv = "";
 	char*	hashv;
 
@@ -289,14 +293,17 @@ std::string Jhash::String_ele( const char* name, int eidx ) {
 /*
 	Return the value at index eidx in the array <name>.
 */
-double Jhash::Value_ele( const char* name, int eidx ) {
+double xapp::Jhash::Value_ele( const char* name, int eidx ) {
 	return jw_value_ele( st, name, eidx );
 }
 
 /*
 	Return the bool value at index eidx in the array <name>.
 */
-bool Jhash::Bool_ele( const char* name, int eidx ) {
+bool xapp::Jhash::Bool_ele( const char* name, int eidx ) {
 	return jw_bool_ele( st, name, eidx ) == 1;
 }
 
+
+
+} // namespace

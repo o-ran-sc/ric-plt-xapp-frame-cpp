@@ -34,6 +34,8 @@
 
 #include <string>
 
+namespace xapp {
+
 // ------------------------------------------------------------------------
 
 class Jhash {
@@ -83,4 +85,6 @@ class Jhash {
 };
 
 
+
+} // namespace
 #endif

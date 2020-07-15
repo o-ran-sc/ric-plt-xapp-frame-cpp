@@ -117,8 +117,8 @@ void stats( cb_info_t& cbi ) {
 	}
 }
 
-void cb1( Message& mbuf, int mtype, int subid, int len,
-				Msg_component payload,  void* data ) {
+void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
+				xapp::Msg_component payload,  void* data ) {
 	cb_info_t*	cbi;
 	long total_count;
 
@@ -140,7 +140,7 @@ void cb1( Message& mbuf, int mtype, int subid, int len,
 
 	if( cbi->forward ) {
 		// forward with no change to len or payload
-		mbuf.Send_msg( Message::NO_CHANGE, NULL );
+		mbuf.Send_msg( xapp::Message::NO_CHANGE, NULL );
 	}
 }
 
@@ -148,8 +148,8 @@ void cb1( Message& mbuf, int mtype, int subid, int len,
 	registered as the default callback; it counts the
 	messages that we aren't giving details about.
 */
-void cbd( Message& mbuf, int mtype, int subid, int len,
-				Msg_component payload,  void* data ) {
+void cbd( xapp::Message& mbuf, int mtype, int subid, int len,
+				xapp::Msg_component payload,  void* data ) {
 	cb_info_t*	cbi;
 
 	if( (cbi = (cb_info_t *) data) == NULL ) {
@@ -161,7 +161,7 @@ void cbd( Message& mbuf, int mtype, int subid, int len,
 
 	if( cbi->forward ) {
 		// forward with no change to len or payload
-		mbuf.Send_msg( Message::NO_CHANGE, NULL );
+		mbuf.Send_msg( xapp::Message::NO_CHANGE, NULL );
 	}
 }
 
@@ -192,7 +192,7 @@ int main( int argc, char** argv ) {
 				cbi->forward = true;
 				break;
 
-			case 'p': 					// define port
+			case 'p':					// define port
 				port = argv[ai+1];
 				ai++;
 				break;

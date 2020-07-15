@@ -27,6 +27,12 @@
 	Date:		6 November 2019
 .fi
 
+.mg ### FATAL ### deprecated setup file
+.qu
+
+
+
+
 .if  ! _setup_im
 .dv _setup_im 1
 
@@ -38,6 +44,10 @@
 
 .hn off
 
+.** {X}fm provided common macro definitions (/usr/local/share/xfm or someplace in XFM_PATH)
+.im cmd_master.im
+
+.if false
 .** CAUTION:  xfm comparisons are reverse polish so  "a b ="  is true if a == b.
 .if pfm
 	.dv ot postscript
@@ -60,6 +70,8 @@
 		.im &{lib}/html.im
 	.fi
 .fi
+.fi
+
 
 .** if we can set a license into the output, do it early
 .cd 1 11i

@@ -32,8 +32,12 @@
 #ifndef _DEF_CB_H
 #define _DEF_CB_H
 
+namespace xapp {
 
 void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data );
 
+
+
+} // namespace
 
 #endif

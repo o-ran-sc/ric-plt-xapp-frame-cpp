@@ -35,6 +35,8 @@
 
 #include <memory>
 
+namespace xapp {
+
 //  -------------- smart pointer support  --------------------------------
 /*
 	Pointers to a lot of things in the RMR message aren't directly
@@ -54,4 +56,6 @@ typedef struct {
 */
 using Msg_component = std::unique_ptr<unsigned char, unfreeable>;
 
+
+} // namespace
 #endif

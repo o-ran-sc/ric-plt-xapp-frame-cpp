@@ -19,54 +19,82 @@
 
 .if false
     Mnemonic:   setup.im
-    Abstract:   Look at environment variables and pull in the correct setup prep
-                imbed file based on the desired output type (when running tfm).
-                Obviously, when running pfm we are always generating postscript
-                so this isn't really doing much.
+    Abstract:   Provide general setup for all documents. It will include the
+				{X}fm common macro definitions (cmd) which provide the ability
+				to generate markdown, roff, and RST "source" from {X}fm source
+				while still allowing postscript to be generated.
+
+				Visit gitlab.com/rouxware/xfm for info on how to bulid
+				{X}fm if needed.
+
     Date:       29 July 2019
 .fi
 
 
 .if ! _setup_im
-	.gv e XFM_IM_LIB lib
-	.if ! lib
-		.dv lib ../lib
-	.fi
+	.dv _setup_im 1
+
+	.** our imbeds live here
+	.dv lib ../lib
 
 	.** sane default for everything except rst
 	.dv col_width 6.5i
 	.dv textsize 10
 	.dv textfont Helvetica
+	.hn off
+	.tm .75i
 
 	.**  imbed output type specific macro file
 	.gv e OUTPUT_TYPE ot
 	.dv output_type &{ot!txt}
 
+	.** {X}fm package provided common macro definitions
 	.im cmd_master.im
-	.** .im  &{lib}/&{ot}.im
 
 	.gv e XFM_PASS pass
 	.dv pass &{pass!1}
 
 
-	.**  define a 'subroutine' to add a variable and place it into the forward reference file
-	.**  fref_sub.ca contains code to execute by the set_fref macor and fref.ca contains the
-	.**  forward references to include during pass2. The macro set_ref will define the variable
-	.**  passed as $1 (name) with the value passed as $2 and will add it to the fref.ca file.
+	.** check that current version of {X}fm is greater/equal to our minimum req'd
+	.if ! [ "2.3.2" CVGE ]
+		.gv
+		.mg ### WARN ###  this document source expects {X}fm version 2.3.2 or greater; found &{_major}.&{_minor}.&_patch
+	.fi
+
+	.gv e XFM_PATH xpath
+	.if ! xpath
+		.gv e TFM_PATH xpath
+		.if ! xpath
+			.mg ### WARNING ###  XFM_PATH should be set to reference the shared imbed files; likely these are in /usr/local/share/xfm
+		.fi
+	.fi
+
+	.** forward variable reference support
+	.** define a 'subroutine' to add a variable and place it into the forward reference file
+	.** fref_sub.ca contains code to execute by the set_fref macor and fref.ca contains the
+	.** forward references to include during pass2. The macro set_ref will define the variable
+	.** passed as $1 (name) with the value passed as $2 and will add it to the fref.ca file.
 	.**
-.ca shift start fref_sub.ca
-	.ca expand extend fref.ca
-	.dv &vname &vval
-	.ca end
+	.ca shift start _fref_sub.ca
+		.** be careful... the next  'ca end' MUST be tab indented before {X} version 2.4.
+		.** with 2.4 and after it can be space indented
+
+		.ca expand extend _fref.ca
+		.dv &vname &vval
+		.ca end
+.** this ca end MUST be in col 0
 .ca end
-	.dv set_fref .dv vname $1 ^: .dv vval $2 ^: .dv $1 $2 ^: .im fref_sub.ca
+	.dv export_var .dv vname $1 ^: .dv vval $2 ^: .dv $1 $2 ^: .im _fref_sub.ca
+	.dv export_fig  .dv vname $1 ^: .gv fig .ev ^`.dv vval ^^&_fig ^: ^`  .im _fref_sub.ca
+	.dv export_tab  .dv vname $1 ^: .gv table .ev ^`.dv vval ^^&_table ^` ^: .im _fref_sub.ca
+	.dv export_pg  .dv vname $1 ^: .gv page .ev ^`.dv vval ^^&_page ^` ^: .im _fref_sub.ca
 
 
 	.if &pass 2 =
-		.im fref.ca
+		.im _fref.ca
 	.ei
 		.** initialise the forward ref file
-		.ca start fref.ca
+		.ca start _fref.ca
 			.** forward reference variables; auto generated
 .ca end
 	.fi
@@ -74,6 +102,11 @@
 
 	.** set up for an index when using pfm and snare file is defined
 	.if pfm
+		.** {X}fm macro definitions are too big
+		.dh 1 p=14 s=2,1 e=off
+		.dh 2 p=12 s=1,.5
+		.dh 3 p=&{textsize!10} s=1,0
+
 		.if index_snare_file
 			.ix space .sp 1 .cc 5 %c .ln  ^: .sp 0
 			.ix term .br %s  `^`   ^`` %d
@@ -88,7 +121,5 @@
 			.im &index_snare_file
 		.fi
 	.fi
-
-	.dv _setup_im 1
 
 .fi
