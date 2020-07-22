@@ -44,6 +44,7 @@
 #include "message.hpp"
 #include "messenger.hpp"
 #include "alarm.hpp"
+#include "metrics.hpp"
 
 namespace xapp {
 
@@ -199,6 +200,28 @@ std::unique_ptr<xapp::Alarm> xapp::Messenger::Alloc_alarm( ) {
 	return Alloc_alarm( -1, "" );
 }
 
+
+// ------------------ metrics support --------------------------------------------------
+std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( ) {
+	std::shared_ptr<Message> m;
+
+	m = Alloc_msg( 4096 );
+	return std::unique_ptr<xapp::Metrics>( new xapp::Metrics( m ) );
+}
+
+std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( std::string source ) {
+	std::shared_ptr<Message> m;
+
+	m = Alloc_msg( 4096 );
+	return std::unique_ptr<xapp::Metrics>( new xapp::Metrics( m, source ) );
+}
+
+std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( std::string reporter, std::string source ) {
+	std::shared_ptr<Message> m;
+
+	m = Alloc_msg( 4096 );
+	return std::unique_ptr<xapp::Metrics>( new xapp::Metrics( m, reporter, source ) );
+}
 
 // ------------------- listening support -----------------------------------------------
 

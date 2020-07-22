@@ -34,6 +34,12 @@ used, but the programme is &bold(not) thread safe; to keep
 this example as simple as possible, the counters
 are not locked when incremented.
 
+&h2(Metrics Generation)
+The example also illustrates how a metrics object instance can be created
+and used to send appliction metrics to the collector.
+In this example the primary callback function will genereate metrics with
+the receipt of each 1000th message.
+
 &space
 &indent
 .** pull in the code from the example directory

@@ -1,0 +1,181 @@
+.** vim: sw=4 ts=4 et :
+.if false
+==================================================================================
+    Copyright (c) 2020 AT&T Intellectual Property.
+    Copyright (c) 2020 Nokia
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+.if false
+    This imbed file contains the description of the metrics API.
+    It should be included by the main user.xfm source.
+.fi
+
+
+&h1(Metrics Support)
+The C++ xAPP framework provides a  lightweight interface to the metrics
+gateway allowing the xAPP to create and send metrics updates without
+needing to understand the underlying message format.
+From the xAPP's perspective, the metrics object is created with one or
+more key/value measurement pairs and then is sent to the process
+responsible for forwarding them to the various collection processes.
+The following sections describe the Metrics object and the API associated
+with it.
+
+
+&h2(Creating The Metrics Object)
+The &cw(xapp:Metrics) object can be created directly, or via the xapp framework.
+When creating directly the xAPP must supply an RMR message for the object to use;
+when the framework is used to create the object, the message is created as
+as part of the process.
+
+The framework provides three constructors for the metrics instance allowing the
+xAPP to supply the measurement source, the source and reporter, or to default to
+using the xAPP name as both the source and reporter (see section &ital( &snr_section )
+for a more detailed description of these).
+The framework constructors are illustrated in figure &frame_builders.
+&space
+
+.ca start frame_builder.ca
+&ex_start
+  std::unique_ptr<xapp::Metrics> Alloc_metrics( );
+  std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string source );
+  std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string reporter, std::string source );
+&ex_end
+&export_fig( frame_builders )
+&fig_cen(The framework constructors for creating an instance of the metrics object.)
+&space
+.ca end
+.gv remain
+&ifroom( 2 : frame_builder.ca )
+
+.ca start create1.ca
+&ex_start
+
+    #include <ricxfcpp/Metrics>
+
+    char* port = (char *) "4560";
+
+    auto x = std::unique_ptr<Xapp>( new Xapp( port ) );
+    auto reading = std::shared_ptr<xapp::Metrics>( x->Alloc_metric( ) );
+&ex_end
+&export_fig( metric_create_1 )
+&fig_cen(Metrics instance creation using the framework. )
+&space
+.ca end
+.gv remain
+&ifroom( 2 : create1.ca )
+
+Figures &metric_create_1 illustrates how the framework constructor can be used to
+create a metrics instance.
+While it is unlikely that an xAPP will create a metrics instance directly, there
+are three similar constructors available.
+These are prototypes are shown in figure &metrics_builders and their use is illustrated
+in figure &metrics_create_2.
+
+.ca start met_builder.ca
+&ex_start
+   Metrics( std::shared_ptr<xapp::Message> msg );
+   Metrics( std::shared_ptr<xapp::Message> msg, std::string msource );
+   Metrics( std::shared_ptr<xapp::Message> msg, std::string reporter, std::string msource );
+&ex_end
+&export_fig( metrics_builders )
+&fig_cen(Metrics object constructors.)
+&space
+.ca end
+.gv remain
+&ifroom( 1 : met_builder.ca )
+
+.ca start create2.ca
+&ex_start
+    #include <ricxfcpp/Metrics>
+
+    char* port = (char *) "4560";
+
+    auto x = std::unique_ptr<Xapp>( new Xapp( port ) );
+    auto msg = std::shared_ptr<xapp::Message>( x->Alloc_msg( 4096 ) );
+    auto reading = std::shared_ptr<xapp::Metrics>( new Metrics( msg ) );
+&ex_end
+&export_fig( metrics_create_2 )
+&fig_cen(Direct creation of a metrics instance.)
+&space
+.ca end
+.gv remain
+&ifroom( 2 : create2.ca )
+
+&h2(Adding Values)
+Once an instance of the metrics object is created, the xAPP may push values in
+preparation to sending the measurement(s) to the collector.
+The &cw(Push_data())  function is used to push each key/value pair and is illustrated
+in figure &push_fig.
+
+.ca start push.ca
+&ex_start
+        reading->Push_data( "normal_count", (double) norm_count );
+        reading->Push_data( "high_count", (double) hi_count );
+        reading->Push_data( "excessive_count", (double) ex_count );
+&ex_end
+&export_fig( push_fig )
+&fig_cen(Pushing key/value pairs into a metrics instance.)
+&space
+.ca end
+.gv remain
+&ifroom( 1 : push.ca )
+
+&h2(Sending A Measurement Set)
+After all of the measurement key/value pairs have been added to the instance, the
+&cw(Send()) function can be invoked to create the necessary RMR message and send that
+to the collection application.
+Following the send, the key/value pairs are cleared from the instance and the
+xAPP is free to start pushing values into the instance again.
+The send function has the following prototype and returns &cw(true) on success and
+&cw(false) if the measurements could not be sent.
+
+&h2(Source and Reporter)
+&export_var( snr_section : Source and Reporter )
+The alarm collector has the understanding that a measurement might be &ital(sourced) from one
+piece of equipment, or software component, but reported by another.
+For auditing purposes it makes sense to distinguish these, and as such the metrics object
+allows the xAPP to identify the case when the source and reporter are something other than
+the xAPP which is generating the metrics message(s).
+
+&space
+The &ital(source) is the component to which the measurement applies.
+This could be a network interface card counting packets, a temperature sensor, or the xAPP
+itself reporting xAPP related metrics.
+The &ital(reporter) is the application that is reporting the measurement(s) to the collector.
+
+&space
+By default, both reporter and source are assumed to be the xAPP, and the name is automatically
+determined using the run-time supplied programme name.
+Should the xAPP need to report measurements for more than one source it has the option to
+create an instance for every reporter source combination, or to set the reporter and/or
+source with the generation of each measurement set.
+To facilitate the ability to change the source and/or the reporter without the need to create
+a new metrics instance, two &ital(setter) functions are provided.
+The prototypes for these are shown in figure &setter_fig.
+&space
+
+.ca start setter.ca
+&ex_start
+    void Set_source( std::string new_source );
+    void Set_reporter( std::string new_reporter );
+&ex_end
+&export_fig( setter_fig )
+&fig_cen( Setter functions allowing the reporter and/or source to be set after construction. )
+&space
+.ca end
+.gv remain
+&ifroom( 1 : setter.ca )

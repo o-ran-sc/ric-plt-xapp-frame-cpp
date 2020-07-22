@@ -18,6 +18,11 @@ xAPP Framework.
 Cherry Release
 ==============
 
+2020 July 22; version 2.1.0
+---------------------------
+Added metrics support (RIC-381).
+
+
 2020 July 17; version 2.0.0
 ---------------------------
 Add alarm support.
