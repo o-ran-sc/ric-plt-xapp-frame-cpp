@@ -70,8 +70,8 @@ do
 	shift
 done
 
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=../.build:/usr/local/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=../.build:/usr/local/lib:$LIBRARY_PATH
 
 make nuke >/dev/null
 make tests >/tmp/PID$$.log 2>&1
@@ -80,8 +80,9 @@ echo "tests successfully built" >&2
 
 spew="cat"
 
-for x in unit_test jhash_test
+for x in unit_test jhash_test metrics_test
 do
+echo ">>>> $x"
 	./$x >/tmp/PID$$.log 2>&1
 	abort_if_error $? "test failed: $x"
 	gcov $x.c >/dev/null 2>&1

@@ -45,6 +45,7 @@
 
 #include "ricxfcpp/message.hpp"
 #include "ricxfcpp/msg_component.hpp"
+#include <ricxfcpp/metrics.hpp>
 #include "ricxfcpp/xapp.hpp"
 
 // counts; not thread safe
@@ -55,7 +56,10 @@ long cbd_count = 0;
 long cb1_lastts = 0;
 long cb1_lastc = 0;
 
-// respond with 2 messages for each type 1 received
+/*
+	Respond with 2 messages for each type 1 received
+	Send metrics every 1000 messages.
+*/
 void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
 			xapp::Msg_component payload,  void* data ) {
 	long now;
@@ -66,6 +70,16 @@ void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
 	mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK2\n" );
 
 	cb1_count++;
+
+    if( cb1_count % 1000 == 0 && data != NULL ) {   // send metrics every 1000 messages
+        auto x = (Xapp *) data;
+        auto msgm = std::shared_ptr<xapp::Message>( x->Alloc_msg( 4096 ) );
+
+        auto m = std::unique_ptr<xapp::Metrics>( new xapp::Metrics( msgm ) );
+        m->Push_data( "tst_cb1", (double) cb1_count );
+        m->Push_data( "tst_cb2", (double) cb2_count );
+        m->Send();
+    }
 }
 
 // just count messages
@@ -111,7 +125,7 @@ int main( int argc, char** argv ) {
 	fprintf( stderr, "<XAPP> starting %d threads\n", nthreads );
 
 	x = new Xapp( port, true );
-	x->Add_msg_cb( 1, cb1, NULL );				// register callbacks
+	x->Add_msg_cb( 1, cb1, x );		// register callbacks
 	x->Add_msg_cb( 2, cb2, NULL );
 	x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, NULL );
 

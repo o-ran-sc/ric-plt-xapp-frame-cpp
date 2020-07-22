@@ -931,614 +931,153 @@ Figure 16: Alarm Setters
 
 
 
-EXAMPLE PROGRAMMES
-==================
+METRICS SUPPORT
+===============
 
-The following sections contain several example programmes
-which are written on top of the C++ framework.
+The C++ xAPP framework provides a lightweight interface to
+the metrics gateway allowing the xAPP to create and send
+metrics updates without needing to understand the underlying
+message format. From the xAPP's perspective, the metrics
+object is created with one or more key/value measurement
+pairs and then is sent to the process responsible for
+forwarding them to the various collection processes. The
+following sections describe the Metrics object and the API
+associated with it.
 
 
-RMR Dump xAPP
+Creating The Metrics Object
+---------------------------
+
+The ``xapp`` object can be created directly, or via the xapp
+framework. When creating directly the xAPP must supply an RMR
+message for the object to use; when the framework is used to
+create the object, the message is created as as part of the
+process. The framework provides three constructors for the
+metrics instance allowing the xAPP to supply the measurement
+source, the source and reporter, or to default to using the
+xAPP name as both the source and reporter (see section
+*Source and Reporter* for a more detailed description of
+these). The framework constructors are illustrated in figure
+17.
+
+
+::
+
+    std::unique_ptr<xapp::Metrics> Alloc_metrics( );
+    std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string source );
+    std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string reporter, std::string source );
+
+Figure 17: The framework constructors for creating an
+instance of the metrics object.
+
+
+::
+
+
+      #include <ricxfcpp/Metrics>
+
+      char* port = (char *) "4560";
+
+      auto x = std::unique_ptr<Xapp>( new Xapp( port ) );
+      auto reading = std::shared_ptr<xapp::Metrics>( x->Alloc_metric( ) );
+
+Figure 18: Metrics instance creation using the framework.
+
+Figures 18 illustrates how the framework constructor can be
+used to create a metrics instance. While it is unlikely that
+an xAPP will create a metrics instance directly, there are
+three similar constructors available. These are prototypes
+are shown in figure 19 and their use is illustrated in figure
+20.
+
+::
+
+     Metrics( std::shared_ptr<xapp::Message> msg );
+     Metrics( std::shared_ptr<xapp::Message> msg, std::string msource );
+     Metrics( std::shared_ptr<xapp::Message> msg, std::string reporter, std::string msource );
+
+Figure 19: Metrics object constructors.
+
+
+::
+
+      #include <ricxfcpp/Metrics>
+
+      char* port = (char *) "4560";
+
+      auto x = std::unique_ptr<Xapp>( new Xapp( port ) );
+      auto msg = std::shared_ptr<xapp::Message>( x->Alloc_msg( 4096 ) );
+      auto reading = std::shared_ptr<xapp::Metrics>( new Metrics( msg ) );
+
+Figure 20: Direct creation of a metrics instance.
+
+
+
+Adding Values
 -------------
 
-The RMR dump application is an example built on top of the
-C++ xApp framework to both illustrate the use of the
-framework, and to provide a useful diagnostic tool when
-testing and troubleshooting xApps.
+Once an instance of the metrics object is created, the xAPP
+may push values in preparation to sending the measurement(s)
+to the collector. The ``Push_data()`` function is used to
+push each key/value pair and is illustrated in figure 21.
 
-The RMR dump xApp isn't a traditional xApp inasmuch as its
-goal is to listen for message types and to dump information
-about the messages received to the TTY much as
-``tcpdump`` does for raw packet traffic. The full source
-code, and Makefile, are in the ``examples`` directory of the
-C++ framework repo.
+::
 
-When invoked, the RMR dump program is given one or more
-message types to listen for. A callback function is
-registered for each, and the framework ``Run()`` function is
-invoked to drive the process. For each recognised message,
-and depending on the verbosity level supplied at program
-start, information about the received message(s) is written
-to the TTY. If the forwarding option, -f, is given on the
-command line, and an appropriate route table is provided,
-each received message is forwarded without change. This
-allows for the insertion of the RMR dump program into a flow,
-however if the ultimate receiver of a message needs to reply
-to that message, the reply will not reach the original
-sender, so RMR dump is not a complete "middle box"
-application.
+          reading->Push_data( "normal_count", (double) norm_count );
+          reading->Push_data( "high_count", (double) hi_count );
+          reading->Push_data( "excessive_count", (double) ex_count );
 
-The following is the code for this xAPP. Several functions,
-which provide logic unrelated to the framework, have been
-omitted. The full code is in the framework repository.
+Figure 21: Pushing key/value pairs into a metrics instance.
 
 
 
-   ::
+Sending A Measurement Set
+-------------------------
 
-     #include <stdio.h>
-     #include <unistd.h>
-     #include <atomic>
+After all of the measurement key/value pairs have been added
+to the instance, the ``Send()`` function can be invoked to
+create the necessary RMR message and send that to the
+collection application. Following the send, the key/value
+pairs are cleared from the instance and the xAPP is free to
+start pushing values into the instance again. The send
+function has the following prototype and returns ``true`` on
+success and ``false`` if the measurements could not be sent.
 
-     #include "ricxfcpp/xapp.hpp"
 
-     /*
-         Information that the callback needs outside
-         of what is given to it via parms on a call
-         by the framework.
-     */
-     typedef struct {
-         int        vlevel;             // verbosity level
-         bool    forward;            // if true, message is forwarded
-         int        stats_freq;         // header/stats after n messages
-         std::atomic<long>    pcount; // messages processed
-         std::atomic<long>    icount; // messages ignored
-         std::atomic<int>    hdr;    // number of messages before next header
-     } cb_info_t;
+Source and Reporter
+-------------------
 
-     // ----------------------------------------------------------------------
+The alarm collector has the understanding that a measurement
+might be *sourced* from one piece of equipment, or software
+component, but reported by another. For auditing purposes it
+makes sense to distinguish these, and as such the metrics
+object allows the xAPP to identify the case when the source
+and reporter are something other than the xAPP which is
+generating the metrics message(s).
 
-     /*
-         Dump bytes to tty.
-     */
-     void dump( unsigned const char* buf, int len ) {
-         int        i;
-         int        j;
-         char    cheater[17];
+The *source* is the component to which the measurement
+applies. This could be a network interface card counting
+packets, a temperature sensor, or the xAPP itself reporting
+xAPP related metrics. The *reporter* is the application that
+is reporting the measurement(s) to the collector.
 
-         fprintf( stdout, "<RD> 0000 | " );
-         j = 0;
-         for( i = 0; i < len; i++ ) {
-             cheater[j++] =  isprint( buf[i] ) ? buf[i] : '.';
-             fprintf( stdout, "%02x ", buf[i] );
+By default, both reporter and source are assumed to be the
+xAPP, and the name is automatically determined using the
+run-time supplied programme name. Should the xAPP need to
+report measurements for more than one source it has the
+option to create an instance for every reporter source
+combination, or to set the reporter and/or source with the
+generation of each measurement set. To facilitate the ability
+to change the source and/or the reporter without the need to
+create a new metrics instance, two *setter* functions are
+provided. The prototypes for these are shown in figure 22.
 
-             if( j == 16 ) {
-                 cheater[j] = 0;
-                 fprintf( stdout, " | %s\\n<RD> %04x | ", cheater, i+1 );
-                 j = 0;
-             }
-         }
 
-         if( j ) {
-             i = 16 - (i % 16);
-             for( ; i > 0; i-- ) {
-                 fprintf( stdout, "   " );
-             }
-             cheater[j] = 0;
-             fprintf( stdout, " | %s\\n", cheater );
-         }
-     }
+::
 
-     /*
-         generate stats when the hdr count reaches 0. Only one active
-         thread will ever see it be exactly 0, so this is thread safe.
-     */
-     void stats( cb_info_t& cbi ) {
-         int curv;                    // current stat trigger value
+      void Set_source( std::string new_source );
+      void Set_reporter( std::string new_reporter );
 
-         curv = cbi.hdr--;
-
-         if( curv == 0 ) {                    // stats when we reach 0
-             fprintf( stdout, "ignored: %ld  processed: %ld\\n",
-                 cbi.icount.load(), cbi.pcount.load() );
-             if( cbi.vlevel > 0 ) {
-                 fprintf( stdout, "\\n     %5s %5s %2s %5s\\n",
-                     "MTYPE", "SUBID", "ST", "PLLEN" );
-             }
-
-             cbi.hdr = cbi.stats_freq;        // reset must be last
-         }
-     }
-
-     void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
-                     xapp::Msg_component payload,  void* data ) {
-         cb_info_t*    cbi;
-         long total_count;
-
-         if( (cbi = (cb_info_t *) data) == NULL ) {
-             return;
-         }
-
-         cbi->pcount++;
-         stats( *cbi );            // gen stats & header if needed
-
-         if( cbi->vlevel > 0 ) {
-             fprintf( stdout, "<RD> %-5d %-5d %02d %-5d \\n",
-                     mtype, subid, mbuf.Get_state(), len );
-
-             if( cbi->vlevel > 1 ) {
-                 dump(  payload.get(), len > 64 ? 64 : len );
-             }
-         }
-
-         if( cbi->forward ) {
-             // forward with no change to len or payload
-             mbuf.Send_msg( xapp::Message::NO_CHANGE, NULL );
-         }
-     }
-
-     /*
-         registered as the default callback; it counts the
-         messages that we aren't giving details about.
-     */
-     void cbd( xapp::Message& mbuf, int mtype, int subid, int len,
-                     xapp::Msg_component payload,  void* data ) {
-         cb_info_t*    cbi;
-
-         if( (cbi = (cb_info_t *) data) == NULL ) {
-             return;
-         }
-
-         cbi->icount++;
-         stats( *cbi );
-
-         if( cbi->forward ) {
-             // forward with no change to len or payload
-             mbuf.Send_msg( xapp::Message::NO_CHANGE, NULL );
-         }
-     }
-
-     int main( int argc, char** argv ) {
-         std::unique_ptr<Xapp> x;
-         char*    port = (char *) "4560";
-         int ai = 1;                    // arg processing index
-         cb_info_t*    cbi;
-         int        ncb = 0;            // number of callbacks registered
-         int        mtype;
-         int        nthreads = 1;
-
-         cbi = (cb_info_t *) malloc( sizeof( *cbi ) );
-         cbi->pcount = 0;
-         cbi->icount = 0;
-         cbi->stats_freq = 10;
-
-         ai = 1;
-         // very simple flag parsing (no error/bounds checking)
-         while( ai < argc ) {
-             if( argv[ai][0] != '-' )  {        // break on first non-flag
-                 break;
-             }
-
-             // very simple arg parsing; each must be separate -x -y not -xy.
-             switch( argv[ai][1] ) {
-                 case 'f':                    // enable packet forwarding
-                     cbi->forward = true;
-                     break;
-
-                 case 'p':                    // define port
-                     port = argv[ai+1];
-                     ai++;
-                     break;
-
-                 case 's':                        // stats frequency
-                     cbi->stats_freq = atoi( argv[ai+1] );
-                     if( cbi->stats_freq < 5 ) {    // enforce sanity
-                         cbi->stats_freq = 5;
-                     }
-                     ai++;
-                     break;
-
-                 case 't':                        // thread count
-                     nthreads = atoi( argv[ai+1] );
-                     if( nthreads < 1 ) {
-                         nthreads = 1;
-                     }
-                     ai++;
-                     break;
-
-                 case 'v':            // simple verbose bump
-                     cbi->vlevel++;
-                     break;
-
-                 case 'V':            // explicit verbose level
-                     cbi->vlevel = atoi( argv[ai+1] );
-                     ai++;
-                     break;
-
-                 default:
-                     fprintf( stderr, "unrecognised option: %s\\n", argv[ai] );
-                     fprintf( stderr, "usage: %s [-f] [-p port] "
-                                     "[-s stats-freq]  [-t thread-count] "
-                                     "[-v | -V n] msg-type1 ... msg-typen\\n",
-                                     argv[0] );
-                     fprintf( stderr, "\\tstats frequency is based on # of messages received\\n" );
-                     fprintf( stderr, "\\tverbose levels (-V) 0 counts only, "
-                                     "1 message info 2 payload dump\\n" );
-                     exit( 1 );
-             }
-
-             ai++;
-         }
-
-         cbi->hdr = cbi->stats_freq;
-         fprintf( stderr, "<RD> listening on port: %s\\n", port );
-
-         // create xapp, wait for route table if forwarding
-         x = std::unique_ptr<Xapp>( new Xapp( port, cbi->forward ) );
-
-         // register callback for each type on the command line
-         while( ai < argc ) {
-             mtype = atoi( argv[ai] );
-             ai++;
-             fprintf( stderr, "<RD> capturing messages for type %d\\n", mtype );
-             x->Add_msg_cb( mtype, cb1, cbi );
-             ncb++;
-         }
-
-         if( ncb < 1 ) {
-             fprintf( stderr, "<RD> no message types specified on the command line\\n" );
-             exit( 1 );
-         }
-
-         x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, cbi );        // register default cb
-
-         fprintf( stderr, "<RD> starting driver\\n" );
-         x->Run( nthreads );
-
-         // return from run() is not expected, but some compilers might
-         // compilain if there isn't a return value here.
-         return 0;
-     }
-
-   Figure 17: Simple callback application.
-
-
-Callback Receiver
------------------
-
-This sample programme implements a simple message listener
-which registers three callback functions to process two
-specific message types and a default callback to handle
-unrecognised messages.
-
-When a message of type 1 is received, it will send two
-response messages back to the sender. Two messages are sent
-in order to illustrate that it is possible to send multiple
-responses using the same received message.
-
-The programme illustrates how multiple listening threads can
-be used, but the programme is **not** thread safe; to keep
-this example as simple as possible, the counters are not
-locked when incremented.
-
-
-   ::
-
-     #include <stdio.h>
-
-     #include "ricxfcpp/message.hpp"
-     #include "ricxfcpp/msg_component.hpp"
-     #include "ricxfcpp/xapp.hpp"
-
-     // counts; not thread safe
-     long cb1_count = 0;
-     long cb2_count = 0;
-     long cbd_count = 0;
-
-     long cb1_lastts = 0;
-     long cb1_lastc = 0;
-
-     // respond with 2 messages for each type 1 received
-     void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
-                 xapp::Msg_component payload,  void* data ) {
-         long now;
-         long total_count;
-
-         // illustrate that we can use the same buffer for 2 rts calls
-         mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK1\\n" );
-         mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK2\\n" );
-
-         cb1_count++;
-     }
-
-     // just count messages
-     void cb2( xapp::Message& mbuf, int mtype, int subid, int len,
-                 xapp::Msg_component payload,  void* data ) {
-         cb2_count++;
-     }
-
-     // default to count all unrecognised messages
-     void cbd( xapp::Message& mbuf, int mtype, int subid, int len,
-                 xapp::Msg_component payload,  void* data ) {
-         cbd_count++;
-     }
-
-     int main( int argc, char** argv ) {
-         Xapp* x;
-         char*    port = (char *) "4560";
-         int ai = 1;                            // arg processing index
-         int nthreads = 1;
-
-         // very simple flag processing (no bounds/error checking)
-         while( ai < argc ) {
-             if( argv[ai][0] != '-' )  {
-                 break;
-             }
-
-             switch( argv[ai][1] ) {            // we only support -x so -xy must be -x -y
-                 case 'p':
-                     port = argv[ai+1];
-                     ai++;
-                     break;
-
-                 case 't':
-                     nthreads = atoi( argv[ai+1] );
-                     ai++;
-                     break;
-             }
-
-             ai++;
-         }
-
-         fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
-         fprintf( stderr, "<XAPP> starting %d threads\\n", nthreads );
-
-         x = new Xapp( port, true );
-         x->Add_msg_cb( 1, cb1, NULL );                // register callbacks
-         x->Add_msg_cb( 2, cb2, NULL );
-         x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, NULL );
-
-         x->Run( nthreads );                // let framework drive
-         // control should not return
-     }
-
-   Figure 18: Simple callback application.
-
-
-
-Looping Sender
---------------
-
-This is another very simple application which demonstrates
-how an application can control its own listen loop while
-sending messages. As with the other examples, some error
-checking is skipped, and short cuts have been made in order
-to keep the example small and to the point.
-
-
-   ::
-
-
-     #include <stdio.h>
-     #include <string.h>
-     #include <unistd.h>
-
-     #include <iostream>
-     #include <memory>
-
-     #include "ricxfcpp/xapp.hpp"
-
-     extern int main( int argc, char** argv ) {
-         std::unique_ptr<Xapp> xfw;
-         std::unique_ptr<xapp::Message> msg;
-         xapp::Msg_component payload;                // special type of unique pointer to the payload
-
-         int    sz;
-         int len;
-         int i;
-         int ai;
-         int response_to = 0;                // max timeout wating for a response
-         char*    port = (char *) "4555";
-         int    mtype = 0;
-         int rmtype;                            // received message type
-         int delay = 1000000;                // mu-sec delay; default 1s
-
-
-         // very simple flag processing (no bounds/error checking)
-         while( ai < argc ) {
-             if( argv[ai][0] != '-' )  {
-                 break;
-             }
-
-             // we only support -x so -xy must be -x -y
-             switch( argv[ai][1] ) {
-                 // delay between messages (mu-sec)
-                 case 'd':
-                     delay = atoi( argv[ai+1] );
-                     ai++;
-                     break;
-
-                 case 'p':
-                     port = argv[ai+1];
-                     ai++;
-                     break;
-
-                 // timeout in seconds; we need to convert to ms for rmr calls
-                 case 't':
-                     response_to = atoi( argv[ai+1] ) * 1000;
-                     ai++;
-                     break;
-             }
-             ai++;
-         }
-
-         fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
-         fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
-
-         // get an instance and wait for a route table to be loaded
-         xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
-         msg = xfw->Alloc_msg( 2048 );
-
-         for( i = 0; i < 100; i++ ) {
-             mtype++;
-             if( mtype > 10 ) {
-                 mtype = 0;
-             }
-
-             // we'll reuse a received message; get max size
-             sz = msg->Get_available_size();
-
-             // direct access to payload; add something silly
-             payload = msg->Get_payload();
-             len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
-
-             // payload updated in place, prevent copy by passing nil
-             if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
-                 fprintf( stderr, "<SNDR> send failed: %d\\n", i );
-             }
-
-             // receive anything that might come back
-             msg = xfw->Receive( response_to );
-             if( msg != NULL ) {
-                 rmtype = msg->Get_mtype();
-                 payload = msg->Get_payload();
-                 fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
-                     rmtype, (char *) payload.get() );
-             } else {
-                 msg = xfw->Alloc_msg( 2048 );
-             }
-
-             if( delay > 0 ) {
-                 usleep( delay );
-             }
-         }
-     }
-
-   Figure 19: Simple looping sender application.
-
-
-
-Alarm Example
--------------
-
-   This is an extension of a previous example which sends an
-   alarm during initialisation and clears the alarm as soon
-   as messages are being received. It is unknown if this is
-   the type of alarm that is expected at the collector, but
-   illustrates how an alarm is allocated, raised and cleared.
-
-
-      ::
-
-
-        #include <stdio.h>
-        #include <string.h>
-        #include <unistd.h>
-
-        #include <iostream>
-        #include <memory>
-
-        #include "ricxfcpp/xapp.hpp"
-        #include "ricxfcpp/alarm.hpp"
-
-        extern int main( int argc, char** argv ) {
-            std::unique_ptr<Xapp> xfw;
-            std::unique_ptr<xapp::Message> msg;
-            xapp::Msg_component payload;                // special type of unique pointer to the payload
-            std::unique_ptr<xapp::Alarm>    alarm;
-
-            bool received = false;                // false until we've received a message
-            int    sz;
-            int len;
-            int i;
-            int ai = 1;
-            int response_to = 0;                // max timeout wating for a response
-            char*    port = (char *) "4555";
-            int    mtype = 0;
-            int rmtype;                            // received message type
-            int delay = 1000000;                // mu-sec delay; default 1s
-
-
-            // very simple flag processing (no bounds/error checking)
-            while( ai < argc ) {
-                if( argv[ai][0] != '-' )  {
-                    break;
-                }
-
-                // we only support -x so -xy must be -x -y
-                switch( argv[ai][1] ) {
-                    // delay between messages (mu-sec)
-                    case 'd':
-                        delay = atoi( argv[ai+1] );
-                        ai++;
-                        break;
-
-                    case 'p':
-                        port = argv[ai+1];
-                        ai++;
-                        break;
-
-                    // timeout in seconds; we need to convert to ms for rmr calls
-                    case 't':
-                        response_to = atoi( argv[ai+1] ) * 1000;
-                        ai++;
-                        break;
-                }
-                ai++;
-            }
-
-            fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
-            fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
-
-            // get an instance and wait for a route table to be loaded
-            xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
-            msg = xfw->Alloc_msg( 2048 );
-
-
-            // raise an unavilable alarm which we'll clear on the first recevied message
-            alarm =  xfw->Alloc_alarm( "meid-1234"  );
-            alarm->Raise( xapp::Alarm::SEV_MINOR, 13, "unavailable", "no data recevied" );
-
-            for( i = 0; i < 100; i++ ) {
-                mtype++;
-                if( mtype > 10 ) {
-                    mtype = 0;
-                }
-
-                // we'll reuse a received message; get max size
-                sz = msg->Get_available_size();
-
-                // direct access to payload; add something silly
-                payload = msg->Get_payload();
-                len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
-
-                // payload updated in place, prevent copy by passing nil
-                if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
-                    fprintf( stderr, "<SNDR> send failed: %d\\n", i );
-                }
-
-                // receive anything that might come back
-                msg = xfw->Receive( response_to );
-                if( msg != NULL ) {
-                    if( ! received ) {
-                        alarm->Clear( xapp::Alarm::SEV_MINOR, 13, "messages flowing", "" );                // clear the alarm on first received message
-                        received = true;
-                    }
-
-                    rmtype = msg->Get_mtype();
-                    payload = msg->Get_payload();
-                    fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
-                        rmtype, (char *) payload.get() );
-                } else {
-                    msg = xfw->Alloc_msg( 2048 );
-                }
-
-                if( delay > 0 ) {
-                    usleep( delay );
-                }
-            }
-        }
-
-      Figure 20: Simple looping sender application with alarm
-      generation.
+Figure 22: Setter functions allowing the reporter and/or
+source to be set after construction.
 

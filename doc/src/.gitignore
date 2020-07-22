@@ -1,0 +1,10 @@
+# don't stash generated things
+*.md
+*.rst
+*.ps
+*.pdf
+
+# don't stash intermediates
+*.sp
+*.ca
+*.bncfile
