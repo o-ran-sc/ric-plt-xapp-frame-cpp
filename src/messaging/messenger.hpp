@@ -41,6 +41,7 @@
 
 #include "message.hpp"
 #include "alarm.hpp"
+#include "metrics.hpp"
 
 #ifndef RMR_FALSE
 	#define RMR_FALSE	0
@@ -81,6 +82,10 @@ class Messenger {
 		std::unique_ptr<xapp::Alarm> Alloc_alarm( );					// alarm allocation
 		std::unique_ptr<xapp::Alarm> Alloc_alarm( std::string meid );
 		std::unique_ptr<xapp::Alarm> Alloc_alarm( int prob_id, std::string meid );
+
+		std::unique_ptr<xapp::Metrics> Alloc_metrics( );					// metrics allocation
+		std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string source );
+		std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string reporter, std::string source );
 
 		void Listen( );													// lisen driver
 		std::unique_ptr<Message> Receive( int timeout );				// receive 1 message

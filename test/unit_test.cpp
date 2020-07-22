@@ -40,6 +40,7 @@
 #include "../src/messaging/messenger.hpp"
 #include "../src/messaging/msg_component.hpp"
 #include "../src/alarm/alarm.hpp"
+#include "../src/metrics/metrics.hpp"
 #include "../src/xapp/xapp.hpp"
 
 #include "../src/messaging/callback.cpp"
@@ -105,6 +106,19 @@ void killer( std::shared_ptr<Xapp> x ) {
 	sleep( 2 );
 	fprintf( stderr, "<INFO> killer is on the loose\n" );
 	x->Halt();
+}
+
+/*
+	Drive the constructors so that we actually see the coverage
+	in the .gc* files.  The metrics tests will actually verify that
+	the various underlying functions work.
+*/
+static int metrics( std::shared_ptr<Xapp> x ) {
+	std::shared_ptr<xapp::Metrics> m;
+
+	m = x->Alloc_metrics( );						// basic construction
+	m = x->Alloc_metrics( "different-source" );		 // drive alternate builders
+	m = x->Alloc_metrics( "different-app", "different-source" );
 }
 
 int main( int argc, char** argv ) {
@@ -321,12 +335,6 @@ int main( int argc, char** argv ) {
 	a = x->Alloc_alarm( 13, "meid-abc" );
 	errors += fail_if( a == NULL, "unable to allcoate an alarm with meid and  problem id" );
 
-
-    //#####:  210:xapp::Alarm::Alarm( const Alarm& soi ) {
-    //#####:  227:Alarm& xapp::Alarm::operator=( const Alarm& soi ) {
-    //#####:  249:xapp::Alarm::Alarm( Alarm&& soi ) {
-    //#####:  269:Alarm& xapp::Alarm::operator=( Alarm&& soi ) {
-
 	a->Set_meid( "changed_meid" );
 	for( i = 0; i < 6; i++ ) {
 		a->Set_severity( i );			// drive all switch possibilities
@@ -356,6 +364,12 @@ int main( int argc, char** argv ) {
 
 	b = std::move( c );						// move = operator
 	xapp::Alarm d = std::move( b );			// move constructor
+
+
+	// ------ minimal metrics to prove coverage ------------------------------------------------------------
+	metrics( x );
+
+	// ------------------------------------------------------------------------------------------------------
 
 	announce_results( errors );
 	return errors > 0;

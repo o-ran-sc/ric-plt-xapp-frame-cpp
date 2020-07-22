@@ -152,14 +152,14 @@ xapp::Message::~Message() {
 */
 //char* Message::Copy_payload( ){
 std::unique_ptr<unsigned char> xapp::Message::Copy_payload( ){
-	unsigned char*	new_payload = NULL;
 
 	if( mbuf != NULL ) {
-		new_payload = (unsigned char *) malloc( sizeof( unsigned char ) * mbuf->len );
+		unsigned char*	new_payload = new unsigned char[mbuf->len];
 		memcpy( new_payload, mbuf->payload, mbuf->len );
+		return std::unique_ptr<unsigned char>( new_payload );
 	}
 
-	return std::unique_ptr<unsigned char>( new_payload );
+	return NULL;
 }
 
 /*
@@ -198,10 +198,7 @@ int	xapp::Message::Get_mtype(){
 	Makes a copy of the source field and returns a smart pointer to it.
 */
 std::unique_ptr<unsigned char> xapp::Message::Get_src(){
-	unsigned char* m = NULL;
-
-	m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_SRC );
-	memset( m, 0, sizeof( unsigned char ) * RMR_MAX_SRC );
+	unsigned char* m = new unsigned char[RMR_MAX_SRC]; 
 
 	if( m != NULL ) {
 		rmr_get_src( mbuf, m );

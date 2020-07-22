@@ -931,6 +931,158 @@ Figure 16: Alarm Setters
 
 
 
+METRICS SUPPORT
+===============
+
+The C++ xAPP framework provides a lightweight interface to
+the metrics gateway allowing the xAPP to create and send
+metrics updates without needing to understand the underlying
+message format. From the xAPP's perspective, the metrics
+object is created with one or more key/value measurement
+pairs and then is sent to the process responsible for
+forwarding them to the various collection processes. The
+following sections describe the Metrics object and the API
+associated with it.
+
+
+Creating The Metrics Object
+---------------------------
+
+The ``xapp`` object can be created directly, or via the xapp
+framework. When creating directly the xAPP must supply an RMR
+message for the object to use; when the framework is used to
+create the object, the message is created as as part of the
+process. The framework provides three constructors for the
+metrics instance allowing the xAPP to supply the measurement
+source, the source and reporter, or to default to using the
+xAPP name as both the source and reporter (see section
+*Source and Reporter* for a more detailed description of
+these). The framework constructors are illustrated in figure
+17.
+
+
+::
+
+    std::unique_ptr<xapp::Metrics> Alloc_metrics( );
+    std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string source );
+    std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string reporter, std::string source );
+
+Figure 17: The framework constructors for creating an
+instance of the metrics object.
+
+
+::
+
+
+      #include <ricxfcpp/Metrics>
+
+      char* port = (char *) "4560";
+
+      auto x = std::unique_ptr<Xapp>( new Xapp( port ) );
+      auto reading = std::shared_ptr<xapp::Metrics>( x->Alloc_metric( ) );
+
+Figure 18: Metrics instance creation using the framework.
+
+Figures 18 illustrates how the framework constructor can be
+used to create a metrics instance. While it is unlikely that
+an xAPP will create a metrics instance directly, there are
+three similar constructors available. These are prototypes
+are shown in figure 19 and their use is illustrated in figure
+20.
+
+::
+
+     Metrics( std::shared_ptr<xapp::Message> msg );
+     Metrics( std::shared_ptr<xapp::Message> msg, std::string msource );
+     Metrics( std::shared_ptr<xapp::Message> msg, std::string reporter, std::string msource );
+
+Figure 19: Metrics object constructors.
+
+
+::
+
+      #include <ricxfcpp/Metrics>
+
+      char* port = (char *) "4560";
+
+      auto x = std::unique_ptr<Xapp>( new Xapp( port ) );
+      auto msg = std::shared_ptr<xapp::Message>( x->Alloc_msg( 4096 ) );
+      auto reading = std::shared_ptr<xapp::Metrics>( new Metrics( msg ) );
+
+Figure 20: Direct creation of a metrics instance.
+
+
+
+Adding Values
+-------------
+
+Once an instance of the metrics object is created, the xAPP
+may push values in preparation to sending the measurement(s)
+to the collector. The ``Push_data()`` function is used to
+push each key/value pair and is illustrated in figure 21.
+
+::
+
+          reading->Push_data( "normal_count", (double) norm_count );
+          reading->Push_data( "high_count", (double) hi_count );
+          reading->Push_data( "excessive_count", (double) ex_count );
+
+Figure 21: Pushing key/value pairs into a metrics instance.
+
+
+
+Sending A Measurement Set
+-------------------------
+
+After all of the measurement key/value pairs have been added
+to the instance, the ``Send()`` function can be invoked to
+create the necessary RMR message and send that to the
+collection application. Following the send, the key/value
+pairs are cleared from the instance and the xAPP is free to
+start pushing values into the instance again. The send
+function has the following prototype and returns ``true`` on
+success and ``false`` if the measurements could not be sent.
+
+
+Source and Reporter
+-------------------
+
+The alarm collector has the understanding that a measurement
+might be *sourced* from one piece of equipment, or software
+component, but reported by another. For auditing purposes it
+makes sense to distinguish these, and as such the metrics
+object allows the xAPP to identify the case when the source
+and reporter are something other than the xAPP which is
+generating the metrics message(s).
+
+The *source* is the component to which the measurement
+applies. This could be a network interface card counting
+packets, a temperature sensor, or the xAPP itself reporting
+xAPP related metrics. The *reporter* is the application that
+is reporting the measurement(s) to the collector.
+
+By default, both reporter and source are assumed to be the
+xAPP, and the name is automatically determined using the
+run-time supplied programme name. Should the xAPP need to
+report measurements for more than one source it has the
+option to create an instance for every reporter source
+combination, or to set the reporter and/or source with the
+generation of each measurement set. To facilitate the ability
+to change the source and/or the reporter without the need to
+create a new metrics instance, two *setter* functions are
+provided. The prototypes for these are shown in figure 22.
+
+
+::
+
+      void Set_source( std::string new_source );
+      void Set_reporter( std::string new_reporter );
+
+Figure 22: Setter functions allowing the reporter and/or
+source to be set after construction.
+
+
+
 EXAMPLE PROGRAMMES
 ==================
 
@@ -1200,7 +1352,7 @@ omitted. The full code is in the framework repository.
          return 0;
      }
 
-   Figure 17: Simple callback application.
+   Figure 23: Simple callback application.
 
 
 Callback Receiver
@@ -1222,12 +1374,22 @@ this example as simple as possible, the counters are not
 locked when incremented.
 
 
+Metrics Generation
+------------------
+
+The example also illustrates how a metrics object instance
+can be created and used to send appliction metrics to the
+collector. In this example the primary callback function will
+genereate metrics with the receipt of each 1000th message.
+
+
    ::
 
      #include <stdio.h>
 
      #include "ricxfcpp/message.hpp"
      #include "ricxfcpp/msg_component.hpp"
+     #include <ricxfcpp/metrics.hpp>
      #include "ricxfcpp/xapp.hpp"
 
      // counts; not thread safe
@@ -1238,7 +1400,10 @@ locked when incremented.
      long cb1_lastts = 0;
      long cb1_lastc = 0;
 
-     // respond with 2 messages for each type 1 received
+     /*
+         Respond with 2 messages for each type 1 received
+         Send metrics every 1000 messages.
+     */
      void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
                  xapp::Msg_component payload,  void* data ) {
          long now;
@@ -1249,6 +1414,16 @@ locked when incremented.
          mbuf.Send_response( 101, -1, 5, (unsigned char *) "OK2\\n" );
 
          cb1_count++;
+
+         if( cb1_count % 1000 == 0 && data != NULL ) {   // send metrics every 1000 messages
+             auto x = (Xapp *) data;
+             auto msgm = std::shared_ptr<xapp::Message>( x->Alloc_msg( 4096 ) );
+
+             auto m = std::unique_ptr<xapp::Metrics>( new xapp::Metrics( msgm ) );
+             m->Push_data( "tst_cb1", (double) cb1_count );
+             m->Push_data( "tst_cb2", (double) cb2_count );
+             m->Send();
+         }
      }
 
      // just count messages
@@ -1294,7 +1469,7 @@ locked when incremented.
          fprintf( stderr, "<XAPP> starting %d threads\\n", nthreads );
 
          x = new Xapp( port, true );
-         x->Add_msg_cb( 1, cb1, NULL );                // register callbacks
+         x->Add_msg_cb( 1, cb1, x );        // register callbacks
          x->Add_msg_cb( 2, cb2, NULL );
          x->Add_msg_cb( x->DEFAULT_CALLBACK, cbd, NULL );
 
@@ -1302,7 +1477,7 @@ locked when incremented.
          // control should not return
      }
 
-   Figure 18: Simple callback application.
+   Figure 24: Simple callback application.
 
 
 
@@ -1414,7 +1589,7 @@ to keep the example small and to the point.
          }
      }
 
-   Figure 19: Simple looping sender application.
+   Figure 25: Simple looping sender application.
 
 
 
@@ -1539,6 +1714,6 @@ Alarm Example
             }
         }
 
-      Figure 20: Simple looping sender application with alarm
+      Figure 26: Simple looping sender application with alarm
       generation.
 

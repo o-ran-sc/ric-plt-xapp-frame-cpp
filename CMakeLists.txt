@@ -29,7 +29,7 @@ project( ricxfcpp )
 cmake_minimum_required( VERSION 3.5 )
 
 set( major_version "2" )		# should be automatically populated from git tag later, but until CI process sets a tag we use this
-set( minor_version "0" )
+set( minor_version "1" )
 set( patch_level "0" )
 
 set( install_root "${CMAKE_INSTALL_PREFIX}" )
@@ -156,7 +156,7 @@ set ( srcd "${CMAKE_CURRENT_SOURCE_DIR}" )
 # but Cmake insists on having these exist when we add them to include directories to
 # enable code to find them after we build them.
 #
-include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/ext/jsmn" )
+include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/ext/jsmn" )
 
 # Compiler flags
 #
@@ -186,12 +186,13 @@ add_subdirectory( src/json )
 add_subdirectory( src/messaging )
 add_subdirectory( src/xapp )
 add_subdirectory( src/alarm )
+add_subdirectory( src/metrics )
 #add_subdirectory( doc )				# this will auto skip if {X}fm is not available
 
 # shared and static libraries are built from the same object files.
 #
 add_library( ricxfcpp_shared SHARED
-	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:xapp_objects>"
+	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:xapp_objects>"
 )
 set_target_properties( ricxfcpp_shared
 	PROPERTIES
@@ -199,12 +200,12 @@ set_target_properties( ricxfcpp_shared
 	SOVERSION ${major_version}
 	VERSION ${major_version}.${minor_version}.${patch_level}
 )
-target_include_directories( ricxfcpp_shared PUBLIC "src/messenger" "src/xapp" )
+#target_include_directories( ricxfcpp_shared PUBLIC "src/alarm" "src/metrics" "src/messenger" "src/xapp" )
 
 # we only build/export the static archive (.a) if generating a dev package
 if( DEV_PKG )
 	add_library( ricxfcpp_static STATIC
-		"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:xapp_objects>"
+		"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:xapp_objects>"
 	)
 	set_target_properties( ricxfcpp_static
 		PROPERTIES
@@ -212,14 +213,14 @@ if( DEV_PKG )
 		SOVERSION ${major_version}
 		VERSION ${major_version}.${minor_version}.${patch_level}
 	)
-	target_include_directories( ricxfcpp_static PUBLIC "src/messenger" "src/xapp" )
+#	target_include_directories( ricxfcpp_static PUBLIC "src/alarm" "src/metrics" "src/messenger" "src/xapp" )
 endif()
 
 # -------- unit testing -------------------------------------------------------
 enable_testing()
 add_test(
 	NAME drive_unit_tests
-	COMMAND bash ../test/unit_test.sh -q
+	COMMAND bash ../test/unit_test.sh -q CMBUILD=${CMAKE_CURRENT_BINARY_DIR}
 	WORKING_DIRECTORY ../test
 )
 

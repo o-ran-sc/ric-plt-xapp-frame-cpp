@@ -490,7 +490,7 @@ extern void* jw_new( const char* json ) {
 	char*	djson;				// dup so we can save it
 	void*	rp = NULL;			// return value
 
-	if( json != NULL && (st = rmr_sym_alloc( MAX_THINGS )) != NULL ) {
+	if( json != NULL && (st = rmr_sym_alloc( MAX_THINGS/4 )) != NULL ) {
 		djson = strdup( json );													// allows user to free/overlay their buffer as needed
 		rp =  parse_jobject( st,  djson, "" );			// empty prefix for the root object; parse_jo will clean up and free st
 		if( rp == NULL ) {

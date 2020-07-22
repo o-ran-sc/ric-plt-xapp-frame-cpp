@@ -60,6 +60,18 @@ function abort_if_error {
 
 spew="cat"					# default to dumping all make output on failure (-q turns it to ~40 lines)
 
+set -x
+if [[ -d ../.build ]]
+then
+	build_dir="../.build"
+else
+	if [[ -d ../build ]]
+	then
+		build_dir="../build"
+	fi
+fi
+set +x
+
 while [[ $1 == "-"* ]]
 do
 	case $1 in
@@ -70,8 +82,24 @@ do
 	shift
 done
 
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+while [[ $1 == *=* ]]
+do
+	case ${1%%=*} in
+		CMBUILD)
+			export build_dir=${1##*=}
+			;;
+	esac
+
+	shift
+done
+
+echo "## INFO ## build dir=$build_dir"
+find /tmp -name "libricxfcpp.*"
+find $build_dir -name "libricxfcpp.*"
+echo "## INFO ##"
+
+export LD_LIBRARY_PATH=../$build_dir:/usr/local/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=../$build_dir:/usr/local/lib:$LIBRARY_PATH
 
 make nuke >/dev/null
 make tests >/tmp/PID$$.log 2>&1
@@ -80,7 +108,7 @@ echo "tests successfully built" >&2
 
 spew="cat"
 
-for x in unit_test jhash_test
+for x in unit_test jhash_test metrics_test
 do
 	./$x >/tmp/PID$$.log 2>&1
 	abort_if_error $? "test failed: $x"

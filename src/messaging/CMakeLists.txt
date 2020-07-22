@@ -22,7 +22,7 @@
 # For clarity: this generates object, not a lib as the CM command implies.
 #
 add_library( message_objects OBJECT
-	callback.cpp  	
+	callback.cpp
 	default_cb.cpp
 	message.cpp
 	messenger.cpp
@@ -36,12 +36,12 @@ target_include_directories (message_objects PUBLIC
 # header files should go into .../include/xfcpp/
 if( DEV_PKG )
 	install( FILES
-		callback.hpp  
-		default_cb.hpp  
-		message.hpp  
+		callback.hpp
+		default_cb.hpp
+		message.hpp
 		messenger.hpp
 		msg_component.hpp
 		DESTINATION ${install_inc}
-	) 
+	)
 endif()
 
