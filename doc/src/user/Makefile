@@ -19,7 +19,7 @@
 
 docs = user_guide
 src = user_guide.xfm
-imbed_src = cpp_frame.im example1.im example2.im example3.im jhash.im example4.im metrics.im
+imbed_src = cpp_frame.im example1.im example2.im example3.im jhash.im example4.im metrics.im config.im
 desired_out = rst ps md
 
 include ../master.mk

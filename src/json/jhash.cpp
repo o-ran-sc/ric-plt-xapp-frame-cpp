@@ -222,6 +222,7 @@ bool xapp::Jhash::Is_missing( const char* name ) {
 bool xapp::Jhash::Bool( const char* name ) {
 	int v;
 	v = (int) jw_value( st, name );
+
 	return v == 1;
 }
 

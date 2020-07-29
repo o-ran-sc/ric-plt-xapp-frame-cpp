@@ -45,6 +45,7 @@
 #include "../src/xapp/xapp.hpp"
 
 #include "../src/metrics/metrics.hpp"		// overtly pull the code under test to get coverage opts
+#include "../src/messaging/messenger.cpp"
 #include "../src/metrics/metrics.cpp"
 
 #include "ut_support.cpp"
@@ -54,7 +55,7 @@ int main( int argc, char** argv ) {
 	std::shared_ptr<Xapp> x;
 	std::shared_ptr<xapp::Metrics> m;
 
-	set_test_name( "jhash_test" );
+	set_test_name( "metrics_test" );
 
 	x = std::shared_ptr<Xapp>( new Xapp( "4560", true ) );
 	if( x == NULL ) {

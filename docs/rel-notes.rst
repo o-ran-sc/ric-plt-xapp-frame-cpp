@@ -18,6 +18,12 @@ xAPP Framework.
 Cherry Release
 ==============
 
+2020 July 30; version 2.2.0
+---------------------------
+Add support for configuration file reading and change
+notification.
+
+
 2020 July 22; version 2.1.0
 ---------------------------
 Added metrics support (RIC-381).
