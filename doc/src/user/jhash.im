@@ -37,9 +37,9 @@ resulting hash.
 &h2(Creating The Jhash Object)
 The Jhash object is created simply by passing a json string to the constructor.
 
-.cc 10l
+.ca start jhash_obj.ca
 &ex_start
-    #include <ricxfcpp/Jhash>
+    #include <ricxfcpp/Jhash.hpp>
 
     std::string jstring = "{ \"tag\": \"Hello World\" }";
     Jhash*  jh;
@@ -48,6 +48,8 @@ The Jhash object is created simply by passing a json string to the constructor.
 &ex_end
 &fig_cen(The creation of the Jhash object.)
 &space
+.ca end
+&ifroom( 2.5 : jhash_obj.ca )
 
 
 Once the Jhash object has been created any of the methods described in the following
@@ -232,7 +234,7 @@ values from the json in figure &array_blob_json_fig.
 &space
 
 
-.cc 18l
+.ca start blobs.ca
 &ex_start
     std::string mname;
     float mnum;
@@ -252,4 +254,6 @@ values from the json in figure &array_blob_json_fig.
 &export_fig(array_blob_json_fig )
 &fig_cen(Code to process the array of blobs.)
 &space
+.ca end
+&ifroom( 3 : blobs.ca )
 

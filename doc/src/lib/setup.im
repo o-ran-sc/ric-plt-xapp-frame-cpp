@@ -41,6 +41,7 @@
 	.dv col_width 6.5i
 	.dv textsize 10
 	.dv textfont Helvetica
+	.dv boldfont Helvetica-Bold
 	.hn off
 	.tm .75i
 
@@ -48,8 +49,14 @@
 	.gv e OUTPUT_TYPE ot
 	.dv output_type &{ot!txt}
 
+
 	.** {X}fm package provided common macro definitions
 	.im cmd_master.im
+
+	.** because of the current RTD "template" we MUST force double spaceing
+	.** in definition lists else the bloody thing runs them all onto one line.
+	.** the following will do this and is harmless for other output types.
+	&force_diterm_breaks
 
 	.gv e XFM_PASS pass
 	.dv pass &{pass!1}
@@ -82,8 +89,8 @@
 		.ca expand extend _fref.ca
 		.dv &vname &vval
 		.ca end
-.** this ca end MUST be in col 0
 .ca end
+.** the previous 'ca end' MUST be in col 0
 	.dv export_var .dv vname $1 ^: .dv vval $2 ^: .dv $1 $2 ^: .im _fref_sub.ca
 	.dv export_fig  .dv vname $1 ^: .gv fig .ev ^`.dv vval ^^&_fig ^: ^`  .im _fref_sub.ca
 	.dv export_tab  .dv vname $1 ^: .gv table .ev ^`.dv vval ^^&_table ^` ^: .im _fref_sub.ca
