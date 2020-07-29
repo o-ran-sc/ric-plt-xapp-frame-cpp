@@ -1,8 +1,8 @@
-# vim: ts=4 sw=4 noet:
-
+# vim: sw=4 ts=4 noet:
+#
 #==================================================================================
-#	Copyright (c) 2020 Nokia
-#	Copyright (c) 2020 AT&T Intellectual Property.
+#   Copyright (c) 2020 Nokia
+#   Copyright (c) 2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,17 +16,27 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #==================================================================================
+#
 
-# simple makefile to build the examples. This assumes that the xapp framework
-# library has been installed or the LD_LIBRARY_PATH and C_INCLUDE_PATH environent
-# variables are set to reference the needed files.
 
-%.o:: %.cpp %.hpp
-	g++ -g ${prereq%% *} -c
+# For clarity: this generates object, not a lib as the CM command implies.
+#
+add_library( config_objects OBJECT
+	config.cpp
+	config_cb.cpp
+)
 
-% :: %.cpp
-	#C_INCLUDE_PATH=/tmp/usr/include:/usr/local/include g++ $< -g -o $@  -lricxfcpp -lrmr_si -lpthread -lm
-	g++ $< -g -o $@  -lricxfcpp -lrmr_si -lpthread -lm
-	#g++ $< -g -o $@  /usr/local/lib/libricxfcpp.a -lrmr_si -lpthread -lm
+target_include_directories (config_objects PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
+	PRIVATE src)
 
-all:: xapp_t1 xapp_t2 rmr_dump
+# header files should go into .../include/xfcpp/
+if( DEV_PKG )
+	install( FILES
+		config.hpp
+		config_cb.hpp
+		DESTINATION ${install_inc}
+	)
+endif()
+

@@ -46,6 +46,6 @@ the receipt of each 1000th message.
 &ex_start
 .im  j=start-example ../../../examples/xapp_t1.cpp
 &ex_end
-&fig( Simple callback application. )
+&fig_cen( Simple callback application. )
 &uindent
 &space

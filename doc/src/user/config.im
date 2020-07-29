@@ -1,0 +1,236 @@
+.** vim: sw=4 ts=4 et :
+.if false
+==================================================================================
+    Copyright (c) 2020 Nokia
+    Copyright (c) 2020 AT&T Intellectual Property.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================================
+.fi
+
+
+.if false
+	This imbed file contains the portion of the document that describes the
+    configuration file and config notification update interface.
+.fi
+
+
+&h1(Configuration Support)
+The C++ xAPP framework provides the xAPP with an interface to load, parse
+and receive update notifications on the configuration.
+The configuration, also known as the xAPP descriptor, is assumed to be a
+file containing json with a well known structure, with some fields or
+&ital( objects ) used by an xAPP for configuration purposes.
+The following paragraphs describe the support that the framework provides
+to the xAPP with respect to the configuration aspects of the descriptor.
+
+&h2( The Config Object )
+The xAPP must create an instance of the &cw(config) object in order to take
+advantage of the support.
+This is accomplished by using one of two constructors illustrated with code
+samples in figure &conf_const_fig.
+&space
+
+
+.ca start conf_const.ca
+&ex_start
+    #include <ricxfcpp/config.hpp>
+
+    auto cfg = new xapp::Config( );
+    auto cfg = new xapp::Config( "/var/myapp/config.json"  );
+&ex_end
+&export_fig(conf_const_fig)
+&fig_cen(Creating a configuration instance.)
+&space
+.ca end
+.gv remain
+&ifroom( 1.5 : conf_const.ca )
+
+The creation of the object causes the file to be found, loaded, after
+which the xAPP can use the instance functions to access the information
+it needs.
+
+&h2( Available Functions )
+Once a configuration has been created the following capabilities are
+available:
+&space
+
+&indent
+&beg_list( &lic1 )
+&li Get a control value (numeric, string, or boolean)
+&half_space
+&li Get the RMR port for the container with the supplied name
+&half_space
+&li Set a notification callback function
+&half_space
+&li Get the raw contents of the file
+&end_list
+&uindent
+
+&h3(Control Values)
+The &cw(controls) section of the xAPP descriptor is generally used to supply a
+&ital(flat) namespace of key/value pairs which the xAPP can use for configuration.
+These pairs are supplied by the xAPP author as a part of development, and thus
+are specific to each xAPP.
+The framework provides a general set of functions which allows a key to be searched
+for in this section and returned to the caller.
+Data is assumed to be one of three types: numeric (double), string, or boolean.
+
+&space
+Two methods for each return type are supported with the more specific form
+allowing the xAPP to supply a default value to be used should the file not
+contain the requested field.
+The function prototypes for these are provided in figure &config_proto1_fig.
+
+
+.ca start conf_proto1.ca
+&ex_start
+  bool Get_control_bool( std::string name, bool defval );
+  bool Get_control_bool( std::string name );
+
+  std::string Get_control_str( std::string name, std::string defval );
+  std::string Get_control_str( std::string name );
+
+  double Get_control_value( std::string name, double defval );
+  double Get_control_value( std::string name );
+&ex_end
+&export_fig(config_proto1_fig)
+&fig_cen(The various controls section get functions.)
+&space
+.ca end
+.gv remain
+&ifroom( 1.5 : conf_proto1.ca )
+
+
+If the more generic form of these functions is used, without a default value,
+the return values are false, "", and 0.0 in the respective order of the prototypes
+in figure &config_proto1_fig.
+
+
+&h3(The RMR Port)
+The &cw(messaging) section of the xAPP descriptor provides the ability to define
+one or more RMR &ital(listen ports) that apply to the xAPP(s) started in a
+given container.
+The xAPP may read a port value (as a string) using the defined port name via
+the &cw(Get_port) function whose prototype is illustrated in figure &get_port_fig below.
+&space
+
+.ca start git_port.ca
+&ex_start
+  std::string Get_port( std::string name );
+&ex_end
+&export_fig(get_port_fig)
+&fig_cen(The get port prototype.)
+&space
+.ca end
+.gv remain
+&ifroom( 0.5 : git_port.ca )
+
+
+&h3(Raw File Contents)
+While it is not anticipated to be necessary, the xAPP might need direct access to the
+raw contents of the configuration file.
+As a convenience the framework provides the &cw(Get_contents()) function which
+reads the entire file into a standard library string and returns that to the calling function.
+Parsing and interpreting the raw contents is then up to the xAPP.
+
+&h2(Notification Of Changes)
+When desired, the xAPP may register a notification callback function with the framework.
+This callback will be driven any time a change to the descriptor is detected.
+When a change is detected, the revised descriptor is read into the existing
+object (overlaying any previous information), before invoking the callback.
+The callback may then retrieve the updated values and make any adjustments which are
+necessary.
+The prototype for the xAPP callback function is described in figure &callback_proto_fig.
+&space
+
+
+
+.ca start callbac_proto.ca
+&ex_start
+   void cb_name( xapp::Config& c, void* data )
+&ex_end
+&export_fig(callback_proto_fig)
+&fig_cen(The prototype which the xAPP configuration notify callback must use.)
+&space
+.ca end
+.gv remain
+&ifroom( 0.75 : callbac_proto.ca )
+
+&h3(Enabling The Notifications)
+Notifications are enabled by invoking the &cw(Set_callback()) function.
+Once enabled, the framework will monitor the configuration source and invoke
+the callback upon change.
+This occurs in a separate thread than the main xAPP thread; it is up to the xAPP
+to guard against any potential data collisions when evaluating configuration
+changes.
+If the xAPP does not register a notification function the framework will not
+monitor the configuration for changes and the object will have static data.
+Figure &callback_fig illustrates how the xAPP can define and register a notification
+callback.
+&space
+
+.ca start callback.ca
+&ex_start
+
+  //  notification callback; allows verbose level to change on the fly
+  void config_chg( xapp::Config& c, void* vdata ) {
+    app_ctx* ctx;      // application context
+
+   ctx = (app_ctx *) vdata;
+   ctx->vlevel = c->Get_value( "verbose_level", ctx->vlevel );
+  }
+&ex_end
+&export_fig(callback_fig)
+&fig_cen(Small notification callback function allowing on the fly verbose level change.)
+&space
+.ca end
+.gv remain
+&ifroom( 1.75 : callback.ca )
+
+&space
+The xAPP would register the &cw(config_chg()) function as the notification callback
+using the call illustrated in figure &config_set_cb_fig.
+
+.ca start set_callback.ca
+&ex_start
+
+   auto conf = new xapp::Config();
+   conf->Set_callback( config_chg );
+&ex_end
+&export_fig(config_set_cb_fig)
+&fig_cen(Setting the notification callback and and activating notifications.)
+&mult_space( 2.5 )
+.ca end
+.gv remain
+&ifroom( 0.75 : set_callback.ca )
+
+&h2(xAPP Descriptor Notes)
+While it is beyond the scope of this document to describe the complete contents
+of an xAPP descriptor file, it is prudent to mention several items which
+are related to the information used from the descriptor file.
+The following paragraphs discuss things which the xAPP developer should
+be aware of, and keep in mind when using the configuration class.
+
+&h3(The RMR Section)
+There is a deprecated section within the xAPP descriptor which has the title
+&ital(rmr.)
+The &ital(messaging) section provides more flexibility, and additional information
+and has been a replacement for the &ital(rmr) section for all applications.
+The information in the &ital(rmr) section should be kept consistent with the
+duplicated information in the &ital(messaging) section as long as there are
+container management and/or platform applications (e.g. Route Manager) which
+are back level and do not recognise the &ital(messaging) section.
+The configuration parsing and support provided by the framework will ignore the
+&ital(rmr) section.
+

@@ -14,16 +14,27 @@ USER'S GUIDE
 INTRODUCTION
 ============
 
-The C++ framework allows the programmer to create an xApp
-object instance, and to use that instance as the logic base.
-The xApp object provides a message level interface to the RIC
-Message Router (RMR), including the ability to register
-callback functions which the instance will drive as messages
-are received; much in the same way that an X-windows
-application is driven by the window manager for all activity.
-The xApp may also choose to use its own send/receive loop,
-and thus is not required to use the callback driver mechanism
-provided by the framework.
+The C++ framework allows the programmer to create an instance
+of the ``Xapp`` object which then can be used as a foundation
+for the application. The ``Xapp`` object provides a message
+level interface to the RIC Message Router (RMR), including
+the ability to register callback functions which the instance
+will drive as messages are received; much in the same way
+that an X-windows application is driven by the window manager
+for all activity. The xApp may also choose to use its own
+send/receive loop, and thus is not required to use the
+callback driver mechanism provided by the framework.
+
+
+Termonology
+-----------
+
+To avoid confusion the term **xAPP** is used in this document
+to refer to the user's application code which is creating
+``Xapp,`` and related objects provided by the *framework.*
+The use of *framework* should be taken to mean any of the
+classes and/or support functions which are provided by the
+``ricxfcpp`` library.
 
 
 THE FRAMEWORK API
@@ -65,21 +76,37 @@ the object's constructor with two required parameters:
          :header-rows: 0
          :class: borderless
 
+
          * - **port**
+
            -
+
              A C string (pointer to char) which defines the port that
+
              RMR will open to listen for connections.
+
+
+
 
 
              |
 
+
+
          * - **wait**
+
            -
+
              A Boolean value which indicates whether or not the
+
              initialization process should wait for the arrival of a
+
              valid route table before completing. When true is
+
              supplied, the initialization will not complete until RMR
+
              has received a valid route table (or one is located via
+
              the ``RMR_SEED_RT`` environment variable).
 
 
@@ -163,49 +190,93 @@ follows:
          :header-rows: 0
          :class: borderless
 
+
          * - **m**
+
            -
+
              A reference to the Message that was received.
 
 
+
+
+
              |
 
+
+
          * - **mtype**
+
            -
+
              The message type (allows for disambiguation if the
+
              callback is registered for multiple message types).
 
 
+
+
+
              |
 
+
+
          * - **subid**
+
            -
+
              The subscription ID from the message.
 
 
+
+
+
              |
 
+
+
          * - **payload len**
+
            -
+
              The number of bytes which the sender has placed into the
+
              payload.
 
 
+
+
+
              |
 
+
+
          * - **payload**
+
            -
+
              A direct reference (smart pointer) to the payload. (The
+
              smart pointer is wrapped in a special class in order to
+
              provide a custom destruction function without burdening
+
              the xApp developer with that knowledge.)
 
 
+
+
+
              |
 
+
+
          * - **user data**
+
            -
+
              A pointer to user data. This is the pointer that was
+
              provided when the function was registered.
 
 
@@ -491,7 +562,7 @@ to the constructor.
 
 ::
 
-      #include <ricxfcpp/Jhash>
+      #include <ricxfcpp/Jhash.hpp>
 
       std::string jstring = "{ \\"tag\\": \\"Hello World\\" }";
       Jhash*  jh;
@@ -592,20 +663,35 @@ following default values are returned:
          :header-rows: 0
          :class: borderless
 
+
          * - **String**
+
            -
+
              An empty string (.e.g "").
 
+
+
              |
+
+
 
          * - **Value**
+
            -
+
              Zero (e.g 0.0)
+
+
 
              |
 
+
+
          * - **bool**
+
            -
+
              false
 
 
@@ -753,24 +839,43 @@ The API consists of the following function types:
          :header-rows: 0
          :class: borderless
 
+
          * - **Raise**
+
            -
+
              Cause the alarm to be assigned a severity and and sent via
+
              RMR message to the alarm collector process.
 
 
+
+
+
              |
 
+
+
          * - **Clear**
+
            -
+
              Cause a clear message to be sent to the alarm collector.
 
 
+
+
+
              |
 
+
+
          * - **Raise Again**
+
            -
+
              Cause a clear followed by a raise message to be sent to
+
              the alarm collector.
 
 
@@ -1083,11 +1188,233 @@ source to be set after construction.
 
 
 
+CONFIGURATION SUPPORT
+=====================
+
+The C++ xAPP framework provides the xAPP with an interface to
+load, parse and receive update notifications on the
+configuration. The configuration, also known as the xAPP
+descriptor, is assumed to be a file containing json with a
+well known structure, with some fields or *objects* used by
+an xAPP for configuration purposes. The following paragraphs
+describe the support that the framework provides to the xAPP
+with respect to the configuration aspects of the descriptor.
+
+
+The Config Object
+-----------------
+
+The xAPP must create an instance of the ``config`` object in
+order to take advantage of the support. This is accomplished
+by using one of two constructors illustrated with code
+samples in figure 23.
+
+
+::
+
+      #include <ricxfcpp/config.hpp>
+
+      auto cfg = new xapp::Config( );
+      auto cfg = new xapp::Config( "/var/myapp/config.json"  );
+
+Figure 23: Creating a configuration instance.
+
+The creation of the object causes the file to be found,
+loaded, after which the xAPP can use the instance functions
+to access the information it needs.
+
+
+Available Functions
+-------------------
+
+Once a configuration has been created the following
+capabilities are available:
+
+
+   * Get a control value (numeric, string, or boolean)
+
+   * Get the RMR port for the container with the supplied
+     name
+
+   * Set a notification callback function
+
+   * Get the raw contents of the file
+
+
+
+Control Values
+--------------
+
+The ``controls`` section of the xAPP descriptor is generally
+used to supply a *flat* namespace of key/value pairs which
+the xAPP can use for configuration. These pairs are supplied
+by the xAPP author as a part of development, and thus are
+specific to each xAPP. The framework provides a general set
+of functions which allows a key to be searched for in this
+section and returned to the caller. Data is assumed to be one
+of three types: numeric (double), string, or boolean.
+
+Two methods for each return type are supported with the more
+specific form allowing the xAPP to supply a default value to
+be used should the file not contain the requested field. The
+function prototypes for these are provided in figure 24.
+
+::
+
+    bool Get_control_bool( std::string name, bool defval );
+    bool Get_control_bool( std::string name );
+
+    std::string Get_control_str( std::string name, std::string defval );
+    std::string Get_control_str( std::string name );
+
+    double Get_control_value( std::string name, double defval );
+    double Get_control_value( std::string name );
+
+Figure 24: The various controls section get functions.
+
+If the more generic form of these functions is used, without
+a default value, the return values are false, "", and 0.0 in
+the respective order of the prototypes in figure 24.
+
+
+The RMR Port
+------------
+
+The ``messaging`` section of the xAPP descriptor provides the
+ability to define one or more RMR *listen ports* that apply
+to the xAPP(s) started in a given container. The xAPP may
+read a port value (as a string) using the defined port name
+via the ``Get_port`` function whose prototype is illustrated
+in figure 25 below.
+
+
+::
+
+    std::string Get_port( std::string name );
+
+Figure 25: The get port prototype.
+
+
+
+Raw File Contents
+-----------------
+
+While it is not anticipated to be necessary, the xAPP might
+need direct access to the raw contents of the configuration
+file. As a convenience the framework provides the
+``Get_contents()`` function which reads the entire file into
+a standard library string and returns that to the calling
+function. Parsing and interpreting the raw contents is then
+up to the xAPP.
+
+
+Notification Of Changes
+-----------------------
+
+When desired, the xAPP may register a notification callback
+function with the framework. This callback will be driven any
+time a change to the descriptor is detected. When a change is
+detected, the revised descriptor is read into the existing
+object (overlaying any previous information), before invoking
+the callback. The callback may then retrieve the updated
+values and make any adjustments which are necessary. The
+prototype for the xAPP callback function is described in
+figure 26.
+
+
+::
+
+     void cb_name( xapp::Config& c, void* data )
+
+Figure 26: The prototype which the xAPP configuration notify
+callback must use.
+
+
+
+Enabling The Notifications
+--------------------------
+
+Notifications are enabled by invoking the
+``Set_callback()`` function. Once enabled, the framework will
+monitor the configuration source and invoke the callback upon
+change. This occurs in a separate thread than the main xAPP
+thread; it is up to the xAPP to guard against any potential
+data collisions when evaluating configuration changes. If the
+xAPP does not register a notification function the framework
+will not monitor the configuration for changes and the object
+will have static data. Figure 27 illustrates how the xAPP can
+define and register a notification callback.
+
+
+::
+
+
+    //  notification callback; allows verbose level to change on the fly
+    void config_chg( xapp::Config& c, void* vdata ) {
+      app_ctx* ctx;      // application context
+
+     ctx = (app_ctx *) vdata;
+     ctx->vlevel = c->Get_value( "verbose_level", ctx->vlevel );
+    }
+
+Figure 27: Small notification callback function allowing on
+the fly verbose level change.
+
+
+The xAPP would register the ``config_chg()`` function as the
+notification callback using the call illustrated in figure
+28.
+
+::
+
+
+     auto conf = new xapp::Config();
+     conf->Set_callback( config_chg );
+
+Figure 28: Setting the notification callback and and
+activating notifications.
+
+
+
+
+xAPP Descriptor Notes
+---------------------
+
+While it is beyond the scope of this document to describe the
+complete contents of an xAPP descriptor file, it is prudent
+to mention several items which are related to the information
+used from the descriptor file. The following paragraphs
+discuss things which the xAPP developer should be aware of,
+and keep in mind when using the configuration class.
+
+
+The RMR Section
+---------------
+
+There is a deprecated section within the xAPP descriptor
+which has the title *rmr.* The *messaging* section provides
+more flexibility, and additional information and has been a
+replacement for the *rmr* section for all applications. The
+information in the *rmr* section should be kept consistent
+with the duplicated information in the *messaging* section as
+long as there are container management and/or platform
+applications (e.g. Route Manager) which are back level and do
+not recognise the *messaging* section. The configuration
+parsing and support provided by the framework will ignore the
+*rmr* section.
+
+
 EXAMPLE PROGRAMMES
 ==================
 
 The following sections contain several example programmes
-which are written on top of the C++ framework.
+which are written on top of the C++ framework. All of these
+examples are available in the code repository RIC xAPP C++
+framework available via the following URL:
+
+.. class:: center
+   ``https://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/xapp-frame-cpp``
+
 
 
 RMR Dump xAPP
@@ -1352,7 +1679,7 @@ omitted. The full code is in the framework repository.
          return 0;
      }
 
-   Figure 23: Simple callback application.
+   Figure 29: Simple callback application.
 
 
 Callback Receiver
@@ -1477,7 +1804,7 @@ genereate metrics with the receipt of each 1000th message.
          // control should not return
      }
 
-   Figure 24: Simple callback application.
+   Figure 30: Simple callback application.
 
 
 
@@ -1589,131 +1916,224 @@ to keep the example small and to the point.
          }
      }
 
-   Figure 25: Simple looping sender application.
+   Figure 31: Simple looping sender application.
 
 
 
-Alarm Example
--------------
+Alarm Generation
+----------------
 
-   This is an extension of a previous example which sends an
-   alarm during initialisation and clears the alarm as soon
-   as messages are being received. It is unknown if this is
-   the type of alarm that is expected at the collector, but
-   illustrates how an alarm is allocated, raised and cleared.
-
-
-      ::
+This is an extension of a previous example which sends an
+alarm during initialisation and clears the alarm as soon as
+messages are being received. It is unknown if this is the
+type of alarm that is expected at the collector, but
+illustrates how an alarm is allocated, raised and cleared.
 
 
-        #include <stdio.h>
-        #include <string.h>
-        #include <unistd.h>
-
-        #include <iostream>
-        #include <memory>
-
-        #include "ricxfcpp/xapp.hpp"
-        #include "ricxfcpp/alarm.hpp"
-
-        extern int main( int argc, char** argv ) {
-            std::unique_ptr<Xapp> xfw;
-            std::unique_ptr<xapp::Message> msg;
-            xapp::Msg_component payload;                // special type of unique pointer to the payload
-            std::unique_ptr<xapp::Alarm>    alarm;
-
-            bool received = false;                // false until we've received a message
-            int    sz;
-            int len;
-            int i;
-            int ai = 1;
-            int response_to = 0;                // max timeout wating for a response
-            char*    port = (char *) "4555";
-            int    mtype = 0;
-            int rmtype;                            // received message type
-            int delay = 1000000;                // mu-sec delay; default 1s
+   ::
 
 
-            // very simple flag processing (no bounds/error checking)
-            while( ai < argc ) {
-                if( argv[ai][0] != '-' )  {
-                    break;
-                }
+     #include <stdio.h>
+     #include <string.h>
+     #include <unistd.h>
 
-                // we only support -x so -xy must be -x -y
-                switch( argv[ai][1] ) {
-                    // delay between messages (mu-sec)
-                    case 'd':
-                        delay = atoi( argv[ai+1] );
-                        ai++;
-                        break;
+     #include <iostream>
+     #include <memory>
 
-                    case 'p':
-                        port = argv[ai+1];
-                        ai++;
-                        break;
+     #include "ricxfcpp/xapp.hpp"
+     #include "ricxfcpp/alarm.hpp"
 
-                    // timeout in seconds; we need to convert to ms for rmr calls
-                    case 't':
-                        response_to = atoi( argv[ai+1] ) * 1000;
-                        ai++;
-                        break;
-                }
-                ai++;
-            }
+     extern int main( int argc, char** argv ) {
+         std::unique_ptr<Xapp> xfw;
+         std::unique_ptr<xapp::Message> msg;
+         xapp::Msg_component payload;                // special type of unique pointer to the payload
+         std::unique_ptr<xapp::Alarm>    alarm;
 
-            fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
-            fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
-
-            // get an instance and wait for a route table to be loaded
-            xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
-            msg = xfw->Alloc_msg( 2048 );
+         bool received = false;                // false until we've received a message
+         int    sz;
+         int len;
+         int i;
+         int ai = 1;
+         int response_to = 0;                // max timeout wating for a response
+         char*    port = (char *) "4555";
+         int    mtype = 0;
+         int rmtype;                            // received message type
+         int delay = 1000000;                // mu-sec delay; default 1s
 
 
-            // raise an unavilable alarm which we'll clear on the first recevied message
-            alarm =  xfw->Alloc_alarm( "meid-1234"  );
-            alarm->Raise( xapp::Alarm::SEV_MINOR, 13, "unavailable", "no data recevied" );
+         // very simple flag processing (no bounds/error checking)
+         while( ai < argc ) {
+             if( argv[ai][0] != '-' )  {
+                 break;
+             }
 
-            for( i = 0; i < 100; i++ ) {
-                mtype++;
-                if( mtype > 10 ) {
-                    mtype = 0;
-                }
+             // we only support -x so -xy must be -x -y
+             switch( argv[ai][1] ) {
+                 // delay between messages (mu-sec)
+                 case 'd':
+                     delay = atoi( argv[ai+1] );
+                     ai++;
+                     break;
 
-                // we'll reuse a received message; get max size
-                sz = msg->Get_available_size();
+                 case 'p':
+                     port = argv[ai+1];
+                     ai++;
+                     break;
 
-                // direct access to payload; add something silly
-                payload = msg->Get_payload();
-                len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
+                 // timeout in seconds; we need to convert to ms for rmr calls
+                 case 't':
+                     response_to = atoi( argv[ai+1] ) * 1000;
+                     ai++;
+                     break;
+             }
+             ai++;
+         }
 
-                // payload updated in place, prevent copy by passing nil
-                if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
-                    fprintf( stderr, "<SNDR> send failed: %d\\n", i );
-                }
+         fprintf( stderr, "<XAPP> response timeout set to: %d\\n", response_to );
+         fprintf( stderr, "<XAPP> listening on port: %s\\n", port );
 
-                // receive anything that might come back
-                msg = xfw->Receive( response_to );
-                if( msg != NULL ) {
-                    if( ! received ) {
-                        alarm->Clear( xapp::Alarm::SEV_MINOR, 13, "messages flowing", "" );                // clear the alarm on first received message
-                        received = true;
-                    }
+         // get an instance and wait for a route table to be loaded
+         xfw = std::unique_ptr<Xapp>( new Xapp( port, true ) );
+         msg = xfw->Alloc_msg( 2048 );
 
-                    rmtype = msg->Get_mtype();
-                    payload = msg->Get_payload();
-                    fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
-                        rmtype, (char *) payload.get() );
-                } else {
-                    msg = xfw->Alloc_msg( 2048 );
-                }
 
-                if( delay > 0 ) {
-                    usleep( delay );
-                }
-            }
-        }
+         // raise an unavilable alarm which we'll clear on the first recevied message
+         alarm =  xfw->Alloc_alarm( "meid-1234"  );
+         alarm->Raise( xapp::Alarm::SEV_MINOR, 13, "unavailable", "no data recevied" );
 
-      Figure 26: Simple looping sender application with alarm
-      generation.
+         for( i = 0; i < 100; i++ ) {
+             mtype++;
+             if( mtype > 10 ) {
+                 mtype = 0;
+             }
+
+             // we'll reuse a received message; get max size
+             sz = msg->Get_available_size();
+
+             // direct access to payload; add something silly
+             payload = msg->Get_payload();
+             len = snprintf( (char *) payload.get(), sz, "This is message %d\\n", i );
+
+             // payload updated in place, prevent copy by passing nil
+             if ( ! msg->Send_msg( mtype, xapp::Message::NO_SUBID,  len, NULL )) {
+                 fprintf( stderr, "<SNDR> send failed: %d\\n", i );
+             }
+
+             // receive anything that might come back
+             msg = xfw->Receive( response_to );
+             if( msg != NULL ) {
+                 if( ! received ) {
+                     // clear the alarm on first received message
+                     alarm->Clear( xapp::Alarm::SEV_MINOR, 13, "messages flowing", "" );
+                     received = true;
+                 }
+
+                 rmtype = msg->Get_mtype();
+                 payload = msg->Get_payload();
+                 fprintf( stderr, "got: mtype=%d payload=(%s)\\n",
+                     rmtype, (char *) payload.get() );
+             } else {
+                 msg = xfw->Alloc_msg( 2048 );
+             }
+
+             if( delay > 0 ) {
+                 usleep( delay );
+             }
+         }
+     }
+
+   Figure 32: Simple looping sender application with alarm
+   generation.
+
+
+
+Configuration Interface
+-----------------------
+
+This example is a simple illustration of how the
+configuration file support (xAPP descriptor) can be used to
+suss out configuration parameters before creating the Xapp
+object. The example also illustrates how a notification
+callback can be used to react to changes in the
+configuration.
+
+
+   ::
+
+     #include <stdio.h>
+
+     #include "ricxfcpp/config.hpp"
+     #include "ricxfcpp/message.hpp"
+     #include "ricxfcpp/msg_component.hpp"
+     #include <ricxfcpp/metrics.hpp>
+     #include "ricxfcpp/xapp.hpp"
+
+     int vlevel = 0;                    // verbose mode set via config
+
+     /*
+         Just print something to the tty when we receive a message
+         and are in verbose mode.
+     */
+     void cb1( xapp::Message& mbuf, int mtype, int subid, int len,
+                 xapp::Msg_component payload,  void* data ) {
+         if( vlevel > 0 ) {
+             fprintf( stdout, "message received is %d bytes long\\n", len );
+         }
+     }
+
+     /*
+         Driven when the configuration changes. We snarf the verbose
+         level from the new config and update it. If it changed to
+         >0, incoming messages should be recorded with a tty message.
+         If set to 0, then tty output will be disabled.
+     */
+     void config_cb( xapp::Config& c, void* data ) {
+         int* vp;
+
+         if( (vp = (int *) data) != NULL ) {
+             *vp = c.Get_control_value( "verbose_level", *vp );
+         }
+     }
+
+     int main( int argc, char** argv ) {
+         Xapp*    x;
+         int        nthreads = 1;
+         std::unique_ptr<xapp::Config> cfg;
+
+         // only parameter recognised is the config file name
+         if( argc > 1 ) {
+             cfg = std::unique_ptr<xapp::Config>( new xapp::Config( std::string( argv[1] ) ) );
+         } else {
+             cfg = std::unique_ptr<xapp::Config>( new xapp::Config( ) );
+         }
+
+         // must get a port from the config; no default
+         auto port = cfg->Get_port( "rmr-data" );
+         if( port.empty() ) {
+             fprintf( stderr, "<FAIL> no port in config file\\n" );
+             exit( 1 );
+         }
+
+         // dig other data from the config
+         vlevel = cfg->Get_control_value( "verbose_level", 0 );
+         nthreads = cfg->Get_control_value( "thread_count", 1 );
+         // very simple flag processing (no bounds/error checking)
+
+         if( vlevel > 0 ) {
+             fprintf( stderr, "<XAPP> listening on port: %s\\n", port.c_str() );
+             fprintf( stderr, "<XAPP> starting %d threads\\n", nthreads );
+         }
+
+         // register the config change notification callback
+         cfg->Set_callback( config_cb, (void *) &vlevel );
+
+         x = new Xapp( port.c_str(), true );
+         x->Add_msg_cb( 1, cb1, x );        // register message callback
+
+         x->Run( nthreads );                // let framework drive
+         // control should not return
+     }
+
+   Figure 33: Simple application making use of the
+   configuration object.
 

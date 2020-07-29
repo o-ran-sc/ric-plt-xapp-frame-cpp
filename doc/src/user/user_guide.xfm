@@ -57,12 +57,24 @@
 .im jhash.im
 .im alarm.im
 .im metrics.im
+.im config.im
 
 &h1(Example Programmes)
 The following sections contain several example programmes which are written on
 top of the C++ framework.
+All of these examples are available in the code repository RIC xAPP C++ framework available via
+the following URL:
+&space
+
+.** indent gets round a space bug in RST
+&center_start
+&indent
+&cw( https^://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/xapp-frame-cpp )
+&uindent
+&center_end
 
 .im example1.im
 .im example2.im
 .im example3.im
 .im example4.im
+.im example5.im
