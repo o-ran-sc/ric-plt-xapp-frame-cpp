@@ -20,15 +20,21 @@
 .fi
 
 &h1(Introduction)
-The C++ framework allows the programmer to create an xApp object instance, and to use that instance as
-the logic base.
-The xApp object provides a message level interface to the RIC Message Router (RMR), including the ability
+The C++ framework allows the programmer to create an instance of the &cw(Xapp) object which then
+can be used as a foundation for the application.
+The &cw(Xapp) object provides a message level interface to the RIC Message Router (RMR), including the ability
 to register callback functions which the instance will drive as messages are received; much in the same
 way that an X-windows application is driven by the window manager for all activity.
 The xApp may also choose to use its own send/receive loop, and thus is not required to use the callback
 driver mechanism provided by the framework.
 
-&h1(The Framework API)
+&h2( Termonology )
+To avoid confusion the term &bold( xAPP ) is used in this document to refer to the user's application
+code which is creating &cw( Xapp, ) and related objects provided by the &ital( framework. )
+The use of &ital( framework ) should be taken to mean any of the classes and/or support functions
+which are provided by the &cw( ricxfcpp ) library.
+
+&h1( The Framework API )
 The C++ framework API consists of the creation of the xApp object, and invoking desired functions via
 the instance of the object.
 The following paragraphs cover the various steps involved to create an xApp instance, wait for a route

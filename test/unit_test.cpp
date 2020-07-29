@@ -365,7 +365,6 @@ int main( int argc, char** argv ) {
 	b = std::move( c );						// move = operator
 	xapp::Alarm d = std::move( b );			// move constructor
 
-
 	// ------ minimal metrics to prove coverage ------------------------------------------------------------
 	metrics( x );
 

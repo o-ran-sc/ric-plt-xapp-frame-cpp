@@ -1,0 +1,103 @@
+{
+   "comment":  "test config; this one is complete and legit",
+   "xapp_name": "mcxapp",
+   "version": "1.0.11",
+   "containers": [
+        {
+            "name": "mcxapp",
+            "image": {
+                "registry": "ranco-dev-tools.eastus.cloudapp.azure.com:10001",
+                "name": "ric-app-mc",
+                "tag": "1.1.3"
+            },
+            "command": [ "/bin/bash", "-c", "--" ],
+        "args": [ "/playpen/bin/container_start.sh" ]
+        }
+    ],
+    "messaging": {
+        "ports": [
+            {
+                "name": "rmr-data-in",
+                "container": "mcxapp",
+                "port": 4560,
+                "rxMessages": [
+                    "RIC_UE_CONTEXT_RELEASE",
+                    "RIC_SGNB_ADDITION_REQ",
+                    "RIC_SGNB_ADDITION_ACK",
+                    "RIC_SGNB_ADDITION_REJECT",
+                    "RIC_SGNB_RECONF_COMPLETE",
+                    "RIC_RRC_TRANSFER",
+                    "RIC_SGNB_MOD_REQUEST",
+                    "RIC_SGNB_MOD_REQUEST_ACK",
+                    "RIC_SGNB_MOD_REQUEST_REJ",
+                    "RIC_SGNB_MOD_REQUIRED",
+                    "RIC_SGNB_MOD_CONFIRM",
+                    "RIC_SGNB_MOD_REFUSE",
+                    "RIC_SGNB_RELEASE_REQUEST",
+                    "RIC_SGNB_RELEASE_REQUEST_ACK",
+                    "RIC_SGNB_RELEASE_REQUIRED",
+                    "RIC_SGNB_RELEASE_CONFIRM",
+                    "RIC_SECONDARY_RAT_DATA_USAGE_REPORT"
+                ],
+                "txMessages": [],
+                "policies": [],
+                "description": "rmr receive data port for mcxapp"
+            },
+            {
+                "name": "rmr-data-out",
+                "container": "mcxapp",
+                "port": 4562,
+                "txMessages": [
+                    "MC_REPORT"
+                ],
+                "rxMessages": [],
+                "policies": [],
+                "description": "rmr send data port for mcxapp"
+            },
+            {
+                "name": "rmr-route",
+                "container": "mcxapp",
+                "port": 4561,
+                "description": "rmr route port for mcxapp"
+            }
+        ]
+    },
+
+    "controls": {
+        "ves_collector_address": "10.53.183.214:8888",
+        "measurement_interval": 1000,
+        "debug_mode": true,
+        "tbool": true,
+        "fbool": false,
+        "simulator_mode": true
+    },
+
+    "rmr": {
+        "protPort": "tcp:4560",
+        "maxSize": 2072,
+        "numWorkers": 1,
+        "txMessages": [
+            "MC_REPORT"
+        ],
+        "rxMessages": [
+            "RIC_UE_CONTEXT_RELEASE",
+            "RIC_SGNB_ADDITION_REQ",
+            "RIC_SGNB_ADDITION_ACK",
+            "RIC_SGNB_ADDITION_REJECT",
+            "RIC_SGNB_RECONF_COMPLETE",
+            "RIC_RRC_TRANSFER",
+            "RIC_SGNB_MOD_REQUEST",
+            "RIC_SGNB_MOD_REQUEST_ACK",
+            "RIC_SGNB_MOD_REQUEST_REJ",
+            "RIC_SGNB_MOD_REQUIRED",
+            "RIC_SGNB_MOD_CONFIRM",
+            "RIC_SGNB_MOD_REFUSE",
+            "RIC_SGNB_RELEASE_REQUEST",
+            "RIC_SGNB_RELEASE_REQUEST_ACK",
+            "RIC_SGNB_RELEASE_REQUIRED",
+            "RIC_SGNB_RELEASE_CONFIRM",
+            "RIC_SECONDARY_RAT_DATA_USAGE_REPORT"
+        ]
+    }
+}
+

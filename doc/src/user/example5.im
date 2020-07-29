@@ -1,3 +1,4 @@
+
 .if false
 ==================================================================================
     Copyright (c) 2020 Nokia
@@ -17,22 +18,21 @@
 ==================================================================================
 .fi
 
-&h2(Alarm Generation)
-This is an extension of a previous example which sends an alarm
-during initialisation and clears the alarm as soon as messages
-are being received.
-It is unknown if this is the type of alarm that is expected at the
-collector, but illustrates how an alarm is allocated, raised and
-cleared.
+&h2(Configuration Interface)
+This example is a simple illustration of how the configuration file support
+(xAPP descriptor) can be used to suss out configuration parameters before
+creating the Xapp object.
+The example also illustrates how a notification callback can be used to react
+to changes in the configuration.
 
 
 &space
 &indent
 .** pull in the code from the example directory
 &ex_start
-.im  j=start-example ../../../examples/xapp_alarm.cpp
+.im  j=start-example ../../../examples/xapp_t3.cpp
 &ex_end
-&fig_cen( Simple looping sender application with alarm generation. )
+&fig_cen( Simple application making use of the configuration object.)
 &uindent
 &space
 
