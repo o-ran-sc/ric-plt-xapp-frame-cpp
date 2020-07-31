@@ -19,7 +19,7 @@ unit_test:: unit_test.cpp rmr_em.o
 
 # build a special jwrapper object with coverage settings
 jwrapper_test.o:: ../src/json/jwrapper.c ../src/json/jwrapper.h
-	cc $(coverage_opts)  -g -I  ../src/json -I ../ext/jsmn  ../src/json/jwrapper.c -c -o jwrapper_test.o
+	cc $(coverage_opts)  -DDEBUG=0 -g -I  ../src/json -I ../ext/jsmn  ../src/json/jwrapper.c -c -o jwrapper_test.o
 
 jhash_test:: jwrapper_test.o jhash_test.cpp
 	# do NOT link the xapp lib; we include all modules in the test programme

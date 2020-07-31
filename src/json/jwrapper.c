@@ -25,7 +25,10 @@
 
 				This code is based on the AT&T VFd open source library available
 				on github.com/att/vfd.  The changes are mostly to port to the
-				RMR version of symtab from VFd's version.
+				RMR version of symtab from VFd's version, however the parsing loop
+				was considerably refactored to eliminate the bad practices in the
+				original code, and to squelch the sonar complaint about a potential,
+				though not valide, NPE.
 
 	Author:		E. Scott Daniels
 	Date:		26 June 2020
@@ -43,9 +46,11 @@
 
 #define JSMN_STATIC 1		// jsmn no longer builds into a library; this pulls as static functions
 #include <jsmn.h>
-//#include <../../ext/jsmn/jsmn.h>
 
 #include <rmr/rmr_symtab.h>
+
+extern void jw_nuke( void* st );
+static pull( char* dest, char* src, jsmntok_t* token );
 
 #define JSON_SYM_NAME	"_jw_json_string"
 #define MAX_THINGS		1024 * 4	// max objects/elements
@@ -59,7 +64,6 @@
 #define OBJ_SPACE		1			// space in the symbol table where json bits are stashed
 #define MGT_SPACE		2			// non-json objects in the hash (management things)
 
-extern void jw_nuke( void* st );
 
 // ---------------------------------------------------------------------------------------
 
@@ -90,6 +94,18 @@ static char* extract( char* buf, jsmntok_t *jtoken ) {
 	return &buf[jtoken->start];
 }
 
+#if DEBUG > 0
+/*
+	For debugging we should NOT extract as that disrupts the "flow" by
+	adding a nil before the parser gets a chance to acutally parse an
+	object.
+*/
+static void pull( const char* dest, char* src, jsmntok_t* jtoken ) {
+	memcpy( dest, &src[jtoken->start], jtoken->end - jtoken->start );
+	dest[jtoken->end - jtoken->start] = 0;
+}
+#endif
+
 /*
 	create a new jthing and add a reference to it in the symbol table st.
 	sets the number of elements to 1 by default.
@@ -97,22 +113,20 @@ static char* extract( char* buf, jsmntok_t *jtoken ) {
 static jthing_t *mk_thing( void *st, char *name, int jsmn_type ) {
 	jthing_t	*jtp = NULL;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) malloc( sizeof( *jtp ) )) != NULL ) {
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) malloc( sizeof( *jtp ) )) != NULL ) {
 
-		if( DEBUG ) {
-			fprintf( stderr, "<DBUG> jwrapper adding: %s type=%d\n", name, jsmn_type );
+			if( DEBUG > 1 ) fprintf( stderr, "<DBUG> jwrapper adding: %s type=%d\n", name, jsmn_type );
+
+			jtp->jsmn_type = jsmn_type;
+			jtp->prim_type = PT_UNKNOWN;			// caller must set this
+			jtp->nele = 1;
+			jtp->v.fv = 0;
+
+			rmr_sym_put( st, name, OBJ_SPACE, jtp );
+		} else {
+			fprintf( stderr, "[WARN] jwrapper: unable to create '%s' type=%d\n", name, jsmn_type );
 		}
-
-		jtp->jsmn_type = jsmn_type;
-		jtp->prim_type = PT_UNKNOWN;			// caller must set this
-		jtp->nele = 1;
-		jtp->v.fv = 0;
-
-		rmr_sym_put( st, name, OBJ_SPACE, jtp );
-	} else {
-		fprintf( stderr, "[WARN] jwrapper: unable to create '%s' type=%d\n", name, jsmn_type );
 	}
 
 	return jtp;
@@ -127,11 +141,10 @@ static jthing_t *mk_thing( void *st, char *name, int jsmn_type ) {
 static jthing_t* suss_array( void* st, const char* name ) {
 	jthing_t* jtp = NULL;							// thing that is referenced by the symtab
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		jtp =  jtp->jsmn_type == JSMN_ARRAY  ? jtp : NULL;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			jtp =  jtp->jsmn_type == JSMN_ARRAY  ? jtp : NULL;
+		}
 	}
 
 	return jtp;
@@ -145,13 +158,12 @@ static jthing_t* suss_element( void* st, const char* name, int idx ) {
 	jthing_t* jarray;
 	jthing_t* rv = NULL;
 
-	if( (jtp = suss_array( st, name )) != NULL &&		// have pointer
-		idx >= 0 &&										// and in range
-		idx < jtp->nele ) {
+	if(    (jtp = suss_array( st, name )) != NULL		// have pointer
+		&& idx >= 0										// and in range
+		&& idx < jtp->nele
+		&& (jarray = jtp->v.pv)  != NULL ) {			// and exists
 
-		if( (jarray = jtp->v.pv)  != NULL ) {
 			rv = &jarray[idx];
-		}
 	}
 
 	return rv;
@@ -161,57 +173,82 @@ static jthing_t* suss_element( void* st, const char* name, int idx ) {
 /*
 	Invoked for each thing in the symtab; we free the things that actually point to
 	allocated data (e.g. arrays) and recurse to handle objects.
+
+	Only the element passed is used, but this is a prototype which is required by
+	the RMR symtab implementaion, so we play games in the code to keep sonar quiet.
 */
-static void nix_things( void* st, void* se, const char* name,  void* ele, void *data ) {
+static void nix_things( void* st, void* se, const char* name, void* ele, void *data ) {
 	jthing_t*	j;
 	jthing_t*	jarray;
 	int i;
 
+	st = st;			// silly things to keep sonar from complaining
+	name = name;
+	se = se;
+	data = data;
+
 	j = (jthing_t *) ele;
-	if( j ) {
-		switch( j->jsmn_type ) {
-			case JSMN_ARRAY:
-				if( (jarray = (jthing_t *) j->v.pv)  != NULL ) {
-					for( i = 0; i < j->nele; i++ ) {					// must look for embedded objects
-						if( jarray[i].jsmn_type == JSMN_OBJECT ) {
-							jw_nuke( jarray[i].v.pv );
-							jarray[i].jsmn_type = JSMN_UNDEFINED;			// prevent accidents
-						}
+	if( !j ) {
+		return;
+	}
+
+	switch( j->jsmn_type ) {
+		case JSMN_ARRAY:
+			if( (jarray = (jthing_t *) j->v.pv)  != NULL ) {
+				for( i = 0; i < j->nele; i++ ) {					// must look for embedded objects
+					if( jarray[i].jsmn_type == JSMN_OBJECT ) {
+						jw_nuke( jarray[i].v.pv );
+						jarray[i].jsmn_type = JSMN_UNDEFINED;			// prevent accidents
 					}
-
-					free( j->v.pv );			// must free the array (arrays aren't nested, so all things in the array don't reference allocated mem)
-					free( j );
 				}
-				break;
 
-			case JSMN_OBJECT:							// delete the sub symtab
-				jw_nuke( j->v.pv );
-				j->jsmn_type = JSMN_UNDEFINED;			// prevent a double free
+				free( j->v.pv );			// must free the array (arrays aren't nested, so all things in the array don't reference allocated mem)
 				free( j );
-				break;
+			}
+			break;
 
-			case JSMN_STRING:
-			case JSMN_PRIMITIVE:
-				free( j );
-				break;
-		}
+		case JSMN_OBJECT:							// delete the sub symtab
+			jw_nuke( j->v.pv );
+			j->jsmn_type = JSMN_UNDEFINED;			// prevent a double free
+			free( j );
+			break;
+
+		case JSMN_STRING:
+		case JSMN_PRIMITIVE:
+			free( j );
+			break;
+
+		default:
+			break;		// more unneeded games to keep sonar complaints away
 	}
 }
 
 /*
 	Nix non-json things that are also in the hash.
+
+	Silly games played to keep sonar from complaining. This is driven by RMR
+	symtab code which defines the set of params and we use what we need.
 */
 static void nix_mgt( void* st, void* se, const char* name,  void* ele, void *data ) {
+	st = st;			// silly things to keep sonar from complaining (let's hope the compiler is better than sonar
+	name = name;		// and optimises these out).
+	se = se;
+	data = data;
+
 	free( ele );
 }
 
 /*
 	Invoked for each thing and prints what we can to stderr.
+	Most parms ignored, but symtab code in RMR defines the prototype so they are required.
 */
 static void dump_things( void* st, void* se, const char* name,  void* ele, void *data ) {
-	jthing_t*	j;
-	jthing_t*	jarray;
-	int i;
+	const jthing_t*	j;
+
+	st = st;			// silly things to keep sonar from complaining (let's hope the compiler is better than sonar
+	name = name;		// and optimises these out).
+	se = se;
+	data = data;
 
 	j = (jthing_t *) ele;
 	if( j ) {
@@ -224,6 +261,12 @@ static void dump_things( void* st, void* se, const char* name,  void* ele, void 
 /*
 	Real work for parsing an object ({...}) from the json.   Called by jw_new() and
 	recurses to deal with sub-objects.
+
+	The jsmn parser returns an array of tokens which are expected to be name/data
+	pair. Name must be jsmn string type or we will fail the parse. Data can be
+	any primative type (int,bool) or a complex type (array, object). An array
+	will allow an object as an element, but NOT a nested array; that will cause us
+	to report a failure.
 */
 void* parse_jobject( void* st, char *json, char* prefix ) {
 	jthing_t	*jtp;			// json thing that we just created
@@ -240,16 +283,33 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 	char	pname[1024];		// name with prefix
 	char	wbuf[256];			// temp buf to build a working name in
 	char*	dstr;				// dup'd string
+	int		step = 0;			// parsing step value to skip tokens picked up
+	int		data_idx;			// index into tokens for the next bit of data
+	int		di;					// data skip index for object hopping
+	int		stop;				// loop index termination point
 
 	jsmn_init( &jp );			// does this have a failure mode?
 
+	if( DEBUG ) fprintf( stderr, "<DBUG>> ================= recursion begins  =======================\n" );
 	jtokens = (jsmntok_t *) malloc( sizeof( *jtokens ) * MAX_THINGS );
 	if( jtokens == NULL ) {
 		fprintf( stderr, "[CRI] jwrapper: cannot allocate tokens array\n" );
 		return NULL;
 	}
 
+
+	if( DEBUG > 1 ) fprintf( stderr, "<DBUG> parsing(%s)\n", json );
 	njtokens = jsmn_parse( &jp, json, strlen( json ), jtokens, MAX_THINGS );
+
+	if( DEBUG ) fprintf( stderr, "<DBUG>> tokens=%d\n", njtokens );
+	if( DEBUG > 1 ) {
+		for( di = 0; di < njtokens; di++ ) {
+			wbuf[4096];
+			pull( wbuf, json, &jtokens[di] );
+			fprintf( stderr, "<DBUG> [%d] t=%d start=%d end=%d (%s)\n",
+				di, jtokens[di].type, jtokens[di].start, jtokens[di].end, wbuf );
+		}
+	}
 
 	if( jtokens[0].type != JSMN_OBJECT ) {				// if it's not an object then we can't parse it.
 		fprintf( stderr, "[WARN] jwrapper: badly formed json; initial opening bracket ({) not detected\n" );
@@ -258,20 +318,19 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 		return NULL;
 	}
 
-	if( DEBUG ) {
-		for( i = 1; i < njtokens-1; i++ ) {
-			fprintf( stderr, "<DBUG> %4d: size=%d start=%d end=%d %s\n", i, jtokens[i].size, jtokens[i].start, jtokens[i].end, extract( json, &jtokens[i] ) );
-		}
-	}
+	i = 1;
+	while( i < njtokens ) {						// a final name without data will end up being silently skipped
+		step = 2;								// will always need to step over name and data; object and array will add to this
 
-	for( i = 1; i < njtokens-1; i++ ) {					// we'll silently skip the last token if it's "name" without a value
 		if( jtokens[i].type != JSMN_STRING ) {
-			fprintf( stderr, "[WARN] jwrapper: badly formed json [%d]; expected name (string) found type=%d %s\n", i, jtokens[i].type, extract( json, &jtokens[i] ) );
+			fprintf( stderr, "[WARN] jwrapper: badly formed json [%d]; expected name (string) found type=%d %s\n",
+					i, jtokens[i].type, extract( json, &jtokens[i] ) );
 			rmr_sym_free( st );
 			free( jtokens );
 			return NULL;
 		}
 		name = extract( json, &jtokens[i] );
+		if( DEBUG ) fprintf( stderr, "\n<DBUG> [%d] parsing %s t=%d\n", i, name, jtokens[i].type );
 		if( *prefix != 0 ) {
 			snprintf( pname, sizeof( pname ), "%s.%s", prefix, name );
 			name = pname;
@@ -279,163 +338,177 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 
 		size = jtokens[i].size;
 
-		i++;										// at the data token now
-		switch( jtokens[i].type ) {
+		data_idx = i + 1;								// at data token
+		switch( jtokens[data_idx].type ) {
 			case JSMN_OBJECT:				// save object in two ways: as an object 'blob' and in the current symtab using name as a base (original)
-				dstr = strdup( extract( json, &jtokens[i] ) );
-				snprintf( wbuf, sizeof( wbuf ), "%s_json", name );	// must stash the json string in the symtab for clean up during nuke
-				rmr_sym_put( st, wbuf, MGT_SPACE, dstr );
+				if( DEBUG ) fprintf( stderr, "<DBUG> [%d] %s (object) has %d things\n",  data_idx, name, jtokens[data_idx].size );
 
-				parse_jobject( st, dstr, name );					// recurse to add the object as objectname.xxxx elements
+				if( (jtp = mk_thing( st, name, jtokens[data_idx].type )) != NULL &&		// create thing and reference it in current symtab
+					(jtp->v.pv = (void *) rmr_sym_alloc( 255 ) ) != NULL ) {			// object is just a blob
 
-				if( (jtp = mk_thing( st, name, jtokens[i].type )) != NULL &&		// create thing and reference it in current symtab
-					(jtp->v.pv = (void *) rmr_sym_alloc( 255 ) ) != NULL ) {		// object is just a blob
-
-					dstr = strdup( extract( json, &jtokens[i] ) );
+					dstr = strdup( extract( json, &jtokens[data_idx] ) );
 					rmr_sym_put( jtp->v.pv, JSON_SYM_NAME, MGT_SPACE, dstr );		// must stash json so it is freed during nuke()
-					parse_jobject( jtp->v.pv,  dstr, "" );							// recurse acorss the string and build a new symtab
+					parse_jobject( jtp->v.pv,  dstr, "" );							// recurse across the object and build a new symtab
 
-					size = jtokens[i].end;											// done with them, we need to skip them
-					i++;
-					while( i < njtokens-1  &&  jtokens[i].end < size ) {
-						if( DEBUG ){
+					stop = jtokens[data_idx].end;		// calc step; must loop as it's NOT just simple size*2 b/c nested objects are var length
+					if( DEBUG ) fprintf( stderr, "<DBUG> computing step over object elements\n" );
+					for( di = data_idx+1; di < njtokens-1  && jtokens[di].end < stop ; di++ ) {
+						step++;
+						if( DEBUG ) {
 							fprintf( stderr, "\tskip: [%d] object element start=%d end=%d (%s)\n",
-								i, jtokens[i].start, jtokens[i].end, extract( json, &jtokens[i])  );
+								di, jtokens[di].start, jtokens[di].end, extract( json, &jtokens[di])  );
 						}
-						i++;
 					}
-
-					i--;						// must allow loop to bump past the last
 				}
+				if( DEBUG ) fprintf( stderr, "<DBUG> %s object finished step= %d\n",  name, step );
 				break;
 
 			case JSMN_ARRAY:
-				size = jtokens[i].size;		// size is burried here, and not with the name
-				jtp = mk_thing( st, name, jtokens[i].type );
+				size = jtokens[data_idx].size;							// size is burried here, NOT with the name
+				if( DEBUG ) fprintf( stderr, "<DBUG> %s is array size=%d\n", name, size );
+				jtp = mk_thing( st, name, jtokens[data_idx].type );
 
-				i++;			// skip first ele; it is the whole array string which I don't grock the need for, but it's their code...
-				if( jtp == NULL ) {
-					fprintf( stderr, "[WARN] jwrapper: memory alloc error processing element [%d] in json\n", i );
+				if( jtp == NULL || data_idx + size > njtokens ) {
+					fprintf( stderr, "[WARN] jwrapper: alloc, or size, error processing element [%d] in json; size=%d ntok=%d\n",
+						i, size, njtokens );
 					rmr_sym_free( st );
 					free( jtokens );
 					return NULL;
 				}
+
+				data_idx++;			// skip first ele; it is the whole array string which I don't grock the need for, but it's their code...
 				jarray = jtp->v.pv = (jsmntok_t *) malloc( sizeof( *jarray ) * size );		// allocate the array
 				memset( jarray, 0, sizeof( *jarray ) * size );
 				jtp->nele = size;
 
 				for( n = 0; n < size; n++ ) {								// for each array element
-					jarray[n].prim_type	 = PT_UNKNOWN;						// assume not primative type
-					switch( jtokens[i+n].type ) {
+					step = 1;			// array elements aren't named, so just one initial step
 
+					if( DEBUG ) fprintf( stderr, "\n<DBUG> parsing [%d] %s element %d of %d\n", data_idx, name, n, size );
+					jarray[n].prim_type	 = PT_UNKNOWN;						// initially mark as unknown
+
+					switch( jtokens[data_idx].type ) {
 						case JSMN_OBJECT:
 							jarray[n].v.pv = (void *) rmr_sym_alloc( 255 );
+							if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] is object size=%d\n", name, n, jtokens[data_idx].size );
 							if( jarray[n].v.pv != NULL ) {
 								jarray[n].jsmn_type = JSMN_OBJECT;
-								parse_jobject( jarray[n].v.pv,  extract( json, &jtokens[i+n]  ), "" );		// recurse acorss the string and build a new symtab
-								osize = jtokens[i+n].end;									// done with them, we need to skip them
-								i++;
-								while( i+n < njtokens-1  &&  jtokens[n+i].end < osize ) {
-									i++;
+								parse_jobject( jarray[n].v.pv,  extract( json, &jtokens[data_idx]  ), "" );		// recurse across the object and build a new symtab
+								stop = jtokens[data_idx].end;									// same as before, must manually calc step
+								if( DEBUG ) fprintf( stderr, "<DBUG> computing step over object elements start=%d stop=%d\n", data_idx+1, stop );
+								for( di = data_idx+1; di < njtokens-1  && jtokens[di].end < stop ; di++ ) {
+									step++;
+									if( DEBUG > 1 ) {
+										fprintf( stderr, "\tskip: [%d] object element start=%d end=%d (%s)\n",
+											di, jtokens[di].start, jtokens[di].end, extract( json, &jtokens[di])  );
+									}
 								}
-								i--;					// allow incr at loop end
 							}
+							if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] object element finished step= %d\n",  name, n, step );
 							break;
 
 						case JSMN_ARRAY:
-							fprintf( stderr, "[WARN] jwrapper: [%d] array element %d is not valid type (array) is not string or primative\n", i, n );
-							n += jtokens[i+n].size;			// this should skip the nested array
+							fprintf( stderr, "[ERR] jwrapper: %s [%d] array element is not a valid type: nested arrays not supported.\n", name, n );
 							free( jtp );
 							free( jarray );
 							jarray = NULL;
-							break;
+							free( jtokens );
+							return NULL;
 
 						case JSMN_STRING:
-							data = extract( json, &jtokens[i+n] );
+							data = extract( json, &jtokens[data_idx] );
 							jarray[n].v.pv = (void *) data;
 							jarray[n].prim_type = PT_STRING;
 							jarray[n].jsmn_type = JSMN_STRING;
 							break;
 
 						case JSMN_PRIMITIVE:
-							data = extract( json, &jtokens[i+n] );
+							data = extract( json, &jtokens[data_idx] );
 							switch( *data ) {
 								case 'T':
 								case 't':
 									jarray[n].v.fv = 1;
 									jarray[n].prim_type	 = PT_BOOL;
+									if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] bool = true\n", name, n );
 									break;
 
 								case 'F':
 								case 'f':
 									jarray[n].prim_type	 = PT_BOOL;
 									jarray[n].v.fv = 0;
+									if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] bool = false\n", name, n );
 									break;
 
 								case 'N':										// assume null, nil, or some variant
 								case 'n':
 									jarray[n].prim_type	 = PT_NULL;
 									jarray[n].v.fv = 0;
+									if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] null primative\n", name, n );
 									break;
 
 								default:
 									jarray[n].prim_type	 = PT_VALUE;
 									jarray[n].v.fv = strtod( data, NULL );		// store all numerics as double
+									if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] = %.03f\n", name, n, jarray[n].v.fv );
 									break;
 							}
 
 							jarray[n].jsmn_type = JSMN_PRIMITIVE;
 							break;
 
-						case JSMN_UNDEFINED:
-							// fallthrough
 						default:
-							fprintf( stderr, "[WARN] jwrapper: [%d] array element %d is not valid type (unknown=%d) is not string or primative\n", i, n, jtokens[i].type  );
+							if( DEBUG ) fprintf( stderr, "[ERR] jwrapper: %s [%d] array ele is unknown type: %d\n",
+								name, n, jtokens[data_idx].type  );
 							rmr_sym_free( st );
 							free( jtokens );
 							return NULL;
-							break;
 					}
+
+					if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] finished, step = %d\n", name, n, step );
+					data_idx += step;
 				}
 
-				i += size - 1;		// must allow loop to push to next
+				step = data_idx - i;		// data_index has been moved along, so it's a simple subtraction at this point
+				if( DEBUG ) fprintf( stderr, "<DBUG> %s array finished, total step = %d\n", name, step );
 				break;
 
 			case JSMN_STRING:
-				data = extract( json, &jtokens[i] );
-				if( (jtp = mk_thing( st, name, jtokens[i].type )) != NULL ) {
+				data = extract( json, &jtokens[data_idx] );
+				if( (jtp = mk_thing( st, name, jtokens[data_idx].type )) != NULL ) {
 					jtp->prim_type = PT_STRING;
 					jtp->v.pv =  (void *) data;						// just point into the large json string
 				}
 				break;
 
 			case JSMN_PRIMITIVE:
-				data = extract( json, &jtokens[i] );
-				if( (jtp = mk_thing( st, name, jtokens[i].type )) != NULL ) {
-					switch( *data ) {								// assume T|t is true and F|f is false
-						case 'T':
-						case 't':
-							jtp->prim_type = PT_BOOL;
-							jtp->v.fv = 1;
-							break;
+				data = extract( json, &jtokens[data_idx] );
 
-						case 'F':
-						case 'f':
-							jtp->prim_type = PT_BOOL;
-							jtp->v.fv = 0;
-							break;
+				if( (jtp = mk_thing( st, name, jtokens[data_idx].type )) == NULL ) {
+					break;
+				}
+				switch( *data ) {								// assume T|t is true and F|f is false
+					case 'T':
+					case 't':
+						jtp->prim_type = PT_BOOL;
+						jtp->v.fv = 1;
+						break;
 
-						case 'N':									// Null or some form of that
-						case 'n':
-							jtp->prim_type = PT_NULL;
-							jtp->v.fv = 0;
-							break;
+					case 'F':
+					case 'f':
+						jtp->prim_type = PT_BOOL;
+						jtp->v.fv = 0;
+						break;
 
-						default:
-							jtp->prim_type = PT_VALUE;
-							jtp->v.fv = strtod( data, NULL );		// store all numerics as double
-							break;
-					}
+					case 'N':									// Null or some form of that
+					case 'n':
+						jtp->prim_type = PT_NULL;
+						jtp->v.fv = 0;
+						break;
+
+					default:
+						jtp->prim_type = PT_VALUE;
+						jtp->v.fv = strtod( data, NULL );		// store all numerics as double
+						break;
 				}
 				break;
 
@@ -443,8 +516,12 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 				fprintf( stderr, "[WARN] jwrapper: element [%d] is undefined or of unknown type\n", i );
 				break;
 		}
+
+		if( DEBUG ) fprintf( stderr, "<DBUG> stepping i = %d  by %d max=%d\n", i, step, njtokens );
+		i += step;				// step to next name token
 	}
 
+	if( DEBUG ) fprintf( stderr, "<DBUG> ================= recursion ends  =======================\n\n" );
 	free( jtokens );
 	return st;
 }
@@ -455,8 +532,6 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 	Destroy all operating structures assocaited with the symtab pointer passed in.
 */
 extern void jw_nuke( void* st ) {
-	char*	buf;					// pointer to the original json to free
-
 	if( st != NULL ) {
 		rmr_sym_foreach_class( st, OBJ_SPACE, nix_things, NULL );	// free any json thing that the symtab references
 		rmr_sym_foreach_class( st, MGT_SPACE, nix_mgt, NULL );		// free management things
@@ -489,13 +564,15 @@ extern void* jw_new( const char* json ) {
 	char*	djson;				// dup so we can save it
 	void*	rp = NULL;			// return value
 
-	if( json != NULL && (st = rmr_sym_alloc( MAX_THINGS/4 )) != NULL ) {
-		djson = strdup( json );													// allows user to free/overlay their buffer as needed
-		rp =  parse_jobject( st,  djson, "" );			// empty prefix for the root object; parse_jo will clean up and free st
-		if( rp == NULL ) {
-			free( djson );
-		} else {
-			rmr_sym_put( st, (unsigned char *) JSON_SYM_NAME, MGT_SPACE, djson );	// must have a reference to the string until symtab is trashed
+	if( json != NULL ) {
+		if( (st = rmr_sym_alloc( MAX_THINGS/4 )) != NULL ) {
+			djson = strdup( json );													// allows user to free/overlay their buffer as needed
+			rp =  parse_jobject( st,  djson, "" );			// empty prefix for the root object; parse_jo will clean up and free st
+			if( rp == NULL ) {
+				free( djson );
+			} else {
+				rmr_sym_put( st, (unsigned char *) JSON_SYM_NAME, MGT_SPACE, djson );	// must have a reference to the string until symtab is trashed
+			}
 		}
 	}
 
@@ -516,7 +593,7 @@ extern int jw_missing( void* st, const char* name ) {
 }
 
 /*
-	Returns true (1) if the named field is in the blob;
+	Returns true (1) if the named field is in the blob.
 */
 extern int jw_exists( void* st, const char* name ) {
 	int rv = 0;
@@ -532,14 +609,13 @@ extern int jw_exists( void* st, const char* name ) {
 	Returns true (1) if the primative type is value (double).
 */
 extern int jw_is_value( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab
+	const jthing_t* jtp;									// thing that is referenced by the symtab
 	int rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		rv = jtp->prim_type == PT_VALUE;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			rv = jtp->prim_type == PT_VALUE;
+		}
 	}
 
 	return rv;
@@ -548,14 +624,13 @@ extern int jw_is_value( void* st, const char* name ) {
 	Returns true (1) if the primative type is string.
 */
 extern int jw_is_string( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab
+	const jthing_t* jtp;								// thing that is referenced by the symtab
 	int rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		rv = jtp->prim_type == PT_STRING;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			rv = jtp->prim_type == PT_STRING;
+		}
 	}
 
 	return rv;
@@ -565,14 +640,13 @@ extern int jw_is_string( void* st, const char* name ) {
 	Returns true (1) if the primative type is boolean.
 */
 extern int jw_is_bool( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab
+	const jthing_t* jtp;									// thing that is referenced by the symtab
 	int		rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		rv =  jtp->prim_type == PT_BOOL;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			rv =  jtp->prim_type == PT_BOOL;
+		}
 	}
 
 	return rv;
@@ -582,14 +656,13 @@ extern int jw_is_bool( void* st, const char* name ) {
 	Returns true (1) if the primative type was a 'null' type.
 */
 extern int jw_is_null( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab
+	const jthing_t* jtp;									// thing that is referenced by the symtab
 	int		rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		rv = jtp->prim_type == PT_NULL;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			rv = jtp->prim_type == PT_NULL;
+		}
 	}
 
 	return rv;
@@ -599,15 +672,14 @@ extern int jw_is_null( void* st, const char* name ) {
 	Look up the name in the symtab and return the string (data).
 */
 extern char* jw_string( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab
+	const jthing_t* jtp;									// thing that is referenced by the symtab
 	char*		rv = NULL;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		if( jtp->jsmn_type == JSMN_STRING ) {
-			rv = (char *) jtp->v.pv;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			if( jtp->jsmn_type == JSMN_STRING ) {
+				rv = (char *) jtp->v.pv;
+			}
 		}
 	}
 
@@ -637,15 +709,14 @@ extern double jw_value( void* st, const char* name ) {
 	Look up name and return the blob (symtab).
 */
 extern void* jw_blob( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab
+	const jthing_t* jtp;									// thing that is referenced by the symtab
 	void*	rv = NULL;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
-
-		if( jtp->jsmn_type == JSMN_OBJECT ) {
-			rv = (void *) jtp->v.pv;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = (jthing_t *) rmr_sym_get( st, name, OBJ_SPACE )) != NULL ) {
+			if( jtp->jsmn_type == JSMN_OBJECT ) {
+				rv = (void *) jtp->v.pv;
+			}
 		}
 	}
 
@@ -657,14 +728,13 @@ extern void* jw_blob( void* st, const char* name ) {
 	returns true/false based on the value.
 */
 extern int jw_bool_ele( void* st, const char* name, int idx ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	int		rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
 			rv = !! ((int) jtp->v.fv);
+		}
 	}
 
 	return rv;
@@ -677,15 +747,14 @@ extern int jw_bool_ele( void* st, const char* name, int idx ) {
 		element is not a string
 */
 extern char* jw_string_ele( void* st, const char* name, int idx ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	char*		rv = NULL;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
-		if( jtp->jsmn_type == JSMN_STRING ) {
-			rv = (char *) jtp->v.pv;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
+			if( jtp->jsmn_type == JSMN_STRING ) {
+				rv = (char *) jtp->v.pv;
+			}
 		}
 	}
 
@@ -700,15 +769,14 @@ extern char* jw_string_ele( void* st, const char* name, int idx ) {
 		element is not a value
 */
 extern double jw_value_ele( void* st, const char* name, int idx ) {
-	jthing_t*	jtp;							// thing that is referenced by the symtab entry
+	const jthing_t*	jtp;							// thing that is referenced by the symtab entry
 	double		rv = 0.0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
-		if( jtp->prim_type == PT_VALUE ) {
-			rv = jtp->v.fv;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
+			if( jtp->prim_type == PT_VALUE ) {
+				rv = jtp->v.fv;
+			}
 		}
 	}
 
@@ -737,14 +805,13 @@ extern int jw_is_string_ele( void* st, const char* name, int idx ) {
 	Return true (1) if it is.
 */
 extern int jw_is_value_ele( void* st, const char* name, int idx ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	int		rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
 			rv = jtp->prim_type == PT_VALUE;
+		}
 	}
 
 	return rv;
@@ -755,14 +822,13 @@ extern int jw_is_value_ele( void* st, const char* name, int idx ) {
 	Return true (1) if it is.
 */
 extern int jw_is_bool_ele( void* st, const char* name, int idx ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	int		rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
 			rv = jtp->prim_type == PT_BOOL;
+		}
 	}
 
 	return rv;
@@ -773,14 +839,13 @@ extern int jw_is_bool_ele( void* st, const char* name, int idx ) {
 	Return true (1) if it is.
 */
 extern int jw_is_null_ele( void* st, const char* name, int idx ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	int		rv = 0;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
 			rv =  jtp->prim_type == PT_NULL;
+		}
 	}
 
 	return rv;
@@ -799,15 +864,14 @@ extern int jw_is_null_ele( void* st, const char* name, int idx ) {
 	namespace.
 */
 extern void* jw_obj_ele( void* st, const char* name, int idx ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	void*		rv = NULL;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_element( st, name, idx )) != NULL ) {
-
-		if( jtp->jsmn_type == JSMN_OBJECT ) {
-			rv = (void *) jtp->v.pv;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_element( st, name, idx )) != NULL ) {
+			if( jtp->jsmn_type == JSMN_OBJECT ) {
+				rv = (void *) jtp->v.pv;
+			}
 		}
 	}
 
@@ -819,14 +883,13 @@ extern void* jw_obj_ele( void* st, const char* name, int idx ) {
 	and returns the number of elements otherwise.
 */
 extern int jw_array_len( void* st, const char* name ) {
-	jthing_t* jtp;									// thing that is referenced by the symtab entry
+	const jthing_t* jtp;									// thing that is referenced by the symtab entry
 	int		rv = -1;
 
-	if( st != NULL &&
-		name != NULL &&
-		(jtp = suss_array( st, name )) != NULL ) {
-
-		rv = jtp->nele;
+	if( st != NULL && name != NULL ) {
+		if( (jtp = suss_array( st, name )) != NULL ) {
+			rv = jtp->nele;
+		}
 	}
 
 	return rv;
