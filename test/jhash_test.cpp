@@ -204,9 +204,9 @@ int main( int argc, char** argv ) {
 	errors += fail_if( state, "string element check on non-stirng element returned true" );
 
 	state = jh->Is_value_ele( (char *) "dues_assistance", 1 );
-	errors += fail_if( !state, "string element check on sponser failed" );
+	errors += fail_if( !state, "value element type check on value element reported false" );
 	state = jh->Is_value_ele( (char *) "current_on_dues", 1 );
-	errors += fail_if( state, "string element check on non-stirng element returned true" );
+	errors += fail_if( state, "value element type check on non-value element returned true" );
 
 	state = jh->Is_bool_ele( (char *) "current_on_dues", 1 );
 	errors += fail_if( !state, "string element check on sponser failed" );
@@ -224,7 +224,14 @@ int main( int argc, char** argv ) {
 
 	// ---- test sussing of elements from arrays -------------------------------------------------
 	sval = jh->String_ele( (char *) "sponser", 1 );
-	errors += fail_if( sval.compare( "" ) == 0, "get string element failed for sponser" );
+	errors += fail_if( sval.compare( "" ) == 0, "get string element failed for sponser (empty string)" );
+	errors += fail_if( sval.compare( "slate" ) != 0, "get string element failed for sponser (wrong value for[1])" );
+
+	sval = jh->String_ele( (char *) "sponser", 0 );
+	errors += fail_if( sval.compare( "slate" ) != 0, "get string element failed for sponser (wrong value for [0])" );
+
+	sval = jh->String_ele( (char *) "sponser", 3 );
+	errors += fail_if( sval.compare( "brick" ) != 0, "get string element failed for sponser (wrong value for [3])" );
 
 	val = jh->Value_ele( (char *) "dues_assistance", 1 );
 	errors += fail_if( val == 0.0, "get value element for dues_assistance was zero" );
@@ -237,6 +244,8 @@ int main( int argc, char** argv ) {
 
 	val = jh->Value( (char *) "timestamp" );
 	fprintf( stderr, "<INFO> timestamp: %.10f\n", val );
+
+	jh->Dump();			// for coverage of debug things
 
 
 	//  ----- jhashes can be moved, drive that logic for coverage
