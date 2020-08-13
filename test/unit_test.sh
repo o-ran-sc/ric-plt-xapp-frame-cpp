@@ -92,7 +92,17 @@ done
 
 echo "## INFO ##"
 echo "build dir=$build_dir"
-find $build_dir -name "libricxfcpp.*"
+if ! find $build_dir | grep "libricxfcpp.*"	# find returns good even if none; must grep to see error
+then
+	echo "building first..."
+	(
+		cd $build_dir
+		make package
+	)
+
+	echo "build finished"
+	find $build_dir -name "libricxfcpp.*"
+fi
 echo "## INFO ##"
 
 export LD_LIBRARY_PATH=$build_dir:/usr/local/lib:$LD_LIBRARY_PATH
