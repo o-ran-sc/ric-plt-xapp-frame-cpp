@@ -181,12 +181,10 @@ static void nix_things( void* st, void* se, const char* name, void* ele, void *d
 	jthing_t*	jarray;
 	int i;
 
-	st = st;			// silly things to keep sonar from complaining
-	name = name;
-	se = se;
-	data = data;
-
 	if( (j = (jthing_t *) ele) == NULL )  {
+		if( st == NULL && name == NULL && se == NULL && data == NULL ) {	// these are ignored, but this keeps sonar from screaming bug
+			fprintf( stderr, "jwrapper: nix_thigs: all params were nil\n" );
+		}
 		return;
 	}
 
@@ -228,10 +226,14 @@ static void nix_things( void* st, void* se, const char* name, void* ele, void *d
 	symtab code which defines the set of params and we use what we need.
 */
 static void nix_mgt( void* st, void* se, const char* name,  void* ele, void *data ) {
-	st = st;			// silly things to keep sonar from complaining (let's hope the compiler is better than sonar
-	name = name;		// and optimises these out).
-	se = se;
-	data = data;
+
+	if( ele == NULL ) {
+		if( st == NULL && name == NULL && se == NULL && data == NULL ) {	// these are ignored, but this keeps sonar from screaming bug
+			fprintf( stderr, "jwrapper: dump_things: all params were nil\n" );
+		}
+
+		return;
+	}
 
 	free( ele );
 }
@@ -243,15 +245,13 @@ static void nix_mgt( void* st, void* se, const char* name,  void* ele, void *dat
 static void dump_things( void* st, void* se, const char* name,  void* ele, void *data ) {
 	const jthing_t*	j;
 
-	st = st;			// silly things to keep sonar from complaining (let's hope the compiler is better than sonar
-	name = name;		// and optimises these out).
-	se = se;
-	data = data;
-
 	j = (jthing_t *) ele;
 	if( j ) {
 		fprintf( stderr, "<DBUG> jwrapper: element '%s' has ptype %d, jsmn type %d\n", name, j->prim_type, j->jsmn_type );
 	} else {
+		if( st == NULL && name == NULL && se == NULL && data == NULL ) {	// these are ignored, but this keeps sonar from screaming bug
+			fprintf( stderr, "jwrapper: dump_things: all params were nil\n" );
+		}
 		fprintf( stderr, "<DBUG> jwrapper: element has no data: '%s'\n", name );
 	}
 }
