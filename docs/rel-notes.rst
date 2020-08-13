@@ -18,6 +18,11 @@ xAPP Framework.
 Cherry Release
 ==============
 
+2020 13 August; version 2.2.2
+-----------------------------
+Correct potential memory leaks in xapp class (RIC-629)
+
+
 2020 July 31; version 2.2.1
 ---------------------------
 Correct "bugs" according to sonar (RIC-629)

@@ -117,8 +117,11 @@ echo "tests successfully built" >&2
 
 spew="cat"
 
+# order here is important to ensure coverage files accumulate
+tests="jw_cov_test metrics_test jhash_test config_test  unit_test"
+
 #run everything, then generate coverage stats after all have run
-for x in metrics_test jhash_test config_test  unit_test
+for x in $tests
 do
 	./$x >/tmp/PID$$.log 2>&1
 	abort_if_error $? "test failed: $x"
@@ -127,7 +130,7 @@ done
 # it seems that we loose coverage reporting if metrics_test's gcov file is generated
 # after unit test.  Very strange. To be safe, run unit_test last.
 #
-for x in metrics_test jhash_test config_test unit_test
+for x in $tests
 do
 	gcov $x.c >/dev/null 2>&1
 done

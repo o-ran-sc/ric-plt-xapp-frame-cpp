@@ -126,6 +126,9 @@ void xapp::Config::Listener( ) {
 			}
 		}
 	}
+
+	free( dname );
+	free( bname );
 }
 
 

@@ -87,7 +87,7 @@ void Xapp::Run( int nthreads ) {
 		tinfo[i]->join();
 	}
 
-	delete tinfo;
+	delete[] tinfo;
 }
 
 /*
