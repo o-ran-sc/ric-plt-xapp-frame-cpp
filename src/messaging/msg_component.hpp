@@ -47,7 +47,7 @@ namespace xapp {
 	such a smart pointer, and does _nothing_ when called.
 */
 typedef struct {
-	void operator()( unsigned char * p ){}
+	void operator()( unsigned char * p ) const { /* empty to prevent free */ }
 } unfreeable;
 
 /*

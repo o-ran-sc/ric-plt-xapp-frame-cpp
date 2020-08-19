@@ -90,13 +90,13 @@ xapp::Messenger::Messenger( const char* uport, bool wait4table ) {
 	the new object, and then DELETE what was moved so that when the
 	user frees the soi, it doesn't destroy what we snarfed.
 */
-xapp::Messenger::Messenger( Messenger&& soi ) {
-	mrc = soi.mrc;
-	listen_port = soi.listen_port;
-	ok_2_run = soi.ok_2_run;
-	gate = soi.gate;
-		cb_hash = soi.cb_hash;				// this seems dodgy
-
+xapp::Messenger::Messenger( Messenger&& soi ) :
+	mrc(  soi.mrc ),
+	listen_port(  soi.listen_port ),
+	ok_2_run(  soi.ok_2_run ),
+	gate(  soi.gate ),
+	cb_hash(  soi.cb_hash )			// this seems dodgy
+{
 	soi.gate = NULL;
 	soi.listen_port = NULL;
 	soi.mrc = NULL;
@@ -112,7 +112,7 @@ xapp::Messenger& Messenger::operator=( Messenger&& soi ) {
 			rmr_close( mrc );
 		}
 		if( listen_port != NULL ) {
-			free( listen_port );
+			delete( listen_port );
 		}
 
 		mrc = soi.mrc;
@@ -138,7 +138,7 @@ xapp::Messenger::~Messenger() {
 	}
 
 	if( listen_port != NULL ) {
-		free( listen_port );
+		delete( listen_port );
 	}
 }
 
@@ -147,7 +147,7 @@ xapp::Messenger::~Messenger() {
 	message is received.  The user may pass an optional data pointer which
 	will be passed to the function when it is called.  The function signature
 	must be:
-		void fun( Messenger* mr, rmr_mbuf_t* mbuf,  void* data );
+		void fun( Messenger* mr, rmr_mbuf_t* mbuf,  void* data )
 
 	The user can also invoke this function to set the "default" callback by
 	passing Messenger::DEFAULT_CALLBACK as the mtype. If no other callback
@@ -181,7 +181,7 @@ std::unique_ptr<Message> xapp::Messenger::Alloc_msg( int payload_size ) {
 	just a message, but to avoid having the user pass the framework
 	object in, we'll just supply a "factory" function.
 */
-std::unique_ptr<xapp::Alarm> xapp::Messenger::Alloc_alarm( int prob_id, std::string meid ) {
+std::unique_ptr<xapp::Alarm> xapp::Messenger::Alloc_alarm( int prob_id, const std::string& meid ) {
 	std::shared_ptr<Message> m;
 	Alarm* a;
 
@@ -192,7 +192,7 @@ std::unique_ptr<xapp::Alarm> xapp::Messenger::Alloc_alarm( int prob_id, std::str
 	return std::unique_ptr<Alarm>( a );
 }
 
-std::unique_ptr<xapp::Alarm> xapp::Messenger::Alloc_alarm( std::string meid ) {
+std::unique_ptr<xapp::Alarm> xapp::Messenger::Alloc_alarm( const std::string& meid ) {
 	return Alloc_alarm( -1, meid );
 }
 
@@ -209,14 +209,14 @@ std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( ) {
 	return std::unique_ptr<xapp::Metrics>( new xapp::Metrics( m ) );
 }
 
-std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( std::string source ) {
+std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( const std::string& source ) {
 	std::shared_ptr<Message> m;
 
 	m = Alloc_msg( 4096 );
 	return std::unique_ptr<xapp::Metrics>( new xapp::Metrics( m, source ) );
 }
 
-std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( std::string reporter, std::string source ) {
+std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( const std::string& reporter, const std::string& source ) {
 	std::shared_ptr<Message> m;
 
 	m = Alloc_msg( 4096 );
@@ -235,7 +235,6 @@ std::unique_ptr<xapp::Metrics> xapp::Messenger::Alloc_metrics( std::string repor
 	Concurrently executing listeners are allowed.
 */
 void xapp::Messenger::Listen( ) {
-	int count = 0;
 	rmr_mbuf_t*	mbuf = NULL;
 	std::map<int,Callback*>::iterator mi;	// map iterator; silly indirect way to point at the value
 	Callback*	dcb = NULL;					// default callback so we don't search
@@ -348,7 +347,7 @@ bool xapp::Messenger::Wait_for_cts( int max_wait ) {
 /*
 	Open a wormhole to the indicated endpoint and return the wormhole ID.
 */
-int xapp::Messenger::Wormhole_open( std::string endpoint ) {
+int xapp::Messenger::Wormhole_open( const std::string& endpoint ) {
 	rmr_whid_t whid;
 
 	whid = rmr_wh_open( mrc, endpoint.c_str() );

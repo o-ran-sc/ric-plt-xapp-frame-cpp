@@ -48,9 +48,17 @@ namespace xapp {
 
 	The mr paramter is obviously ignored, but to add this as a callback
 	the function sig must match.
+
+	This is a callback function; sonar will complain that we don't use payload or
+	data -- we don't, but this is a standard function proto so we cannot just
+	drop them.
 */
 void Health_ck_cb( Message& mbuf, int mtype, int sid, int len, Msg_component payload, void* data ) {
 	unsigned char response[128];
+
+	if( len < 0  || mtype < 0 ) {
+		return;
+	}
 
 	snprintf( (char* ) response, sizeof( response ), "OK\n" );
 	mbuf.Send_response( RIC_HEALTH_CHECK_RESP, sid, strlen( (char *) response )+1, response );

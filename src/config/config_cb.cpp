@@ -37,9 +37,9 @@ namespace xapp {
 /*
 	Builder.
 */
-Config_cb::Config_cb( notify_callback ufun, void* udata ) :
+Config_cb::Config_cb( notify_callback ufun, void* user_data ) :
 		user_fun( ufun ),
-		udata( udata )
+		udata( user_data )
 { /* empty body */  }
 
 
@@ -50,13 +50,14 @@ Config_cb::Config_cb( notify_callback ufun, void* udata ) :
 
 /*
 	Drive_cb will invoke the callback and pass along the stuff passed here.
+	User_data may be nil which causes the data registered with the callback
+	to be used.
 */
-void xapp::Config_cb::Drive_cb( xapp::Config& c, void* udata ) {
+void xapp::Config_cb::Drive_cb( xapp::Config& c, void* user_data ) const {
 	if( user_fun != NULL ) {
-		user_fun( c, udata );
+		user_fun( c, user_data == NULL ? udata : user_data );
 	}
 }
-
 
 
 } // namespace
