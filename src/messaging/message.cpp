@@ -52,24 +52,27 @@ namespace xapp {
 /*
 	Create a new message wrapper for an existing RMR msg buffer.
 */
-xapp::Message::Message( rmr_mbuf_t* mbuf, void* mrc ) {
-	this->mrc = mrc;			// the message router context for sends
-	this->mbuf = mbuf;
-}
+xapp::Message::Message( rmr_mbuf_t* mbuf, void* mrc ) :
+	mrc(  mrc ),			// the message router context for sends
+	mbuf(  mbuf )
+{  /* empty body */ }
 
-xapp::Message::Message( void* mrc, int payload_len ) {
-	this->mrc = mrc;
-	this->mbuf = rmr_alloc_msg( mrc, payload_len );
-}
+xapp::Message::Message( void* mrctx, int payload_len ) :
+	mrc(  mrctx ),										// the message router context for sends
+	mbuf(  rmr_alloc_msg( mrc, payload_len ) )
+{ /* empty body */ }
+//	this->mrc = mrc;
+	//this->mbuf = rmr_alloc_msg( mrc, payload_len );
 
 /*
 	Copy builder.  Given a source object instance (soi), create a copy.
 	Creating a copy should be avoided as it can be SLOW!
 */
-xapp::Message::Message( const Message& soi ) {
+xapp::Message::Message( const Message& soi ) :
+	mrc( soi.mrc )
+{
 	int payload_size;
 
-	mrc = soi.mrc;
 	payload_size = rmr_payload_size( soi.mbuf );		// rmr can handle a nil pointer
 	mbuf = rmr_realloc_payload( soi.mbuf, payload_size, RMR_COPY, RMR_CLONE );
 }
@@ -99,10 +102,10 @@ Message& xapp::Message::operator=( const Message& soi ) {
 	the soi ensuring that the destriction of the soi doesn't trash things from
 	under us.
 */
-xapp::Message::Message( Message&& soi ) {
-	mrc = soi.mrc;
-	mbuf = soi.mbuf;
-
+xapp::Message::Message( Message&& soi ) :
+	mrc(  soi.mrc ),
+	mbuf(  soi.mbuf )
+{
 	soi.mrc = NULL;		// prevent closing of RMR stuff on soi destroy
 	soi.mbuf = NULL;
 }
@@ -165,7 +168,7 @@ std::unique_ptr<unsigned char> xapp::Message::Copy_payload( ){
 /*
 	Makes a copy of the MEID and returns a smart pointer to it.
 */
-std::unique_ptr<unsigned char> xapp::Message::Get_meid(){
+std::unique_ptr<unsigned char> xapp::Message::Get_meid() const {
 	unsigned char* m = NULL;
 
 	m = (unsigned char *) malloc( sizeof( unsigned char ) * RMR_MAX_MEID );
@@ -180,11 +183,11 @@ std::unique_ptr<unsigned char> xapp::Message::Get_meid(){
 	If mbuf isn't valid (nil, or message has a broken header) the return
 	will be -1.
 */
-int xapp::Message::Get_available_size(){
+int xapp::Message::Get_available_size() const {
 	return rmr_payload_size( mbuf );		// rmr can handle a nil pointer
 }
 
-int	xapp::Message::Get_mtype(){
+int	xapp::Message::Get_mtype() const {
 	int rval = INVALID_MTYPE;
 
 	if( mbuf != NULL ) {
@@ -197,8 +200,8 @@ int	xapp::Message::Get_mtype(){
 /*
 	Makes a copy of the source field and returns a smart pointer to it.
 */
-std::unique_ptr<unsigned char> xapp::Message::Get_src(){
-	unsigned char* m = new unsigned char[RMR_MAX_SRC]; 
+std::unique_ptr<unsigned char> xapp::Message::Get_src() const {
+	unsigned char* m = new unsigned char[RMR_MAX_SRC];
 
 	if( m != NULL ) {
 		rmr_get_src( mbuf, m );
@@ -207,7 +210,7 @@ std::unique_ptr<unsigned char> xapp::Message::Get_src(){
 	return std::unique_ptr<unsigned char>( m );
 }
 
-int	xapp::Message::Get_state( ){
+int	xapp::Message::Get_state( ) const {
 	int state = INVALID_STATUS;
 
 	if( mbuf != NULL ) {
@@ -217,7 +220,7 @@ int	xapp::Message::Get_state( ){
 	return state;
 }
 
-int	xapp::Message::Get_subid(){
+int	xapp::Message::Get_subid() const {
 	int	rval = INVALID_SUBID;
 
 	if( mbuf != NULL ) {
@@ -231,7 +234,7 @@ int	xapp::Message::Get_subid(){
 	Return the amount of the payload (bytes) which is used. See
 	Get_available_size() to get the total usable space in the payload.
 */
-int	xapp::Message::Get_len(){
+int	xapp::Message::Get_len() const {
 	int rval = 0;
 
 	if( mbuf != NULL ) {
@@ -249,7 +252,7 @@ int	xapp::Message::Get_len(){
 	length by calling Message:Get_available_size(), and ensuring that
 	writing beyond the indicated size does not happen.
 */
-Msg_component xapp::Message::Get_payload(){
+Msg_component xapp::Message::Get_payload() const {
 	if( mbuf != NULL ) {
 		return std::unique_ptr<unsigned char, unfreeable>( mbuf->payload );
 	}
@@ -259,7 +262,7 @@ Msg_component xapp::Message::Get_payload(){
 
 void xapp::Message::Set_meid( std::shared_ptr<unsigned char> new_meid ) {
 	if( mbuf != NULL ) {
-		rmr_str2meid( mbuf, (unsigned char *) new_meid.get() );
+		rmr_str2meid( mbuf, new_meid.get() );
 	}
 }
 
@@ -362,6 +365,9 @@ bool xapp::Message::Send( int mtype, int subid, int payload_len, unsigned char* 
 			case WORMHOLE_MSG:
 				mbuf = rmr_wh_send_msg( mrc, whid,  mbuf );
 				break;
+
+			default:
+				break;					// because sonar doesn't like defaultless switches even when there is no work :(
 		}
 
 		state = mbuf->state == RMR_OK;

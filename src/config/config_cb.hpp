@@ -55,7 +55,7 @@ class Config_cb {
 
 	public:
 		Config_cb( notify_callback cbfun, void* user_data );		// builder
-		void Drive_cb( xapp::Config& c, void* udata );				// invoker
+		void Drive_cb( xapp::Config& c, void* user_data ) const;	// invokers
 };
 
 } // namespace

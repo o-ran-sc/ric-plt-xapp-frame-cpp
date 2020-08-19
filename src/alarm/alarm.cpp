@@ -35,7 +35,9 @@
 
 #include <rmr/RIC_message_types.h>
 #ifndef RIC_ALARM
-	#define RIC_ALARM 110
+	// this _should_ come from the message types header, but if not ensure we have something
+	constexpr int ric_alarm_value = 110;
+	#define RIC_ALARM ric_alarm_value
 #endif
 
 #include <iostream>
@@ -44,7 +46,7 @@
 #include "message.hpp"
 #include "alarm.hpp"
 
-extern char* __progname;			// runtime lib supplied since we don't get argv[0]
+extern const char* __progname;			// runtime lib supplied since we don't get argv[0]
 
 namespace xapp {
 
@@ -63,7 +65,7 @@ namespace xapp {
 	then we assume 4560 (the defacto RMR listen port).
 */
 static std::string endpoint_addr( ) {
-	char*	et;									// environment token
+	const char*	et;									// environment token
 	std::string addr = "localhost";
 	std::string port = "4560";
 
@@ -98,8 +100,7 @@ static long long now( void ) {
 	Returns the length of the payload inserted.
 */
 int xapp::Alarm::build_alarm( int action_id, xapp::Msg_component payload, int payload_len ) {
-	//char	wbuf[4096];
-	std::string action;
+	std::string maction;				// message action is a text string
 	int used;
 
 	if( app_id.compare( "" ) == 0 ) {
@@ -112,20 +113,18 @@ int xapp::Alarm::build_alarm( int action_id, xapp::Msg_component payload, int pa
 
 	switch( action_id ) {
 		case	Alarm::ACT_CLEAR:
-			action = "CLEAR";
+			maction = "CLEAR";
 			break;
 
 		case	Alarm::ACT_CLEAR_ALL:
-			action = "CLEARALL";
+			maction = "CLEARALL";
 			break;
 
 		default:
-			action = "RAISE";
+			maction = "RAISE";
 			break;
 	}
 
-	//memset( wbuf, 0, sizeof( wbuf ) );
-	//snprintf( wbuf, sizeof( wbuf ),
 	used = snprintf( (char *) payload.get(), payload_len,
 			"{  "
 			"\"managedObjectId\": \"%s\", "
@@ -144,7 +143,7 @@ int xapp::Alarm::build_alarm( int action_id, xapp::Msg_component payload, int pa
 			severity.c_str(),
 			info.c_str(),
 			add_info.c_str(),
-			action.c_str(),
+			maction.c_str(),
 			now()
 	);
 
@@ -162,41 +161,23 @@ int xapp::Alarm::build_alarm( int action_id, xapp::Msg_component payload, int pa
 */
 xapp::Alarm::Alarm( std::shared_ptr<Message> msg ) :
 	msg( msg ),
-	endpoint( endpoint_addr() ),
-	whid( -1 ),
-	app_id( "" ),
-	me_id( "" ),
-	problem_id( -1 ),
-	info( "" ),
-	add_info( "" ),
-	action( "" )
+	endpoint( endpoint_addr() )
 { /* empty body */ }
 
 /*
 	Parameterised constructor (avoids calling setters after creation).
 */
-xapp::Alarm::Alarm( std::shared_ptr<Message> msg, int prob_id, std::string meid  ) :
+xapp::Alarm::Alarm( std::shared_ptr<Message> msg, int prob_id, const std::string& meid  ) :
 	msg( msg ),
 	endpoint( endpoint_addr() ),
-	whid( -1 ),
-	app_id( "" ),
 	me_id( meid ),
-	problem_id( prob_id ),
-	info( "" ),
-	add_info( "" ),
-	action( "" )
+	problem_id( prob_id )
 { /* empty body */ }
 
-xapp::Alarm::Alarm( std::shared_ptr<Message> msg, std::string meid  ) :
+xapp::Alarm::Alarm( std::shared_ptr<Message> msg, const std::string& meid  ) :
 	msg( msg ),
 	endpoint( endpoint_addr() ),
-	whid( -1 ),
-	app_id( "" ),
-	me_id( meid ),
-	problem_id( -1 ),
-	info( "" ),
-	add_info( "" ),
-	action( "" )
+	me_id( meid )
 { /* empty body */ }
 
 
@@ -207,18 +188,18 @@ xapp::Alarm::Alarm( std::shared_ptr<Message> msg, std::string meid  ) :
 	Copy builder.  Given a source object instance (soi), create a copy.
 	Creating a copy should be avoided as it can be SLOW!
 */
-xapp::Alarm::Alarm( const Alarm& soi ) {
-	msg = soi.msg;
-	endpoint = soi.endpoint;
-	whid = soi.whid;
+xapp::Alarm::Alarm( const Alarm& soi ) :
+	msg(  soi.msg ),
+	endpoint(  soi.endpoint ),
+	whid(  soi.whid ),
 
-	me_id = soi.me_id;				// user stuff
-	app_id = soi.app_id;
-	problem_id = soi.problem_id;
-	severity = soi.severity;
-	info = soi.info;
-	add_info = soi.add_info;
-}
+	me_id(  soi.me_id ),				// user stuff
+	app_id(  soi.app_id ),
+	problem_id(  soi.problem_id ),
+	severity(  soi.severity ),
+	info(  soi.info ),
+	add_info(  soi.add_info )
+{ /* empty body */ }
 
 /*
 	Assignment operator. Simiolar to the copycat, but "this" object exists and
@@ -229,7 +210,6 @@ Alarm& xapp::Alarm::operator=( const Alarm& soi ) {
 		msg = soi.msg;
 		endpoint = soi.endpoint;
 		whid = soi.whid;
-
 		me_id = soi.me_id;
 		app_id = soi.app_id;
 		problem_id = soi.problem_id;
@@ -246,17 +226,17 @@ Alarm& xapp::Alarm::operator=( const Alarm& soi ) {
 	the soi ensuring that the destriction of the soi doesn't trash things from
 	under us.
 */
-xapp::Alarm::Alarm( Alarm&& soi ) {
-	msg = soi.msg;		// capture pointers and copy data before setting soruce things to nil
-	endpoint = soi.endpoint;
-	whid = soi.whid;
-
-	me_id = soi.me_id;
-	app_id = soi.app_id;
-	problem_id = soi.problem_id;
-	severity = soi.severity;
-	info = soi.info;
-	add_info = soi.add_info;
+xapp::Alarm::Alarm( Alarm&& soi )  :
+	msg(  soi.msg ),					// order must match .hpp else sonar complains
+	endpoint(  soi.endpoint ),
+	whid(  soi.whid ),
+	me_id(  soi.me_id ),
+	app_id(  soi.app_id ),
+	problem_id(  soi.problem_id ),
+	severity(  soi.severity ),
+	info(  soi.info ),
+	add_info(  soi.add_info )
+{
 
 	soi.msg = NULL;		// prevent closing of RMR stuff on soi destroy
 }
@@ -298,7 +278,7 @@ xapp::Alarm::~Alarm() {
 
 // ---- setters -------------------------------------------------
 
-void xapp::Alarm::Set_meid( std::string new_meid ) {
+void xapp::Alarm::Set_meid( const std::string& new_meid ) {
 	me_id = new_meid;
 }
 
@@ -330,7 +310,7 @@ void xapp::Alarm::Set_severity( int new_sev ) {
 	}
 }
 
-void xapp::Alarm::Set_appid( std::string new_id ) {
+void xapp::Alarm::Set_appid( const std::string& new_id ) {
 	app_id = new_id;
 }
 
@@ -338,11 +318,11 @@ void xapp::Alarm::Set_problem( int new_id ) {
 	problem_id = new_id;
 }
 
-void xapp::Alarm::Set_info( std::string new_info ) {
+void xapp::Alarm::Set_info( const std::string& new_info ) {
 	info = new_info;
 }
 
-void xapp::Alarm::Set_additional( std::string new_info ) {
+void xapp::Alarm::Set_additional( const std::string& new_info ) {
 	add_info = new_info;
 }
 
@@ -350,7 +330,7 @@ void xapp::Alarm::Set_whid( int new_whid ) {
 	whid = new_whid;
 }
 
-void xapp::Alarm::Dump() {
+const void xapp::Alarm::Dump() {
 	fprintf( stderr, "Alarm: prob id: %d\n", problem_id );
 	fprintf( stderr, "Alarm: meid: %s\n", me_id.c_str() );
 	fprintf( stderr, "Alarm: app: %s\n", app_id.c_str() );
@@ -363,7 +343,7 @@ void xapp::Alarm::Dump() {
 /*
 	Return the enpoint address string we have.
 */
-std::string xapp::Alarm::Get_endpoint( ) {
+const std::string xapp::Alarm::Get_endpoint( ) {
 	return endpoint;
 }
 
@@ -384,16 +364,16 @@ bool xapp::Alarm::Raise( ) {
 	problem ID. Info and addional_info are user supplied data that is just passed
 	through.
 */
-bool xapp::Alarm::Raise( int severity, int problem, std::string info ) {
-	this->severity = severity;
+bool xapp::Alarm::Raise( int new_severity, int problem, const std::string& info ) {
+	Set_severity( new_severity );
 	problem_id = problem;
 	this->info = info;
 
 	Raise();
 }
 
-bool xapp::Alarm::Raise( int severity, int problem, std::string info, std::string additional_info ) {
-	this->severity = severity;
+bool xapp::Alarm::Raise( int new_severity, int problem, const std::string& info, const std::string& additional_info ) {
+	Set_severity( new_severity );
 	problem_id = problem;
 	this->info = info;
 	this->add_info = additional_info;
@@ -417,16 +397,16 @@ bool xapp::Alarm::Clear( ) {
 	problem ID. Info and addional_info are user supplied data that is just passed
 	through.
 */
-bool xapp::Alarm::Clear( int severity, int problem, std::string info ) {
-	this->severity = severity;
+bool xapp::Alarm::Clear( int new_severity, int problem, const std::string& info ) {
+	Set_severity( new_severity );
 	problem_id = problem;
 	this->info = info;
 
 	Clear();
 }
 
-bool xapp::Alarm::Clear( int severity, int problem, std::string info, std::string additional_info ) {
-	this->severity = severity;
+bool xapp::Alarm::Clear( int new_severity, int problem, const std::string& info, const std::string& additional_info ) {
+	Set_severity( new_severity );
 	problem_id = problem;
 	this->info = info;
 	this->add_info = additional_info;

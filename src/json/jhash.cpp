@@ -49,7 +49,6 @@ namespace xapp {
 	suss out the values.
 */
 xapp::Jhash::Jhash( const char* jbuf ) :
-	master_st( NULL ),
 	st( jw_new( jbuf ) )
 { /* empty body */ }
 
@@ -57,10 +56,10 @@ xapp::Jhash::Jhash( const char* jbuf ) :
 /*
 	Move constructor.
 */
-Jhash::Jhash( Jhash&& soi ) {
-	master_st = soi.master_st;
-	st = soi.st;
-
+Jhash::Jhash( Jhash&& soi ) :
+	master_st( soi.master_st ),
+	st( soi.st )
+{
 	soi.st = NULL;						// prevent closing of RMR stuff on soi destroy
 	soi.master_st = NULL;
 }
@@ -142,7 +141,7 @@ void xapp::Jhash::Unset_blob( ) {
 	Right now we don't have much to work with other than checking for a
 	nil table.
 */
-bool xapp::Jhash::Parse_errors( ) {
+const bool xapp::Jhash::Parse_errors( ) {
 	return st == NULL;
 }
 
@@ -232,7 +231,7 @@ bool xapp::Jhash::Bool( const char* name ) {
 */
 std::string xapp::Jhash::String( const char* name ) {
 	std::string rv = "";
-	char*	hashv;
+	const char*	hashv;
 
 	if( (hashv = jw_string( st, name )) != NULL ) {
 		rv = std::string( hashv );
@@ -282,7 +281,7 @@ bool xapp::Jhash::Set_blob_ele( const char* name, int eidx ) {
 */
 std::string xapp::Jhash::String_ele( const char* name, int eidx ) {
 	std::string rv = "";
-	char*	hashv;
+	const char*	hashv;
 
 	if( (hashv = jw_string_ele( st, name, eidx )) != NULL ) {
 		rv = std::string( hashv );

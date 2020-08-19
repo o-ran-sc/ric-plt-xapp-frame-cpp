@@ -42,12 +42,12 @@ namespace xapp {
 #define MAX_PFNAME	(4096 + 256)		// max path name and max filname + nil for buffer allocation
 
 class Config {
-	std::string	fname;				// the file name that we'll listen to
-	std::thread* listener;			// listener thread info
+	std::string	fname = "";					// the file name that we'll listen to
+	std::thread* listener = NULL;			// listener thread info
 
-	std::shared_ptr<Jhash>	jh;		// the currently parsed json from the config
-	std::unique_ptr<Config_cb> cb;	// info needed to drive user code when config change noticed
-	void*	user_cb_data;			// data that the caller wants passed on notification callback
+	std::shared_ptr<Jhash>	jh = NULL;		// the currently parsed json from the config
+	std::unique_ptr<Config_cb> cb = NULL;	// info needed to drive user code when config change noticed
+	void*	user_cb_data = NULL;			// data that the caller wants passed on notification callback
 
 	// -----------------------------------------------------------------------
 	private:
@@ -57,20 +57,20 @@ class Config {
 
 	public:
 		Config();						// builders
-		Config( std::string fname);
+		Config( const std::string& fname);
 
-		bool Get_control_bool( std::string name, bool defval );
-		bool Get_control_bool( std::string name );
+		bool Get_control_bool( const std::string& name, bool defval ) const;
+		bool Get_control_bool( const std::string& name ) const;
 
-		std::string Get_contents( );
+		std::string Get_contents( ) const;
 
-		std::string Get_control_str( std::string name, std::string defval );
-		std::string Get_control_str( std::string name );
+		std::string Get_control_str( const std::string& name, const std::string& defval ) const;
+		std::string Get_control_str( const std::string& name ) const;
 
-		double Get_control_value( std::string name, double defval );
-		double Get_control_value( std::string name );
+		double Get_control_value( const std::string& name, double defval ) const;
+		double Get_control_value( const std::string& name ) const;
 
-		std::string Get_port( std::string name );
+		std::string Get_port( const std::string& name ) const;
 
 		void Set_callback( notify_callback usr_func, void* usr_data );
 };

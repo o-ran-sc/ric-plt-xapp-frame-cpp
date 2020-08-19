@@ -36,10 +36,10 @@ namespace xapp {
 /*
 	Builder.
 */
-Callback::Callback( user_callback ufun, void* data ) {		// builder
-	user_fun = ufun;
-	udata = data;
-}
+Callback::Callback( user_callback ufun, void* data ) :		// builder
+	user_fun( ufun ),
+	udata( data )
+{ /* empty body */ }
 
 /*
 	there is nothing to be done from a destruction perspective, so no
@@ -51,7 +51,7 @@ Callback::Callback( user_callback ufun, void* data ) {		// builder
 */
 void xapp::Callback::Drive_cb( Message& m ) {
 	if( user_fun != NULL ) {
-		user_fun( m, m.Get_mtype(), m.Get_subid(), m.Get_len(), m.Get_payload(),  udata );
+		user_fun( m, m.Get_mtype(), m.Get_subid(), m.Get_len(), m.Get_payload(), udata );
 	}
 }
 
