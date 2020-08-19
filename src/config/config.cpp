@@ -71,10 +71,10 @@ namespace xapp {
 	and not directory entries.
 */
 void xapp::Config::Listener( ) {
-	struct inotify_event*	ie;		// event that popped
+	const struct inotify_event*	ie;	// event that popped
 	int ifd;						// the inotify file des
 	int	wfd;						// the watched file des
-	int	n;
+	ssize_t	n;
 	char	rbuf[4096];				// large read buffer as the event is var len
 	char*	dname;					// directory name
 	char*	bname;					// basename
@@ -96,10 +96,12 @@ void xapp::Config::Listener( ) {
 		bname = strdup( fname.c_str() );
 	}
 
-	wfd = inotify_add_watch( ifd, (char *) dname, IN_MOVED_TO | IN_CLOSE_WRITE );		// we only care about close write changes
+	wfd = inotify_add_watch( ifd, dname, IN_MOVED_TO | IN_CLOSE_WRITE );		// we only care about close write changes
+	free( dname );
 
 	if( wfd < 0 ) {
 		fprintf( stderr, "<XFCPP> ### ERR ### unable to add watch on config file %s: %s\n", fname.c_str(), strerror( errno ) );
+		free( bname );
 		return;
 	}
 
@@ -116,9 +118,9 @@ void xapp::Config::Listener( ) {
 
 		ie = (inotify_event *) rbuf;
 		if( ie->len > 0 && strcmp( bname, ie->name ) == 0  ) {
-			// TODO: lock
+			// future: lock
 			auto njh = jparse( fname );							// reparse the file
-			// TODO: unlock
+			// future: unlock
 
 			if( njh != NULL && cb != NULL ) {				// good parse, save and drive user callback
 				jh = njh;
@@ -126,9 +128,6 @@ void xapp::Config::Listener( ) {
 			}
 		}
 	}
-
-	free( dname );
-	free( bname );
 }
 
 
@@ -162,10 +161,10 @@ std::shared_ptr<xapp::Jhash> xapp::Config::jparse( std::string ufname ) {
 	if it's a directory name or not if it comes to it.
 */
 std::shared_ptr<xapp::Jhash> xapp::Config::jparse( ) {
-	char*	data;
+	const char*	data;
 
-	if( (data = getenv( (char *) "XAPP_DESCRIPTOR_PATH" )) == NULL ) {
-		data =  (char *) "./config-file.json";
+	if( (data = getenv( (const char *) "XAPP_DESCRIPTOR_PATH" )) == NULL ) {
+		data = (const char *) "./config-file.json";
 	}
 
 	return jparse( std::string( data ) );
@@ -182,16 +181,14 @@ std::shared_ptr<xapp::Jhash> xapp::Config::jparse( ) {
 	the common things should be fairly painless to extract from the json goop.
 */
 xapp::Config::Config() :
-	jh( jparse() ),
-	listener( NULL )
+	jh( jparse() )
 { /* empty body */ }
 
 /*
 	Similar, except that it allows the xAPP to supply the filename (testing?)
 */
-xapp::Config::Config( std::string fname) :
-	jh( jparse( fname ) ),
-	listener( NULL )
+xapp::Config::Config( const std::string& fname) :
+	jh( jparse( fname ) )
 { /* empty body */ }
 
 
@@ -199,7 +196,7 @@ xapp::Config::Config( std::string fname) :
 	Read and return the raw file blob as a single string. User can parse, or do
 	whatever they need (allows non-json things if necessary).
 */
-std::string xapp::Config::Get_contents( ) {
+std::string xapp::Config::Get_contents( ) const {
 	std::string rv = "";
 
 	if( ! fname.empty() ) {
@@ -218,7 +215,7 @@ std::string xapp::Config::Get_contents( ) {
 	Suss out the port for the named "interface". The interface is likely the application
 	name.
 */
-std::string xapp::Config::Get_port( std::string name ) {
+std::string xapp::Config::Get_port( const std::string& name ) const {
 	int i;
 	int	nele = 0;
 	double value;
@@ -230,13 +227,13 @@ std::string xapp::Config::Get_port( std::string name ) {
 	}
 
 	jh->Unset_blob();
-	if( jh->Set_blob( (char *) "messaging" ) ) {
-		nele = jh->Array_len( (char *) "ports" );
+	if( jh->Set_blob( (const char *) "messaging" ) ) {
+		nele = jh->Array_len( (const char *) "ports" );
 		for( i = 0; i < nele; i++ ) {
-			if( jh->Set_blob_ele( (char *) "ports", i ) ) {
-				pname = jh->String( (char *) "name" );
+			if( jh->Set_blob_ele( (const char *) "ports", i ) ) {
+				pname = jh->String( (const char *) "name" );
 				if( pname.compare( name ) == 0 ) {				// this element matches the name passed in
-					value = jh->Value( (char *) "port" );
+					value = jh->Value( (const char *) "port" );
 					rv = std::to_string( (int) value );
 					jh->Unset_blob( );							// leave hash in a known state
 					return rv;
@@ -244,7 +241,7 @@ std::string xapp::Config::Get_port( std::string name ) {
 			}
 
 			jh->Unset_blob( );								// Jhash requires bump to root, and array reselct to move to next ele
-			jh->Set_blob( (char *) "messaging" );
+			jh->Set_blob( (const char *) "messaging" );
 		}
 	}
 
@@ -256,7 +253,7 @@ std::string xapp::Config::Get_port( std::string name ) {
 	Suss out the named string from the controls object. If the resulting value is
 	missing or "", then the default is returned.
 */
-std::string xapp::Config::Get_control_str( std::string name, std::string defval ) {
+std::string xapp::Config::Get_control_str( const std::string& name, const std::string& defval ) const {
 	std::string value;
 	std::string rv;				// result value
 
@@ -266,7 +263,7 @@ std::string xapp::Config::Get_control_str( std::string name, std::string defval 
 	}
 
 	jh->Unset_blob();
-	if( jh->Set_blob( (char *) "controls" ) ) {
+	if( jh->Set_blob( (const char *) "controls" ) ) {
 		if( jh->Exists( name.c_str() ) )  {
 			value = jh->String( name.c_str() );
 			if( value.compare( "" ) != 0 ) {
@@ -283,7 +280,7 @@ std::string xapp::Config::Get_control_str( std::string name, std::string defval 
 	Convenience funciton without default. "" returned if not found.
 	No default value; returns "" if not set.
 */
-std::string xapp::Config::Get_control_str( std::string name ) {
+std::string xapp::Config::Get_control_str( const std::string& name ) const {
 	return Get_control_str( name, "" );
 }
 
@@ -291,8 +288,7 @@ std::string xapp::Config::Get_control_str( std::string name ) {
 	Suss out the named field from the controls object with the assumption that it is a boolean.
 	If the resulting value is missing then the defval is used.
 */
-bool xapp::Config::Get_control_bool( std::string name, bool defval ) {
-	bool value;
+bool xapp::Config::Get_control_bool( const std::string& name, bool defval ) const {
 	bool rv;				// result value
 
 	rv = defval;
@@ -301,10 +297,8 @@ bool xapp::Config::Get_control_bool( std::string name, bool defval ) {
 	}
 
 	jh->Unset_blob();
-	if( jh->Set_blob( (char *) "controls" ) ) {
-		if( jh->Exists( name.c_str() ) )  {
-			rv = jh->Bool( name.c_str() );
-		}
+	if( jh->Set_blob( (const char *) "controls" )  &&  jh->Exists( name.c_str() ) )  {
+		rv = jh->Bool( name.c_str() );
 	}
 
 	jh->Unset_blob();
@@ -315,7 +309,7 @@ bool xapp::Config::Get_control_bool( std::string name, bool defval ) {
 /*
 	Convenience function without default.
 */
-bool xapp::Config::Get_control_bool( std::string name ) {
+bool xapp::Config::Get_control_bool( const std::string& name ) const {
 	return Get_control_bool( name, false );
 }
 
@@ -324,8 +318,7 @@ bool xapp::Config::Get_control_bool( std::string name ) {
 	Suss out the named field from the controls object with the assumption that it is a value (float/int).
 	If the resulting value is missing then the defval is used.
 */
-double xapp::Config::Get_control_value( std::string name, double defval ) {
-	double value;
+double xapp::Config::Get_control_value( const std::string& name, double defval ) const {
 
 	auto rv = defval;				// return value; set to default
 	if( jh == NULL ) {
@@ -333,10 +326,8 @@ double xapp::Config::Get_control_value( std::string name, double defval ) {
 	}
 
 	jh->Unset_blob();
-	if( jh->Set_blob( (char *) "controls" ) ) {
-		if( jh->Exists( name.c_str() ) )  {
-			rv = jh->Value( name.c_str() );
-		}
+	if( jh->Set_blob( (const char *) "controls" )  && jh->Exists( name.c_str() ) )  {
+		rv = jh->Value( name.c_str() );
 	}
 
 	jh->Unset_blob();
@@ -347,7 +338,7 @@ double xapp::Config::Get_control_value( std::string name, double defval ) {
 /*
 	Convenience function. If value is undefined, then 0 is returned.
 */
-double xapp::Config::Get_control_value( std::string name ) {
+double xapp::Config::Get_control_value( const std::string& name ) const {
 	return Get_control_value( name, 0.0 );
 }
 

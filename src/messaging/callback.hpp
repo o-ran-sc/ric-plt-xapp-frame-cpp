@@ -48,8 +48,8 @@ class Callback {
 		void*	udata;									// user data
 
 	public:
-		Callback( user_callback, void* data );					// builder
-		void Drive_cb( Message& m );							// invoker
+		Callback( user_callback, void* data );			// builder
+		void Drive_cb( Message& m );					// invoker
 };
 
 } // namespace

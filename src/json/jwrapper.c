@@ -88,7 +88,7 @@ typedef struct jthing {
 	we don't create a bunch of small buffers that must be found and freed; we
 	can just release the json string and we'll be done (read won't leak).
 */
-static char* extract( char* buf, jsmntok_t *jtoken ) {
+static char* extract( char* buf, const jsmntok_t *jtoken ) {
 	buf[jtoken->end] = 0;
 	return &buf[jtoken->start];
 }
@@ -160,8 +160,8 @@ static jthing_t* suss_element( void* st, const char* name, int idx ) {
 	if(    (jtp = suss_array( st, name )) != NULL		// have pointer
 		&& idx >= 0										// and in range
 		&& idx < jtp->nele
-		&& (jarray = jtp->v.pv) != NULL ) {				// and exists
-
+		&& jtp->v.pv != NULL ) {						// and exists
+			jarray = jtp->v.pv;
 			rv = &jarray[idx];
 	}
 
@@ -175,6 +175,10 @@ static jthing_t* suss_element( void* st, const char* name, int idx ) {
 
 	Only the element passed is used, but this is a prototype which is required by
 	the RMR symtab implementaion, so we play games in the code to keep sonar quiet.
+
+
+	Sonar will grumble aobut the parms needing to be marked const. Until RMR changes
+	the signature we can't and sonar will just have to unbunch its knickers.
 */
 static void nix_things( void* st, void* se, const char* name, void* ele, void *data ) {
 	jthing_t*	j;
@@ -224,6 +228,9 @@ static void nix_things( void* st, void* se, const char* name, void* ele, void *d
 
 	Silly games played to keep sonar from complaining. This is driven by RMR
 	symtab code which defines the set of params and we use what we need.
+
+	Sonar will grumble aobut the parms needing to be marked const. Until RMR changes
+	the signature we can't and sonar will just have to unbunch its knickers.
 */
 static void nix_mgt( void* st, void* se, const char* name,  void* ele, void *data ) {
 
@@ -241,6 +248,9 @@ static void nix_mgt( void* st, void* se, const char* name,  void* ele, void *dat
 /*
 	Invoked for each thing and prints what we can to stderr.
 	Most parms ignored, but symtab code in RMR defines the prototype so they are required.
+
+	Sonar will grumble aobut the parms needing to be marked const. Until RMR changes
+	the signature we can't and sonar will just have to unbunch its knickers.
 */
 static void dump_things( void* st, void* se, const char* name,  void* ele, void *data ) {
 	const jthing_t*	j;
@@ -274,12 +284,10 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 	char	*data;				// data string from the json
 	jthing_t*	jarray;			// array of jthings we'll coonstruct
 	int		size;
-	int		osize;
 	int		njtokens;			// tokens actually sussed out
 	jsmn_parser jp;				// 'parser' object
 	jsmntok_t *jtokens;			// pointer to tokens returned by the parser
 	char	pname[1024];		// name with prefix
-	char	wbuf[256];			// temp buf to build a working name in
 	char*	dstr;				// dup'd string
 	int		step = 0;			// parsing step value to skip tokens picked up
 	int		data_idx;			// index into tokens for the next bit of data
@@ -342,9 +350,11 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 			case JSMN_OBJECT:				// save object in two ways: as an object 'blob' and in the current symtab using name as a base (original)
 				if( DEBUG ) fprintf( stderr, "<DBUG> [%d] %s (object) has %d things\n",  data_idx, name, jtokens[data_idx].size );
 
-				if( (jtp = mk_thing( st, name, jtokens[data_idx].type )) != NULL &&		// create thing and reference it in current symtab
-					(jtp->v.pv = (void *) rmr_sym_alloc( 255 ) ) != NULL ) {			// object is just a blob
+				if( (jtp = mk_thing( st, name, jtokens[data_idx].type )) != NULL ) {	// create thing and reference it
+					jtp->v.pv =  rmr_sym_alloc( 255 );									// object is just a blob; make it
+				}
 
+				if( jtp != NULL && jtp->v.pv != NULL ) {				// double check allows for better coverage and keeps sonar happy
 					dstr = strdup( extract( json, &jtokens[data_idx] ) );
 					rmr_sym_put( jtp->v.pv, JSON_SYM_NAME, MGT_SPACE, dstr );		// must stash json so it is freed during nuke()
 					parse_jobject( jtp->v.pv,  dstr, "" );							// recurse across the object and build a new symtab
@@ -388,7 +398,7 @@ void* parse_jobject( void* st, char *json, char* prefix ) {
 
 					switch( jtokens[data_idx].type ) {
 						case JSMN_OBJECT:
-							jarray[n].v.pv = (void *) rmr_sym_alloc( 255 );
+							jarray[n].v.pv = rmr_sym_alloc( 255 );
 							if( DEBUG ) fprintf( stderr, "<DBUG> %s[%d] is object size=%d\n", name, n, jtokens[data_idx].size );
 							if( jarray[n].v.pv != NULL ) {
 								jarray[n].jsmn_type = JSMN_OBJECT;

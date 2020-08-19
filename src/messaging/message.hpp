@@ -81,14 +81,14 @@ class Message {
 
 		std::unique_ptr<unsigned char>  Copy_payload( );		// copy the payload; deletable smart pointer
 
-		std::unique_ptr<unsigned char> Get_meid();				// returns a copy of the meid bytes
-		int Get_available_size();
-		int	Get_len();
-		int	Get_mtype();
-		Msg_component Get_payload();
-		std::unique_ptr<unsigned char>  Get_src();
-		int	Get_state( );
-		int	Get_subid();
+		std::unique_ptr<unsigned char> Get_meid() const;				// returns a copy of the meid bytes
+		int Get_available_size() const;
+		int Get_len() const;
+		int Get_mtype() const;
+		Msg_component Get_payload() const;
+		std::unique_ptr<unsigned char>  Get_src() const;
+		int	Get_state( ) const;
+		int	Get_subid() const;
 
 		void Set_meid( std::shared_ptr<unsigned char> new_meid );
 		void Set_mtype( int new_type );

@@ -44,17 +44,17 @@ class Alarm {
 	private:
 		std::shared_ptr<Message> msg;		// message to send
 		std::shared_ptr<char> psp;			// shared pointer to the payload to give out
-		std::string endpoint;				// the ip:port addr:port of the alarm collector
-		int			whid;
+		std::string endpoint =  "";			// the ip:port addr:port of the alarm collector
+		int			whid = -1;
 
 											// data for the payload
-		std::string	me_id;					// managed element ID
-		std::string app_id;					// application ID
-		int			problem_id;				// problem ID (specific problem)
-		std::string	severity;				// SEV_* constants
-		std::string	action;					// ACT_* constants
-		std::string info;					// info string supplied by user
-		std::string add_info;				// additional information supplied by user
+		std::string	me_id = "";				// managed element ID
+		std::string app_id = "";			// application ID
+		int			problem_id  = -1;		// problem ID (specific problem)
+		std::string	severity = "";			// set_sev() xlates from SEV_* consts to collector's string values
+		int			action = 0;				// ACT_* constants
+		std::string info = "";				// info string supplied by user
+		std::string add_info = "";			// additional information supplied by user
 
 		int build_alarm( int action_id, xapp::Msg_component payload, int payload_len );
 
@@ -71,8 +71,8 @@ class Alarm {
 		static const int	ACT_CLEAR_ALL = 3;
 
 		Alarm( std::shared_ptr<Message> msg );		// builders
-		Alarm( std::shared_ptr<Message> msg, std::string meid  );
-		Alarm( std::shared_ptr<Message> msg, int prob_id, std::string meid  );
+		Alarm( std::shared_ptr<Message> msg, const std::string& meid  );
+		Alarm( std::shared_ptr<Message> msg, int prob_id, const std::string& meid  );
 
 		Alarm( const Alarm& soi );					// copy to newly created instance
 		Alarm& operator=( const Alarm& soi );		// copy operator
@@ -81,29 +81,29 @@ class Alarm {
 		~Alarm();									// destroyer
 
 
-		std::string Get_endpoint( );
+		const std::string Get_endpoint( );
 
-		void Set_additional( std::string new_info );
-		void Set_appid( std::string new_id );
-		void Set_info( std::string new_info );
-		void Set_meid( std::string new_meid );
+		void Set_additional( const std::string& new_info );
+		void Set_appid( const std::string& new_id );
+		void Set_info( const std::string& new_info );
+		void Set_meid( const std::string& new_meid );
 		void Set_problem( int new_id );
 		void Set_severity( int new_sev );
 		void Set_whid( int whid );
 
 
 		bool Raise( );
-		bool Raise( int severity, int problem, std::string info );
-		bool Raise( int severity, int problem, std::string info, std::string addional_info );
+		bool Raise( int severity, int problem, const std::string& info );
+		bool Raise( int severity, int problem, const std::string& info, const std::string& additional_info );
 		bool Raise_again( );
 
 		bool Clear( );
-		bool Clear( int severity, int problem, std::string info );
-		bool Clear( int severity, int problem, std::string info, std::string addional_info );
+		bool Clear( int severity, int problem, const std::string& info );
+		bool Clear( int severity, int problem, const std::string& info, const std::string& additional_info );
 		bool Clear_all( );
 
 
-		void Dump();
+		const void Dump();
 };
 
 } // namespace

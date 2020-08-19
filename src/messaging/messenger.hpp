@@ -80,19 +80,19 @@ class Messenger {
 		std::unique_ptr<Message> Alloc_msg( int payload_size );			// message allocation
 
 		std::unique_ptr<xapp::Alarm> Alloc_alarm( );					// alarm allocation
-		std::unique_ptr<xapp::Alarm> Alloc_alarm( std::string meid );
-		std::unique_ptr<xapp::Alarm> Alloc_alarm( int prob_id, std::string meid );
+		std::unique_ptr<xapp::Alarm> Alloc_alarm( const std::string& meid );
+		std::unique_ptr<xapp::Alarm> Alloc_alarm( int prob_id, const std::string& meid );
 
 		std::unique_ptr<xapp::Metrics> Alloc_metrics( );					// metrics allocation
-		std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string source );
-		std::unique_ptr<xapp::Metrics> Alloc_metrics( std::string reporter, std::string source );
+		std::unique_ptr<xapp::Metrics> Alloc_metrics( const std::string& source );
+		std::unique_ptr<xapp::Metrics> Alloc_metrics( const std::string& reporter, const std::string& source );
 
 		void Listen( );													// lisen driver
 		std::unique_ptr<Message> Receive( int timeout );				// receive 1 message
 		void Stop( );													// force to stop
 		bool Wait_for_cts( int max_wait );
 
-		int	Wormhole_open( std::string endpoint );
+		int	Wormhole_open( const std::string& endpoint );
 };
 
 
