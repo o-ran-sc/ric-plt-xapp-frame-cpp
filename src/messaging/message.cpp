@@ -57,12 +57,11 @@ xapp::Message::Message( rmr_mbuf_t* mbuf, void* mrc ) :
 	mbuf(  mbuf )
 {  /* empty body */ }
 
-xapp::Message::Message( void* mrctx, int payload_len ) :
-	mrc(  mrctx ),										// the message router context for sends
-	mbuf(  rmr_alloc_msg( mrc, payload_len ) )
+xapp::Message::Message( void* rmr_ctx, int payload_len ) :
+	mrc(  rmr_ctx ),										// the message router context for sends
+	mbuf(  rmr_alloc_msg( rmr_ctx, payload_len ) )
 { /* empty body */ }
-//	this->mrc = mrc;
-	//this->mbuf = rmr_alloc_msg( mrc, payload_len );
+
 
 /*
 	Copy builder.  Given a source object instance (soi), create a copy.

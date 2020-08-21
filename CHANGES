@@ -6,6 +6,9 @@
 # squished to one.
 
 release = Cherry
+2020 21 August; version 2.3.1
+	Fix bug in message introduced with "code smell" fix. (RIC-629)
+
 2020 20 August; version 2.3.0
 	Address sonar flagged "bugs" in the config class (RIC-629).
 
