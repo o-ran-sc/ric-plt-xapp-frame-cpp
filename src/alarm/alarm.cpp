@@ -32,19 +32,19 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <iostream>
 
 #include <rmr/RIC_message_types.h>
+
+#include "msg_component.hpp"
+#include "message.hpp"
+#include "alarm.hpp"
+
 #ifndef RIC_ALARM
 	// this _should_ come from the message types header, but if not ensure we have something
 	constexpr int ric_alarm_value = 110;
 	#define RIC_ALARM ric_alarm_value
 #endif
-
-#include <iostream>
-
-#include "msg_component.hpp"
-#include "message.hpp"
-#include "alarm.hpp"
 
 extern const char* __progname;			// runtime lib supplied since we don't get argv[0]
 
@@ -147,7 +147,6 @@ int xapp::Alarm::build_alarm( int action_id, xapp::Msg_component payload, int pa
 			now()
 	);
 
-	//action = std::string( wbuf );
 	return used;
 }
 
@@ -246,7 +245,7 @@ xapp::Alarm::Alarm( Alarm&& soi )  :
 	ensure the object reference is cleaned up, and ensuring that the source
 	object references are removed.
 */
-Alarm& xapp::Alarm::operator=( Alarm&& soi ) {
+Alarm& xapp::Alarm::operator=( Alarm&& soi ) noexcept {
 	if( this != &soi ) {				// cannot do self assignment
 		// anything that needs to be freed/delted from soi, must be done here
 
@@ -330,7 +329,7 @@ void xapp::Alarm::Set_whid( int new_whid ) {
 	whid = new_whid;
 }
 
-const void xapp::Alarm::Dump() {
+void xapp::Alarm::Dump() const {
 	fprintf( stderr, "Alarm: prob id: %d\n", problem_id );
 	fprintf( stderr, "Alarm: meid: %s\n", me_id.c_str() );
 	fprintf( stderr, "Alarm: app: %s\n", app_id.c_str() );
@@ -343,7 +342,7 @@ const void xapp::Alarm::Dump() {
 /*
 	Return the enpoint address string we have.
 */
-const std::string xapp::Alarm::Get_endpoint( ) {
+std::string xapp::Alarm::Get_endpoint( ) const {
 	return endpoint;
 }
 
@@ -364,18 +363,18 @@ bool xapp::Alarm::Raise( ) {
 	problem ID. Info and addional_info are user supplied data that is just passed
 	through.
 */
-bool xapp::Alarm::Raise( int new_severity, int problem, const std::string& info ) {
+bool xapp::Alarm::Raise( int new_severity, int problem, const std::string& cinfo ) {
 	Set_severity( new_severity );
 	problem_id = problem;
-	this->info = info;
+	info = cinfo;
 
 	Raise();
 }
 
-bool xapp::Alarm::Raise( int new_severity, int problem, const std::string& info, const std::string& additional_info ) {
+bool xapp::Alarm::Raise( int new_severity, int problem, const std::string& cinfo, const std::string& additional_info ) {
 	Set_severity( new_severity );
 	problem_id = problem;
-	this->info = info;
+	info = cinfo;
 	this->add_info = additional_info;
 
 	Raise();
@@ -397,18 +396,18 @@ bool xapp::Alarm::Clear( ) {
 	problem ID. Info and addional_info are user supplied data that is just passed
 	through.
 */
-bool xapp::Alarm::Clear( int new_severity, int problem, const std::string& info ) {
+bool xapp::Alarm::Clear( int new_severity, int problem, const std::string& cinfo ) {
 	Set_severity( new_severity );
 	problem_id = problem;
-	this->info = info;
+	info = cinfo;
 
 	Clear();
 }
 
-bool xapp::Alarm::Clear( int new_severity, int problem, const std::string& info, const std::string& additional_info ) {
+bool xapp::Alarm::Clear( int new_severity, int problem, const std::string& cinfo, const std::string& additional_info ) {
 	Set_severity( new_severity );
 	problem_id = problem;
-	this->info = info;
+	info = cinfo;
 	this->add_info = additional_info;
 
 	Clear();

@@ -91,13 +91,13 @@ void xapp::Config::Listener( ) {
 		*tok = 0;
 		bname = strdup( tok+1 );
 	} else {
-		free( dname );
+		delete dname;
 		dname = strdup( "." );
 		bname = strdup( fname.c_str() );
 	}
 
 	wfd = inotify_add_watch( ifd, dname, IN_MOVED_TO | IN_CLOSE_WRITE );		// we only care about close write changes
-	free( dname );
+	delete dname;
 
 	if( wfd < 0 ) {
 		fprintf( stderr, "<XFCPP> ### ERR ### unable to add watch on config file %s: %s\n", fname.c_str(), strerror( errno ) );
@@ -263,12 +263,10 @@ std::string xapp::Config::Get_control_str( const std::string& name, const std::s
 	}
 
 	jh->Unset_blob();
-	if( jh->Set_blob( (const char *) "controls" ) ) {
-		if( jh->Exists( name.c_str() ) )  {
-			value = jh->String( name.c_str() );
-			if( value.compare( "" ) != 0 ) {
-				rv = value;
-			}
+	if(    jh->Set_blob( (const char *) "controls" ) && jh->Exists( name.c_str() ) )  {
+		value = jh->String( name.c_str() );
+		if( value.compare( "" ) != 0 ) {
+			rv = value;
 		}
 	}
 

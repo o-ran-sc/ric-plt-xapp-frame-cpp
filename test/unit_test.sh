@@ -125,6 +125,7 @@ for x in $tests
 do
 	./$x >/tmp/PID$$.log 2>&1
 	abort_if_error $? "test failed: $x"
+	grep SUMMARY /tmp/PID$$.log
 done
 
 # it seems that we loose coverage reporting if metrics_test's gcov file is generated

@@ -58,13 +58,17 @@ int main( int argc, char** argv ) {
 	set_test_name( "metrics_test" );
 
 	x = std::shared_ptr<Xapp>( new Xapp( "4560", true ) );
-	if( x == NULL ) {
-		fprintf( stderr, "<FAIL> unable to allocate xapp object\n" );
+	if( fail_if( x == NULL, "could not allocate new xapp"  ) ) {
 		announce_results( 1 );
 		return 1;
 	}
 
 	m = x->Alloc_metrics( );
+	if( fail_if( m == NULL, "could not allocate a metric object" ) ) {
+		announce_results( errors );
+		return errors;
+	}
+
 	m->Push_data( "barney_balance", 216.49 );
 	m->Push_data( "fred_balance", 760.88 );
 	m->Send( );
@@ -80,10 +84,20 @@ int main( int argc, char** argv ) {
 
 	// drive alternate builders
 	m = x->Alloc_metrics( "different-source" );
+	if( fail_if( m == NULL, "could not allocate a metric object" ) ) {
+		announce_results( errors );
+		return errors;
+	}
+
 	m->Push_data( "wilma_balance", 1986.0430 );
 	m->Send();
 
 	m = x->Alloc_metrics( "different-app", "different-source" );
+	if( fail_if( m == NULL, "could not allocate a metric object" ) ) {
+		announce_results( errors );
+		return errors;
+	}
+
 	m->Push_data( "wilma_balance", 1986.0430 );
 	m->Push_data( "pebbles_balance", 1982.0614 );
 	m->Send();

@@ -6,6 +6,10 @@
 # squished to one.
 
 release = Cherry
+2020 21 August; version 2.3.2
+	Small cleanup of "code smells" and add additional test stats
+	to unit tests.
+
 2020 21 August; version 2.3.1
 	Fix bug in message introduced with "code smell" fix. (RIC-629)
 

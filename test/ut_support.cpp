@@ -28,6 +28,9 @@
 #include <string>
 
 static std::string test_name = "unknown";
+static int ut_tests_driven = 0;
+
+// -------------------------------------------------------------------------------
 
 /*
 	Set the name of the current tester
@@ -40,6 +43,8 @@ extern void set_test_name( std::string name ) {
 	Returns 1 if the condition is true (not zero)
 */
 extern int fail_if( int cond, std::string reason ) {
+	ut_tests_driven++;
+
 	if( cond ) {
 		fprintf( stderr, "<FAIL> %s: %s\n", test_name.c_str(), reason.c_str() );
 		return 1;
@@ -52,6 +57,8 @@ extern int fail_if( int cond, std::string reason ) {
 	Returns 1 if the condition is false.
 */
 extern int fail_if_false( int cond, std::string reason ) {
+	ut_tests_driven++;
+
 	if( !cond ) {
 		fprintf( stderr, "<FAIL> %s: %s\n", test_name.c_str(), reason.c_str() );
 		return 1;
@@ -61,6 +68,9 @@ extern int fail_if_false( int cond, std::string reason ) {
 }
 
 extern void announce_results( int errors ) {
+	fprintf( stderr, "<SUMMARY> %s %d tests drivn, %d passed, %d failed\n",
+		test_name.c_str(), ut_tests_driven, ut_tests_driven - errors, errors );
+
 	if( errors > 0 ) {
 		fprintf( stderr, "<FAIL> %s: failed with %d errors\n", test_name.c_str(), errors );
 	} else {

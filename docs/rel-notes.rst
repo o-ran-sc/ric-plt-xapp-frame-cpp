@@ -18,6 +18,23 @@ xAPP Framework.
 Cherry Release
 ==============
 
+2020 21 August; version 2.3.2
+-----------------------------
+Small cleanup of "code smells" and add additional test stats
+to unit tests.
+
+
+2020 21 August; version 2.3.1
+-----------------------------
+Fix bug in message introduced with "code smell" fix.
+(RIC-629)
+
+
+2020 20 August; version 2.3.0
+-----------------------------
+Address sonar flagged "bugs" in the config class (RIC-629).
+
+
 2020 13 August; version 2.2.2
 -----------------------------
 Correct potential memory leaks in xapp class (RIC-629)

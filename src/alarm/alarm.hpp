@@ -52,7 +52,6 @@ class Alarm {
 		std::string app_id = "";			// application ID
 		int			problem_id  = -1;		// problem ID (specific problem)
 		std::string	severity = "";			// set_sev() xlates from SEV_* consts to collector's string values
-		int			action = 0;				// ACT_* constants
 		std::string info = "";				// info string supplied by user
 		std::string add_info = "";			// additional information supplied by user
 
@@ -70,18 +69,18 @@ class Alarm {
 		static const int	ACT_CLEAR = 2;
 		static const int	ACT_CLEAR_ALL = 3;
 
-		Alarm( std::shared_ptr<Message> msg );		// builders
+		explicit Alarm( std::shared_ptr<Message> msg );		// builders
 		Alarm( std::shared_ptr<Message> msg, const std::string& meid  );
 		Alarm( std::shared_ptr<Message> msg, int prob_id, const std::string& meid  );
 
 		Alarm( const Alarm& soi );					// copy to newly created instance
 		Alarm& operator=( const Alarm& soi );		// copy operator
 		Alarm( Alarm&& soi );						// mover
-		Alarm& operator=( Alarm&& soi );			// move operator
+		Alarm& operator=( Alarm&& soi ) noexcept;			// move operator
 		~Alarm();									// destroyer
 
 
-		const std::string Get_endpoint( );
+		std::string Get_endpoint( ) const;
 
 		void Set_additional( const std::string& new_info );
 		void Set_appid( const std::string& new_id );
@@ -103,7 +102,7 @@ class Alarm {
 		bool Clear_all( );
 
 
-		const void Dump();
+		void Dump() const;
 };
 
 } // namespace
