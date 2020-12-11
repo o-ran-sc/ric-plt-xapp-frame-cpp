@@ -18,6 +18,11 @@ xAPP Framework.
 Cherry Release
 ==============
 
+2020 11 December; version 2.3.3
+-------------------------------
+Version bump to force CI jobs to promote the packages.
+
+
 2020 21 August; version 2.3.2
 -----------------------------
 Small cleanup of "code smells" and add additional test stats
