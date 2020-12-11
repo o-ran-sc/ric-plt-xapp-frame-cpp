@@ -1,10 +1,10 @@
 ---
 package_name: ricxfcpp
-log_dir: ric-plt-xapp-frame-cpp-rt-cmake-packagecloud-stage-master/9
-ref: 23d0e614733c0305738d8c70d2e4c3e56beb6473
-version: 2.3.2
+log_dir: ric-plt-xapp-frame-cpp-rt-cmake-packagecloud-stage-master/11
+ref: 555fc14abec797f96cd4c03bf997ce3711984393
+version: 2.3.3
 packages:
-    - name: ricxfcpp-2.3.2-1.x86_64.rpm
-    - name: ricxfcpp-devel-2.3.2-1.x86_64.rpm
-    - name: ricxfcpp_2.3.2_amd64.deb
-    - name: ricxfcpp-dev_2.3.2_amd64.deb
+    - name: ricxfcpp-2.3.3-1.x86_64.rpm
+    - name: ricxfcpp-devel-2.3.3-1.x86_64.rpm
+    - name: ricxfcpp_2.3.3_amd64.deb
+    - name: ricxfcpp-dev_2.3.3_amd64.deb
