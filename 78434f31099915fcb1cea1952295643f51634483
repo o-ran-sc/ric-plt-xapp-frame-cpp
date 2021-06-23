@@ -1,0 +1,8 @@
+Code-Review+2: Thoralf Czichy <thoralf.czichy@nokia.com>
+Code-Review+1: Abdul Wahid W <abdulwahid.w@nokia.com>
+Verified+1: ORAN Jobbuilder <releng+oran-jobbuilder@linuxfoundation.org>
+Submitted-by: Thoralf Czichy <thoralf.czichy@nokia.com>
+Submitted-at: Wed, 23 Jun 2021 12:33:48 +0000
+Reviewed-on: https://gerrit.o-ran-sc.org/r/c/ric-plt/xapp-frame-cpp/+/6404
+Project: ric-plt/xapp-frame-cpp
+Branch: refs/heads/master
