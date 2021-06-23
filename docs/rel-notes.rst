@@ -15,6 +15,13 @@ C++ Framework Release Notes
 The following is a list of release highlights for the C++
 xAPP Framework.
 
+Dawn Release
+============
+
+2021 23 June; version 2.3.4
+---------------------------
+Taking in new RMR version 4.7.4 that contains many bug fixes.
+
 Cherry Release
 ==============
 

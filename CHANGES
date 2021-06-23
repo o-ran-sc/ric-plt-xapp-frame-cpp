@@ -4,6 +4,9 @@
 # and version string. Blank are used to separate items when a version
 # has several changes.  Multiple blank lines between versions are
 # squished to one.
+release = Dawn
+2021 23 June; version 2.3.4
+	Taking in new RMR version 4.7.4 that contains many bug fixes
 
 release = Cherry
 2020 11 December; version 2.3.3
