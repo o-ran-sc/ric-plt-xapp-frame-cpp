@@ -34,7 +34,7 @@
 # --------------------------------------------------------------------------------------
 
 
-FROM nexus3.o-ran-sc.org:10004/bldr-ubuntu18-c-go:4-u18.04-nng as buildenv
+FROM nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-ubuntu20-c-go:1.0.0 as buildenv
 RUN mkdir /playpen
 
 RUN apt-get update && apt-get install -y cmake gcc make git g++ wget
@@ -44,7 +44,7 @@ ARG SRC=.
 
 WORKDIR /playpen
 # Install RMr (runtime and dev) from debian package cached on packagecloud.io
-ARG RMR_VER=3.6.2
+ARG RMR_VER=4.8.0
 
 # if package cloud is actually working, this is preferred
 #
