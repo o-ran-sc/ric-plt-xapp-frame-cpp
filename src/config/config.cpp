@@ -91,13 +91,13 @@ void xapp::Config::Listener( ) {
 		*tok = 0;
 		bname = strdup( tok+1 );
 	} else {
-		delete dname;
+		free (dname);
 		dname = strdup( "." );
 		bname = strdup( fname.c_str() );
 	}
 
 	wfd = inotify_add_watch( ifd, dname, IN_MOVED_TO | IN_CLOSE_WRITE );		// we only care about close write changes
-	delete dname;
+	free (dname);
 
 	if( wfd < 0 ) {
 		fprintf( stderr, "<XFCPP> ### ERR ### unable to add watch on config file %s: %s\n", fname.c_str(), strerror( errno ) );
