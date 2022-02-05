@@ -3,7 +3,6 @@ coverage_opts = -ftest-coverage -fprofile-arcs
 
 binaries = unit_test jhash_test config_test metrics_test
 include = -I ../src/xapp -I ../src/alarm -I ../src/messaging  -I  ../src/config -I ../ext/jsmn  -I  ../src/json -I ../src/metrics
-ld_path = LD_LIBRARY_PATH=../src/.build
 
 tests::	$(binaries)
 

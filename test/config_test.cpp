@@ -83,7 +83,7 @@ int main( int argc, char** argv ) {
 	errors += fail_if( c == NULL, "unable to allocate a config with alternate name" );
 
 	auto s = c->Get_control_str( "ves_collector_address" );
-	errors += fail_if( s.empty(), "expected control string not found" );
+	errors += fail_if( s.empty(), "expected collector address control string not found" );
 	fprintf( stderr, "<INFO> collector address string var: %s\n", s.c_str() );
 
 	s = c->Get_port( "rmr-data-out" );
@@ -105,26 +105,6 @@ int main( int argc, char** argv ) {
 	auto b = c->Get_control_bool( "debug_mode" );
 	errors += fail_if( b == false, "epxected debug mode control boolean not found or had wrong value" );
 
-
-	// ----- test sussing path and using default name ----------------------------------
-	fprintf( stderr, "<INFO> sussing info from default (no name)\n" );
-	c = new xapp::Config(  );							// drive for coverage
-
-	fprintf( stderr, "<INFO> sussing info from default (env var == ./config1.json)\n" );
-	setenv( (char *) "XAPP_DESCRIPTOR_PATH", "./config1.json", 1 );				// this var name is bad; it's not a path, but fname
-	c = new xapp::Config(  );
-
-	s = c->Get_control_str( "ves_collector_address" );
-	errors += fail_if( s.empty(), "expected collector address control string not found" );
-	fprintf( stderr, "<INFO> string var: %s\n", s.c_str() );
-
-	v = c->Get_control_value( "measurement_interval" );
-	errors += fail_if( v == 0.0, "expected measurement interval control value not found" );
-
-	b = c->Get_control_bool( "debug_mode" );
-	errors += fail_if( b == false, "expected debug mode control boolean not found" );
-
-
 	auto cs = c->Get_contents();
 	if( fail_if( cs.empty(), "get contents returned an empty string" ) == 0 ) {
 		fprintf( stderr, "<INFO> contents from file: %s\n", cs.c_str() );
@@ -132,6 +112,28 @@ int main( int argc, char** argv ) {
 	} else {
 		errors++;
 	}
+
+
+	// ----- test sussing path and using default name ----------------------------------
+	fprintf( stderr, "<INFO> sussing info from default (no env XAPP_DESCRIPTOR_PATH)\n" );
+	unsetenv( "XAPP_DESCRIPTOR_PATH" );
+	c = new xapp::Config(  );	// no env XAPP_DESCRIPTOR_PATH; assume the config-file.json is in the same directory
+	errors += fail_if( c->Get_contents().empty(), "no env XAPP_DESCRIPTOR_PATH : expected default config-file.json not found" );
+
+	fprintf( stderr, "<INFO> sussing info using XAPP_DESCRIPTOR_PATH as a directory without trailing slash\n" );
+	setenv( (char *) "XAPP_DESCRIPTOR_PATH", ".", 1 );					// this env var is a directory path
+	c = new xapp::Config(  );
+	errors += fail_if( c->Get_contents().empty(), "env XAPP_DESCRIPTOR_PATH=. : expected default config-file.json not found" );
+
+	fprintf( stderr, "<INFO> sussing info using XAPP_DESCRIPTOR_PATH as a directory with trailing slash\n" );
+	setenv( (char *) "XAPP_DESCRIPTOR_PATH", "./", 1 );					// this env var is a directory path with trailing slash
+	c = new xapp::Config(  );
+	errors += fail_if( c->Get_contents().empty(), "env XAPP_DESCRIPTOR_PATH=./ : expected default config-file.json not found" );
+
+	fprintf( stderr, "<INFO> sussing info from XAPP_DESCRIPTOR_PATH as filename\n" );
+	setenv( (char *) "XAPP_DESCRIPTOR_PATH", "./config1.json", 1 );		// this var name is ok; it's an fname
+	c = new xapp::Config(  );
+	errors += fail_if( c->Get_contents().empty(), "XAPP_DESCRIPTOR_PATH as fname : expected config1.json not found" );
 
 
 	// -------------- force callback to drive and test ---------------------------------

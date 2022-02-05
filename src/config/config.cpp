@@ -44,6 +44,7 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <sstream>
@@ -111,7 +112,7 @@ void xapp::Config::Listener( ) {
 			if( errno == EAGAIN ) {
 				continue;
 			} else {
-				fprintf( stderr, "<XFCPP ### CRIT ### config listener read err: %s\n", strerror( errno ) );
+				fprintf( stderr, "<XFCPP> ### CRIT ### config listener read err: %s\n", strerror( errno ) );
 				return;
 			}
 		}
@@ -143,6 +144,10 @@ std::shared_ptr<xapp::Jhash> xapp::Config::jparse( std::string ufname ) {
 	fname = ufname;
 
 	std::ifstream ifs( fname );
+	if( ! ifs.is_open() ) {
+		fprintf( stderr, "<XFCPP> ### WARN ### unable to open %s; %s\n", fname.c_str(), strerror( errno ) );
+	}
+
 	std::string st( (std::istreambuf_iterator<char>( ifs ) ), (std::istreambuf_iterator<char>() ) );
 
 	auto new_jh = std::shared_ptr<xapp::Jhash>( new xapp::Jhash( st.c_str() ) );
@@ -156,18 +161,30 @@ std::shared_ptr<xapp::Jhash> xapp::Config::jparse( std::string ufname ) {
 
 	The actual meaning of the environment variable is confusing. The name is "path" which
 	should mean that this is the directory in which the config file lives, but the examples
-	elsewhere suggest that this is a filename (either fully qualified or relative). For now
-	we will assume that it's a file name, though we could add some intelligence to determine
-	if it's a directory name or not if it comes to it.
+	elsewhere suggest that this is a filename (either fully qualified or relative). To prevent
+	errors, we use some intelligence to determine if it's a directory name or not if it comes to it.
 */
 std::shared_ptr<xapp::Jhash> xapp::Config::jparse( ) {
 	const char*	data;
+	std::string filename;
+	struct stat sb;
 
-	if( (data = getenv( (const char *) "XAPP_DESCRIPTOR_PATH" )) == NULL ) {
-		data = (const char *) "./config-file.json";
+	data = getenv( (const char *) "XAPP_DESCRIPTOR_PATH" );
+	if( data != NULL ) {
+		filename = data;
+		if( stat( data, &sb ) == 0 ) {
+			if( S_ISDIR( sb.st_mode ) ) {
+				filename.append( "/config-file.json" );
+			}
+		} else {
+			fprintf( stderr, "<XFCPP> ### ERR ### unable to stat env XAPP_DESCRIPTOR_PATH: %s\n", strerror( errno ) );
+		}
+
+	} else {
+		filename = "./config-file.json";
 	}
 
-	return jparse( std::string( data ) );
+	return jparse( filename );
 }
 
 // --------------------- construction, destruction -------------------------------------------

@@ -5,6 +5,10 @@
 # has several changes.  Multiple blank lines between versions are
 # squished to one.
 
+2022 05 February; version 2.3.6
+	Fixed bug on XAPP_DESCRIPTOR_PATH parser.
+	Add test cases for XAPP_DESCRIPTOR_PATH parser.
+
 release = E
 2021 03 December; version 2.3.5
 	Taking in new RMR version 4.8.0. Also one bug fix added.
