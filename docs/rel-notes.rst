@@ -15,6 +15,10 @@ C++ Framework Release Notes
 The following is a list of release highlights for the C++
 xAPP Framework.
 
+2022 05 February; version 2.3.6
+	Fixed bug on XAPP_DESCRIPTOR_PATH parser.
+	Add test cases for XAPP_DESCRIPTOR_PATH parser.
+
 E Release
 =========
 
