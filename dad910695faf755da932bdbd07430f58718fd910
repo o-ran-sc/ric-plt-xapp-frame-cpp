@@ -33,6 +33,23 @@
       "message": "Hi,\nAny ideia why this job is failing?\nThanks,",
       "revId": "dad910695faf755da932bdbd07430f58718fd910",
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b76edd9e_de0be949",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000108
+      },
+      "writtenOn": "2022-02-08T13:56:23Z",
+      "side": 1,
+      "message": "recheck",
+      "revId": "dad910695faf755da932bdbd07430f58718fd910",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     }
   ]
 }
