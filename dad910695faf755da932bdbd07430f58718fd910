@@ -50,6 +50,24 @@
       "message": "recheck",
       "revId": "dad910695faf755da932bdbd07430f58718fd910",
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e257bdfe_32e16de0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000108
+      },
+      "writtenOn": "2022-02-08T14:05:26Z",
+      "side": 1,
+      "message": "The trick is to make sure that the library is already in package cloud staging repo. It wasn\u0027t. It\u0027s pushed there by posting an empty comment \"stage-release\" in the previous commit: https://gerrit.o-ran-sc.org/r/c/ric-plt/xapp-frame-cpp/+/7684 I did that now. Thanks to Timo for suggesting that this might be the issue. After this doing a recheck in this review here succeeded. So I will merge this one here.\n\nchecking staging area: https://packagecloud.io/app/o-ran-sc/staging/search?q\u003dricxfcpp\u0026filter\u003dall\u0026filter\u003dall\u0026dist\u003d\n\nsome details on this in here (e.g., grep for \"stage-release\")\nhttps://wiki.o-ran-sc.org/display/ORAN/O-RAN+Developer%27s+Guide+to+CI+Resources+and+Processes+at+the+LF",
+      "parentUuid": "19b729a1_0fc24ce4",
+      "revId": "dad910695faf755da932bdbd07430f58718fd910",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     }
   ]
 }
