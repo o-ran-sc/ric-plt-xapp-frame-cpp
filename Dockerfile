@@ -34,7 +34,7 @@
 # --------------------------------------------------------------------------------------
 
 
-FROM nexus3.o-ran-sc.org:10004/bldr-ubuntu18-c-go:4-u18.04-nng as buildenv
+FROM nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-ubuntu20-c-go:1.0.0 as buildenv
 RUN mkdir /playpen
 
 RUN apt-get update && apt-get install -y cmake gcc make git g++ wget
@@ -58,22 +58,29 @@ ARG RMR_VER=4.8.0
 COPY ${SRC}/build_rmr.sh /playpen/bin
 RUN bash /playpen/bin/build_rmr.sh -t ${RMR_VER}
 
-COPY ${SRC}/CMakeLists.txt /playpen/factory/
-COPY ${SRC}/src /playpen/factory/src/
-COPY ${SRC}/test /playpen/factory/test/
-COPY ${SRC}/examples /tmp/examples/
 
-#
-# Run unit tests
-#
-COPY ${SRC}/test/* /playpen/factory/test/
-RUN cd /playpen/factory/test; bash unit_test.sh
+#copy the content as git repo inside the container.
+#COPY ${SRC}/CMakeLists.txt /playpen/factory/
+#COPY ${SRC}/src /playpen/factory/src/
+#COPY ${SRC}/test /playpen/factory/test/
+COPY ${SRC}/examples /tmp/examples/
+COPY . /playpen/factory
+
 
 # Go to the factory and build our stuff
 #
 ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
 ENV C_INCLUDE_PATH=/usr/local/include
 RUN cd /playpen/factory; rm -fr .build; mkdir .build; cd .build; cmake .. -DDEV_PKG=1; make install; cmake .. -DDEV_PKG=0; make install
+
+
+
+
+#
+# Run unit tests will come after building process
+#
+COPY ${SRC}/test/* /playpen/factory/test/
+RUN cd /playpen/factory/test; bash unit_test.sh
 
 
 # -----  final, smaller image ----------------------------------
@@ -85,7 +92,7 @@ FROM ubuntu:18.04
 RUN apt-get update && apt-get install -y --no-install-recommends make g++
 
 # if bash doesn't cut it for run_replay grab a real shell and clean up as much as we can
-RUN apt-get update; apt-get install -y ksh
+#RUN apt-get update; apt-get install -y ksh
 RUN rm -fr /var/lib/apt/lists 
 
 RUN mkdir -p /usr/local/include/ricxfcpp
@@ -97,4 +104,4 @@ ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib
 ENV C_INCLUDE_PATH=/usr/local/include
 WORKDIR /factory
 
-CMD [ "make" ]
+#CMD [ "make" ]
