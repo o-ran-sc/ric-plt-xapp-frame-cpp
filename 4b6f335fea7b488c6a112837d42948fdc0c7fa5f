@@ -41,6 +41,30 @@
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "797e8a1c_2a0dce7b",
+        "filename": "Dockerfile",
+        "patchSetId": 1
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1001476
+      },
+      "writtenOn": "2022-05-04T17:37:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "284eaf76_65065334",
+      "range": {
+        "startLine": 87,
+        "startChar": 3,
+        "endLine": 87,
+        "endChar": 17
+      },
+      "revId": "4b6f335fea7b488c6a112837d42948fdc0c7fa5f",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "34722707_5c9e6e2f",
@@ -54,6 +78,30 @@
       "writtenOn": "2022-05-04T13:02:15Z",
       "side": 1,
       "message": "what did this command do earlier? You sure it\u0027s not needed anymore? I presume it was the one that eventually needed the ksh shell from a couple lines earlier. Just trying to understand the second phase in the Dockerfile and what it was supposed to generate",
+      "range": {
+        "startLine": 107,
+        "startChar": 4,
+        "endLine": 107,
+        "endChar": 9
+      },
+      "revId": "4b6f335fea7b488c6a112837d42948fdc0c7fa5f",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b7eb7904_01127f15",
+        "filename": "Dockerfile",
+        "patchSetId": 1
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1001476
+      },
+      "writtenOn": "2022-05-04T17:37:16Z",
+      "side": 1,
+      "message": "The startup command CMD [\"make\"] has no use and doing nothing ,only causing the error when running the container without passing additional command.(docker run -it \u003cimage name\u003e).\n\nIt will work fine if you override this startup command while running the container like by passing additional command (docker run -it \u003cimage name\u003e /bin/bash).\n\nAs there is no Makefile recipe present in the work directory (factory),this startup command is not of any use and will not build anything while starting the container.\n\nThis startup command has nothing to do with the korn shell.\n\nAll the building of static and dynamic library of ricxfcpp has done in part 1 .\n\nIn part 2 we are only copying the needed library and include files.\n\nI think for the sake of completeness of Dockerfile they have provided this startup command.\n\nSo even if you need this startup command, I have uncommented it.",
+      "parentUuid": "34722707_5c9e6e2f",
       "range": {
         "startLine": 107,
         "startChar": 4,
