@@ -16,6 +16,24 @@
       "message": "The change looks good to me.\n\nIt seems that Jenkins jobs also need to be changed to use this Dockerfile in the building process. Currently, Jenkins builds the code using cmake and then pushes xapp-frame-cpp library to the package cloud.\nSee: https://jenkins.o-ran-sc.org/view/ric-plt-xapp-frame-cpp/\n\n",
       "revId": "488447aed60cc52b06d71d50bee4ecf10025f7e1",
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dee51821_28dd0ffb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000108
+      },
+      "writtenOn": "2022-05-05T07:51:42Z",
+      "side": 1,
+      "message": "I created https://jira.o-ran-sc.org/browse/RIC-912 for this",
+      "parentUuid": "f9c267c5_e8cd8bc5",
+      "revId": "488447aed60cc52b06d71d50bee4ecf10025f7e1",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     }
   ]
 }
