@@ -1,0 +1,8 @@
+Verified+1: ORAN Jobbuilder <releng+oran-jobbuilder@linuxfoundation.org>
+Code-Review+1: Alexandre Huff <alexandrehuff@utfpr.edu.br>
+Code-Review+2: Thoralf Czichy <thoralf.czichy@nokia.com>
+Submitted-by: Thoralf Czichy <thoralf.czichy@nokia.com>
+Submitted-at: Thu, 05 May 2022 07:51:47 +0000
+Reviewed-on: https://gerrit.o-ran-sc.org/r/c/ric-plt/xapp-frame-cpp/+/8102
+Project: ric-plt/xapp-frame-cpp
+Branch: refs/heads/master
