@@ -1,4 +1,3 @@
-#==================================================================================
 #	Copyright (c) 2019 Nokia
 #	Copyright (c) 2018-2019 AT&T Intellectual Property.
 #
@@ -100,7 +99,7 @@ add_definitions(
 	-DMAJOR_VER=${major_version}
 	-DMINOR_VER=${minor_version}
 	-DPATCH_VER=${patch_level}
-	-DDEBUG=${debugging}
+    #	-DDEBUG=${debugging}
 )
 
 # ---------------- suss out pkg gen tools so we don't fail generating packages that the system cannot support --------------
@@ -156,14 +155,19 @@ set ( srcd "${CMAKE_CURRENT_SOURCE_DIR}" )
 # but Cmake insists on having these exist when we add them to include directories to
 # enable code to find them after we build them.
 #
-include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/ext/jsmn" )
+include_directories(
+    "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/ext/jsmn;${srcd}/src;${srcd}/src/restfulapi")
+
+include_directories("${srcd}/src/3rdparty")
+include_directories("${srcd}/src/utilities")
+include_directories("${srcd}/src/3rdparty/cpprest-client/model")
+include_directories("${srcd}/ext/Catch2/build/generated_include;${srcd}/ext/Catch2/src/catch2")
 
 # Compiler flags
-#
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 set( CMAKE_C_FLAGS "-g " )
 set( CMAKE_CPP_FLAGS "-g " )
-set( CMAKE_CXX_FLAGS "-g " )
+set( CMAKE_CXX_FLAGS "-g -std=c++17" )
 if( GPROF )					# if set, we'll set profiling flag on compiles
 	message( "+++ profiling is on" )
 	set( CMAKE_C_FLAGS "-pg " )
@@ -188,12 +192,15 @@ add_subdirectory( src/xapp )
 add_subdirectory( src/alarm )
 add_subdirectory( src/metrics )
 add_subdirectory( src/config )
+add_subdirectory( src/restfulapi )
+add_subdirectory( src/3rdparty )
+add_subdirectory( src/utilities )
 #add_subdirectory( doc )				# this will auto skip if {X}fm is not available
 
 # shared and static libraries are built from the same object files.
 #
 add_library( ricxfcpp_shared SHARED
-	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:xapp_objects>"
+    "$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:xapp_objects>;$<TARGET_OBJECTS:cpprest-client_objects>;$<TARGET_OBJECTS:restapi_client_objects>;$<TARGET_OBJECTS:restapi_server_objects>;$<TARGET_OBJECTS:utilities_objects>"
 )
 set_target_properties( ricxfcpp_shared
 	PROPERTIES
@@ -206,7 +213,7 @@ set_target_properties( ricxfcpp_shared
 # we only build/export the static archive (.a) if generating a dev package
 if( DEV_PKG )
 	add_library( ricxfcpp_static STATIC
-		"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:xapp_objects>"
+        "$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:xapp_objects>;$<TARGET_OBJECTS:cpprest-client_objects>;$<TARGET_OBJECTS:restapi_client_objects>;$<TARGET_OBJECTS:restapi_server_objects>;$<TARGET_OBJECTS:utilities_objects>"
 	)
 	set_target_properties( ricxfcpp_static
 		PROPERTIES
