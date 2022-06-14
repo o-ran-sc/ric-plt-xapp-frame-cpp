@@ -36,28 +36,74 @@
 #include <string>
 #include <mutex>
 #include <map>
+#include <csignal>
 
 #include <rmr/rmr.h>
 
 #include "callback.hpp"
 #include "messenger.hpp"
+#include "config.hpp"
+#include "utilities.hpp"
+#include "restapi_client.hpp"
+
+#define SERVICE_HTTP		"SERVICE_%s_%s_HTTP_PORT"
+#define SERVICE_RMR			"SERVICE_%s_%s_RMR_PORT"
+#define LEN_TCP_SUBSTR		strlen("tcp://")
+#define DEFAULT_PLT_NS		"RICXPLT"
+#define DEFAULT_XAPP_NS		"RICXAPP"
+#define APPMGR_HTTP			"http://service-%s-appmgr-http.ricplt:8080/ric/v1"
+#define PLT_NS_ENV			"PLT_NAMESPACE"
+#define XAPP_NS_ENV			"XAPP_NAMESPACE"
+#define CONFIG_PATH			"/ric/v1/config"
+
+class Xapp;
+
+class WrapHandler {
+	private:
+		Xapp* p_Xapp;
+		WrapHandler() = default;
+	public:
+		static WrapHandler& getInstance() {
+			static WrapHandler* p_WrapHandler = new WrapHandler();
+			return *p_WrapHandler;
+		}
+
+		void set(Xapp* _p_Xapp) {
+			p_Xapp = _p_Xapp;
+		}
+
+		Xapp* get() {
+			return p_Xapp;
+		}
+};
 
 class Xapp : public xapp::Messenger {
 
 	private:
-		std::string name;
+		std::string m_appmgr_http;
+		std::string m_xappName;
 
-		// copy and assignment are PRIVATE because we cant "clone" the listen environment
 		Xapp( const Xapp& soi );
 		Xapp& operator=( const Xapp& soi );
+		std::shared_ptr<xapp::Config> sp_cfg = NULL;
+		virtual void registerXapp() final;
+		virtual void deregisterXapp() final;
 
 	public:
-		Xapp( const char* listen_port, bool wait4rt );	// builder
-		Xapp( );
+		Xapp(const char* port, bool wait4table);
+		Xapp(std::shared_ptr<xapp::Config> cfg);
+		Xapp(xapp::Config& cfg);
 		~Xapp();									// destroyer
 
+		void Init();
 		void Run( int nthreads );					// message listen driver
 		void Halt( );								// force to stop
+		static void signalHandler(int signum) {
+			static WrapHandler& p_WrapHandler = WrapHandler::getInstance();
+			p_WrapHandler.get()->deregisterXapp();
+			exit(signum);
+			return;
+		}
 };
 
 #endif
