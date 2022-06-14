@@ -28,17 +28,6 @@
 	Author:		E. Scott Daniels
 */
 
-#include <string.h>
-#include <unistd.h>
-
-#include <rmr/rmr.h>
-#include <rmr/RIC_message_types.h>
-
-
-#include <iostream>
-#include <thread>
-
-#include <messenger.hpp>
 #include "xapp.hpp"
 
 // --------------- private -----------------------------------------------------
@@ -46,7 +35,6 @@
 
 
 // --------------- builders -----------------------------------------------
-
 /*
 	If wait4table is true, then the construction of the object does not
 	complete until the underlying transport has a new copy of the route
@@ -58,11 +46,24 @@ Xapp::Xapp( const char* port, bool wait4table ) : Messenger( port, wait4table ) 
 	// nothing to do; all handled in Messenger constructor
 }
 
+Xapp::Xapp(std::shared_ptr<xapp::Config> cfg) : Messenger(cfg->Get_port("rmr-data").c_str(), false) {
+	sp_cfg = cfg;
+	Init();
+	registerXapp();
+}
+
+Xapp::Xapp(xapp::Config& cfg) : Messenger(cfg.Get_port("rmr-data").c_str(), false) {
+	sp_cfg = std::make_shared<xapp::Config>(std::move(cfg));
+	Init();
+	registerXapp();
+}
+
 /*
 	Destroyer.
 */
 Xapp::~Xapp() {
 	// nothing to destroy; superclass destruction is magically invoked.
+	deregisterXapp();
 }
 
 /*
@@ -98,3 +99,86 @@ void Xapp::Halt() {
 	this->Stop();			// messenger shut off
 }
 
+void Xapp::Init() {
+	char buf[1024];
+	std::string pltNS = getEnvironmentVariable(PLT_NS_ENV, DEFAULT_PLT_NS);
+	bzero(buf, sizeof(buf));
+	snprintf(buf, sizeof(buf), APPMGR_HTTP, pltNS.c_str());
+	appmgr_http = buf;
+	xappName = sp_cfg->Get_string("xapp_name", "");
+}
+
+void Xapp::registerXapp() {
+
+	char buf[1024];
+	auto client = std::make_shared<xapp::RestClient>(appmgr_http);
+	auto sp_register = std::make_shared<xapp::RestModel::RegisterData>();
+
+	std::string xappNS= getEnvironmentVariable(XAPP_NS_ENV, DEFAULT_XAPP_NS);
+
+	bzero(buf, sizeof(buf));
+	snprintf(buf, sizeof(buf), SERVICE_HTTP, xappNS.c_str(), xappName.c_str());
+	std::string httpService = getEnvironmentVariable(toUpper(buf), "");
+
+	if(0 == httpService.compare("") || httpService.length() < LEN_TCP_SUBSTR)
+	{
+		std::cout << __func__ << " " << __LINE__ << "Cannot get " << buf << "\n";
+		return;
+	}
+
+	bzero(buf, sizeof(buf));
+	snprintf(buf, sizeof(buf), SERVICE_RMR, xappNS.c_str(), xappName.c_str());
+	std::string rmrService = getEnvironmentVariable(toUpper(buf), "");
+
+	if(0 == rmrService.compare("") || rmrService.length() < LEN_TCP_SUBSTR)
+	{
+		std::cout << __func__ << " " << __LINE__ << "Cannot get " << buf << "\n";
+		return;
+	}
+
+	sp_register->setAppName(xappName)
+			.setHttpEndpoint(httpService.substr(LEN_TCP_SUBSTR, std::string::npos))
+			.setRmrEndpoint(rmrService.substr(LEN_TCP_SUBSTR, std::string::npos))
+			.setAppInstanceName(xappName)
+			.setAppVersion(sp_cfg->Get_string("version", ""))
+			.setConfigPath(CONFIG_PATH)
+			.setConfig(sp_cfg->Get_contents());
+
+	std::cout << sp_register->toJson().serialize() << std::endl;
+	std::string path = "/register";
+	client->doPost(path, sp_register->toJson().serialize()).then([=](pplx::task<std::string> response)
+	{
+		try
+		{
+			std::cout << "Register xApp successful" << "\n";
+			std::cout << response.get() << std::endl;
+		}
+		catch (const std::exception& e) {
+			std::cout << __func__ << " catch exception: " << e.what() << std::endl;
+		}
+	}).wait();
+}
+
+void Xapp::deregisterXapp() {
+
+	auto client = std::make_shared<xapp::RestClient>(appmgr_http);
+	auto sp_deregister = std::make_shared<xapp::RestModel::DeregisterData>();
+
+	sp_deregister->setAppName(xappName)
+			.setAppInstanceName(xappName);
+	std::cout << sp_deregister->toJson().serialize() << std::endl;
+
+	std::string path = "/deregister";
+	client->doPost(path, sp_deregister->toJson().serialize()).then([=](pplx::task<std::string> response)
+	{
+		try
+		{
+			std::cout << "Deregister xApp successful" << "\n";
+			std::cout << response.get() << std::endl;
+		}
+		catch (const std::exception& e) {
+			std::cout << __func__ << " catch exception: " << e.what() << std::endl;
+		}
+	}).wait();
+	return;
+}
