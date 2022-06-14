@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d7c61752_293ac31c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-14T10:33:00Z",
+      "side": 1,
+      "message": "Please help me to review this. I integrated RESTful API into xApp framework.\n- RESTful API source code is in src/restfulapi directory\n- I separated into 2 classes RestClient \u0026 RestServer\n- RestClient:\n    + Using Cpprest library for this.\n    + Using Swagger generated code.\n    + In RestClient, I created many methods for this class. Some basic methods is POST/GET/PUT/DELETE and some methods for xApp like Subscribe/Unsubscribe/Register.\n    + Using typedef to expose Swagger data model into xapp namespace for easier to use and easier to update new data model class with Swagger (Just need to generate and typedef in RestClient.hpp) and also keeps logic code and namespace of Swagger generated code\n- RestServer:\n    + Using Pistache library for this.\n    + Create some methods to Run server and AddRoute like Go framework.\n- Requirement: gcc/g++ minimum version 8.4\n    + Pistache library, Cpprest library\n\n",
+      "revId": "ccc2a72cddf1abe2322187aeb1004283d32cda0b",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    }
+  ]
+}
