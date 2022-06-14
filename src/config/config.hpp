@@ -71,6 +71,7 @@ class Config {
 		double Get_control_value( const std::string& name ) const;
 
 		std::string Get_port( const std::string& name ) const;
+		std::string Get_string(const std::string& name, const std::string& defval) const;
 
 		void Set_callback( notify_callback usr_func, void* usr_data );
 };
