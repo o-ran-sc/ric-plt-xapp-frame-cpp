@@ -357,6 +357,20 @@ double xapp::Config::Get_control_value( const std::string& name ) const {
 	return Get_control_value( name, 0.0 );
 }
 
+std::string xapp::Config::Get_string( const std::string& name, const std::string& defval ) const {
+	std::string rv;				// result value
+	rv = defval;
+	if( jh == NULL ) {
+		return rv;
+	}
+
+	jh->Unset_blob();
+	if(jh->Exists(name.c_str())) {
+		rv = jh->String(name.c_str());
+	}
+	jh->Unset_blob();
+	return rv;
+}
 
 // ---- notification support ---------------------------------------------------------------
 
