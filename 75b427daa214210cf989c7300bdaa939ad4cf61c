@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "085cf8d1_4fb0a206",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "Hi,\n\nWhile waiting the ci-management commit til it is merged, please help me to review my source code. In this newest commit, I did somethings like your suggestions:\n- Create 3rdparty dir\n- Create utilities dir (this dir will has some helpful function)\n- Move registerXapp to Xapp class and implemented deregisterXapp into Xapp class.\n\nThe source code is quiet messy in registerXapp \u0026 Init function. Because we need to handle and transfer between char and string. If you guys has any ideas to clear it, pls tell me.\n\nAnh Nguyen",
+      "revId": "75b427daa214210cf989c7300bdaa939ad4cf61c",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    }
+  ]
+}

@@ -105,6 +105,24 @@
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9caabb79_961dfa11",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "I dont know about it, please forward that email for me.",
+      "parentUuid": "dde8a112_6a5c0f73",
+      "revId": "1186c2a6a2a4c2d4b5d9c707a8d6ff561cfcc295",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5572a394_0983dfd4",
@@ -118,6 +136,30 @@
       "writtenOn": "2022-06-17T18:58:39Z",
       "side": 1,
       "message": "Needs change after builder change is merged.",
+      "range": {
+        "startLine": 37,
+        "startChar": 59,
+        "endLine": 37,
+        "endChar": 64
+      },
+      "revId": "1186c2a6a2a4c2d4b5d9c707a8d6ff561cfcc295",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "06b72a40_a3f0ab22",
+        "filename": "Dockerfile",
+        "patchSetId": 2
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "I removed it.",
+      "parentUuid": "5572a394_0983dfd4",
       "range": {
         "startLine": 37,
         "startChar": 59,
@@ -189,6 +231,30 @@
       "side": 1,
       "message": "Sure, it is helpful.\nI thought that the new builder image would already have pistache and so we do not need to compile it again.\nWe could keep this for now until RIC-912 is merged.",
       "parentUuid": "9347c1ee_b45bbc43",
+      "range": {
+        "startLine": 63,
+        "startChar": 0,
+        "endLine": 63,
+        "endChar": 3
+      },
+      "revId": "1186c2a6a2a4c2d4b5d9c707a8d6ff561cfcc295",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b1addd8a_c2b77b5f",
+        "filename": "Dockerfile",
+        "patchSetId": 2
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d0a2777b_00ebad84",
       "range": {
         "startLine": 63,
         "startChar": 0,
@@ -320,6 +386,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "48be218b_b9991191",
+        "filename": "examples/xapp_t4.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "Hi Alexandre, I moved register/deregister into xApp class.",
+      "parentUuid": "66ffc2ae_e57df5fc",
+      "range": {
+        "startLine": 86,
+        "startChar": 5,
+        "endLine": 86,
+        "endChar": 17
+      },
+      "revId": "1186c2a6a2a4c2d4b5d9c707a8d6ff561cfcc295",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "6fabd1cf_7d2f2000",
         "filename": "src/restfulapi/cpprest-client/api/CommonApi.h",
         "patchSetId": 2
@@ -343,6 +433,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "b30c8ab6_0a6f3a1f",
+        "filename": "src/restfulapi/cpprest-client/api/CommonApi.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "I created it, pls check newest commit",
+      "parentUuid": "6fabd1cf_7d2f2000",
+      "range": {
+        "startLine": 3,
+        "startChar": 15,
+        "endLine": 10,
+        "endChar": 15
+      },
+      "revId": "1186c2a6a2a4c2d4b5d9c707a8d6ff561cfcc295",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "3c70af22_f552d4ee",
         "filename": "src/restfulapi/restapi_client.hpp",
         "patchSetId": 2
@@ -354,6 +468,30 @@
       "writtenOn": "2022-06-17T18:58:39Z",
       "side": 1,
       "message": "Needs to implement the \"deregisterXapp\" as well.\nCurrently, when an xApp is undeployed or is stopped, the RoutingManager does not removes the routing information automatically from the RIC.\nDeregistration could be called on SIGTERM/SIGINT prior to exit.",
+      "range": {
+        "startLine": 51,
+        "startChar": 13,
+        "endLine": 51,
+        "endChar": 25
+      },
+      "revId": "1186c2a6a2a4c2d4b5d9c707a8d6ff561cfcc295",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5116aecc_c50c3029",
+        "filename": "src/restfulapi/restapi_client.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-21T12:04:12Z",
+      "side": 1,
+      "message": "I implemented it in xApp class src/xapp/xapp.cpp",
+      "parentUuid": "3c70af22_f552d4ee",
       "range": {
         "startLine": 51,
         "startChar": 13,
