@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5acf3ddf_ff0adf30",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-06-23T07:43:35Z",
+      "side": 1,
+      "message": "Hi,\n\nPlease check my newest commit. Main actions of this commit:\n- bzero -\u003e memset\n- add signalhandler for sigterm (I use a class to save Xapp pointer and callback to handler function in Xapp class because of some restrictions of signal handler in c++).\n\nAnh Nguyen",
+      "revId": "5f72d46649b02c96bc2382d713286c0ac1d4d32f",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    }
+  ]
+}
