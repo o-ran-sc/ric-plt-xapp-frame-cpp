@@ -16,6 +16,40 @@
       "message": "recheck",
       "revId": "230e831b076b118ea59d13cd86e94e55edf9f4d2",
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e73506e0_c3a100f8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2022-08-24T12:41:36Z",
+      "side": 1,
+      "message": "Hi I have some findings. I think that there is some problem in those generated codes on top which you have added your own code. They do not implement the interface the same way as in Go xapp-frame.",
+      "revId": "230e831b076b118ea59d13cd86e94e55edf9f4d2",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b6470a37_85a3ab09",
+        "filename": "src/restfulapi/restapi_client.cpp",
+        "patchSetId": 12
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1000033
+      },
+      "writtenOn": "2022-08-24T12:41:36Z",
+      "side": 1,
+      "message": "Submgr returns two parameters. HTTP return code and subscription response which is nil, if HTTP return code is not OK.\n\nThis is generated type in go xapp-frame:\n\ntype ClientService interface {\n\tSubscribe(params *SubscribeParams) (*SubscribeCreated, error)\n\nSubscription code in go xapp-frame:\n\n\t// Subscription: Subscribe\n\tapi.CommonSubscribeHandler \u003d common.SubscribeHandlerFunc(\n\t\tfunc(params common.SubscribeParams) middleware.Responder {\n\t\t\tresp, retCode :\u003d createSubscription(params.SubscriptionParams)\n\t\t\tif retCode !\u003d common.SubscribeCreatedCode {\n\t\t\t\tif retCode \u003d\u003d common.SubscribeBadRequestCode {\n\t\t\t\t\treturn common.NewSubscribeBadRequest()\n\t\t\t\t} else if retCode \u003d\u003d common.SubscribeNotFoundCode {\n\t\t\t\t\treturn common.NewSubscribeNotFound()\n\t\t\t\t} else if retCode \u003d\u003d common.SubscribeServiceUnavailableCode {\n\t\t\t\t\treturn common.NewSubscribeServiceUnavailable()\n\t\t\t\t} else {\n\t\t\t\t\treturn common.NewSubscribeInternalServerError()\n\t\t\t\t}\n\t\t\t}\n\t\t\treturn common.NewSubscribeCreated().WithPayload(resp)\n\t\t})",
+      "revId": "230e831b076b118ea59d13cd86e94e55edf9f4d2",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     }
   ]
 }
