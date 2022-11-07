@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "72ffc1d4_33fc2f96",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001859
+      },
+      "writtenOn": "2022-11-07T16:11:26Z",
+      "side": 1,
+      "message": "Hi,\n\nThis is my new commit for model definitions in xapp-framework-cpp. I don\u0027t use swagger anymore and rewrite these things first and will do with REST API after this. I used 2 libraries:\n- https://github.com/nlohmann/json\n- https://github.com/pboettch/json-schema-validator\n\nThey are modern c++ json libraries and has good performance and nice syntax(like Go). Please help me review this!\n\n*NOTE: about CI, I will update it within tomorrow.\n\nAnh Nguyen",
+      "revId": "4c26461480afefe2ff24db5ea062423500a50dbc",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    }
+  ]
+}
