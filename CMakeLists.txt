@@ -156,7 +156,7 @@ set ( srcd "${CMAKE_CURRENT_SOURCE_DIR}" )
 # but Cmake insists on having these exist when we add them to include directories to
 # enable code to find them after we build them.
 #
-include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/ext/jsmn" )
+include_directories("${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/src/rest/model;${srcd}/ext/jsmn")
 
 # Compiler flags
 #
@@ -188,6 +188,7 @@ add_subdirectory( src/xapp )
 add_subdirectory( src/alarm )
 add_subdirectory( src/metrics )
 add_subdirectory( src/config )
+add_subdirectory( src/rest )
 #add_subdirectory( doc )				# this will auto skip if {X}fm is not available
 
 # shared and static libraries are built from the same object files.
