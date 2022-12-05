@@ -11,5 +11,7 @@
 #include "SubscriptionParams.h"
 #include "SubscriptionInstance.h"
 #include "SubscriptionData.h"
-
-#endif /*XAPP_MODEL_H*/
+#include"SubscriptionDetail.h"
+#include"XAppConfig.h"
+//moved the implementation of model class into separate CPP file, in order to prevent ODR violation
+#endif
