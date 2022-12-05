@@ -100,7 +100,7 @@ add_definitions(
 	-DMAJOR_VER=${major_version}
 	-DMINOR_VER=${minor_version}
 	-DPATCH_VER=${patch_level}
-	-DDEBUG=${debugging}
+	#-DDEBUG=${debugging}
 )
 
 # ---------------- suss out pkg gen tools so we don't fail generating packages that the system cannot support --------------
@@ -156,10 +156,13 @@ set ( srcd "${CMAKE_CURRENT_SOURCE_DIR}" )
 # but Cmake insists on having these exist when we add them to include directories to
 # enable code to find them after we build them.
 #
-include_directories("${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/src/rest/model;${srcd}/ext/jsmn")
+#include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/ext/jsmn" )
+include_directories( "${srcd}/src/messaging;${srcd}/src/json;${srcd}/src/alarm;${srcd}/src/metrics;${srcd}/src/config;${srcd}/ext/jsmn;;${srcd}/src/model;${srcd}/src/rest-client;${srcd}/src/rest-server" )
 
 # Compiler flags
 #
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+#set(CMAKE_CXX_STANDARD 17)
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 set( CMAKE_C_FLAGS "-g " )
 set( CMAKE_CPP_FLAGS "-g " )
@@ -188,13 +191,16 @@ add_subdirectory( src/xapp )
 add_subdirectory( src/alarm )
 add_subdirectory( src/metrics )
 add_subdirectory( src/config )
-add_subdirectory( src/rest )
+add_subdirectory( src/model )
+add_subdirectory( src/rest-client )
+add_subdirectory( src/rest-server )
+
 #add_subdirectory( doc )				# this will auto skip if {X}fm is not available
 
 # shared and static libraries are built from the same object files.
 #
 add_library( ricxfcpp_shared SHARED
-	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:xapp_objects>"
+	"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:xapp_objects>;$<TARGET_OBJECTS:model_objects>;$<TARGET_OBJECTS:rest-client_objects>;$<TARGET_OBJECTS:rest-server_objects>"
 )
 set_target_properties( ricxfcpp_shared
 	PROPERTIES
@@ -207,7 +213,7 @@ set_target_properties( ricxfcpp_shared
 # we only build/export the static archive (.a) if generating a dev package
 if( DEV_PKG )
 	add_library( ricxfcpp_static STATIC
-		"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:xapp_objects>"
+		"$<TARGET_OBJECTS:message_objects>;$<TARGET_OBJECTS:json_objects>;$<TARGET_OBJECTS:alarm_objects>;$<TARGET_OBJECTS:config_objects>;$<TARGET_OBJECTS:metrics_objects>;$<TARGET_OBJECTS:xapp_objects>;$<TARGET_OBJECTS:model_objects>;$<TARGET_OBJECTS:rest-client_objects>;$<TARGET_OBJECTS:rest-server_objects>"
 	)
 	set_target_properties( ricxfcpp_static
 		PROPERTIES
@@ -282,3 +288,4 @@ IF( EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake" )
 
 	INCLUDE( CPack )
 ENDIF()
+
