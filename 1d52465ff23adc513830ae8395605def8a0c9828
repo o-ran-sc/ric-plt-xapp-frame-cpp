@@ -70,6 +70,24 @@
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2219a76a_2c1909a9",
+        "filename": "src/model/Dockerfile",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1001074
+      },
+      "writtenOn": "2022-12-13T21:04:30Z",
+      "side": 1,
+      "message": "Sure, thanks for clarifying.",
+      "parentUuid": "a13098b9_1dc494f2",
+      "revId": "1d52465ff23adc513830ae8395605def8a0c9828",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1196ac06_5446ed51",
@@ -107,6 +125,30 @@
       "side": 1,
       "message": "According to the Oran specs, the Xapp should create a listener to receive the rest notification after sending the rest subscription request.\n\nIam stating this listener in a separate thread.\nSince this listener is acting as server for handling the rest notification post request, it should be running continuously.\n\nBecause of the that I have detached this for main thread in order to prevent blocking of main thread.\n\nIn that separate thread this listener will run continuously uninterrupted, untill the developer uses the stop_response_listener() to stop this listener.\n\nKindly let me know your thought on this.",
       "parentUuid": "1196ac06_5446ed51",
+      "range": {
+        "startLine": 95,
+        "startChar": 10,
+        "endLine": 95,
+        "endChar": 18
+      },
+      "revId": "1d52465ff23adc513830ae8395605def8a0c9828",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bb93d88e_ed6ae3a4",
+        "filename": "src/rest-client/RestClient.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1001074
+      },
+      "writtenOn": "2022-12-13T21:04:30Z",
+      "side": 1,
+      "message": "I was thinking something like pplx:task with lambda expressions.\npplx:task will create a thread for waiting async replies.\nThe listener could be created in one task and stopped upon receiving the reply. Lambda would be very helpful for this scenario.",
+      "parentUuid": "4fea813c_3fdc8a11",
       "range": {
         "startLine": 95,
         "startChar": 10,
