@@ -36,6 +36,23 @@
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bf6f5013_5ab4967e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001476
+      },
+      "writtenOn": "2022-12-14T14:16:11Z",
+      "side": 1,
+      "message": "Suggestions by Anssi and Alexandre has been implemented",
+      "revId": "67f1a5aba257be730cbec06883e4cdddbcf2cf99",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bd06b111_ef98addd",
@@ -83,6 +100,30 @@
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f3b2ffec_7bb8a076",
+        "filename": "src/model/SubscriptionData.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1001476
+      },
+      "writtenOn": "2022-12-14T14:16:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b9fb1c39_b8c4594e",
+      "range": {
+        "startLine": 27,
+        "startChar": 3,
+        "endLine": 27,
+        "endChar": 30
+      },
+      "revId": "67f1a5aba257be730cbec06883e4cdddbcf2cf99",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "503ec5e1_84fccced",
@@ -96,6 +137,30 @@
       "writtenOn": "2022-12-13T21:04:30Z",
       "side": 1,
       "message": "To fix the busy wait issue, you could try the following inside a try...catch\nlistener-\u003eopen()-\u003ewait(); // wait is non-blocking here, and the \"callback(request)\" will run on a pplx::task thread.\nThis frees us of dealing with creating/managing an additional thread to receive replies.",
+      "range": {
+        "startLine": 58,
+        "startChar": 24,
+        "endLine": 60,
+        "endChar": 39
+      },
+      "revId": "67f1a5aba257be730cbec06883e4cdddbcf2cf99",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2bc0844e_6876b6eb",
+        "filename": "src/rest-client/RestClient.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1001476
+      },
+      "writtenOn": "2022-12-14T14:16:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "503ec5e1_84fccced",
       "range": {
         "startLine": 58,
         "startChar": 24,
