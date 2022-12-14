@@ -17,6 +17,10 @@ xAPP Framework.
 
 
 
+2022 14 December; version 2.3.8
+-------------------------------
+Adding support for REST-based E2 subscriptions
+
 2022 08 December; version 2.3.7
 -------------------------------
 Taking in new RMR version 4.8.5. 
