@@ -61,6 +61,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "b9fb1c39_b8c4594e",
+        "filename": "src/model/SubscriptionData.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1001476
+      },
+      "writtenOn": "2022-12-14T08:35:03Z",
+      "side": 1,
+      "message": "I already asked about this in a mail thread,\n\nThoralf mentioned that it will be integer only.\n\nAs far as I remember, in subscription response and notification the subscription id is in string.\n\nBut in subscription data the subscription id is in integer.\n\nThis is also mentioned in open api specification of go framework.\n\nI hope you remember the below mail thread; this is the mail that Thoralf had sent\n\nAnssi,\ncan you respond? I presume they are different IDs, one is for the actual subscription ID used between E2 node and RIC (which is also used in E2 indiciation messages, i.e., an integer) and one is for identifying subscription requests (\u003dstring) between xapp and sub mgr.\n\n\nKindly let me know, whether we have to change the subscription ID to string in subscription data model class?",
+      "parentUuid": "bd06b111_ef98addd",
+      "range": {
+        "startLine": 27,
+        "startChar": 3,
+        "endLine": 27,
+        "endChar": 30
+      },
+      "revId": "67f1a5aba257be730cbec06883e4cdddbcf2cf99",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "503ec5e1_84fccced",
         "filename": "src/rest-client/RestClient.cpp",
         "patchSetId": 7
