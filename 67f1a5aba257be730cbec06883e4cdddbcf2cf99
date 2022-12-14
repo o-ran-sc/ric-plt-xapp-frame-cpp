@@ -53,6 +53,24 @@
       "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c2eff7f0_17020273",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000108
+      },
+      "writtenOn": "2022-12-14T15:05:47Z",
+      "side": 1,
+      "message": "can do. I created https://jira.o-ran-sc.org/browse/RIC-950 for this",
+      "parentUuid": "a787f3af_00d5f542",
+      "revId": "67f1a5aba257be730cbec06883e4cdddbcf2cf99",
+      "serverId": "84e4e190-e623-4c37-9eda-58b1937c1b53"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bd06b111_ef98addd",
