@@ -44,7 +44,7 @@ ARG SRC=.
 
 WORKDIR /playpen
 # Install RMr (runtime and dev) from debian package cached on packagecloud.io
-ARG RMR_VER=4.8.5
+ARG RMR_VER=4.9.1
 
 # if package cloud is actually working, this is preferred
 #
@@ -107,7 +107,7 @@ RUN cp /usr/local/lib/x86_64-linux-gnu/pkgconfig/libpistache.pc /usr/local/lib/p
 RUN git clone https://github.com/nlohmann/json.git && cd json && cmake . && make install
 
 #install json-schema-validator
-RUN git clone https://github.com/pboettch/json-schema-validator.git && cd json-schema-validator &&mkdir build &&cd build && cmake .. && make install
+RUN git clone https://github.com/pboettch/json-schema-validator.git && git checkout cae6fad80001510077a7f40e68477a31ec443add && cd json-schema-validator &&mkdir build &&cd build && cmake .. && make install
 
 #copy the content as git repo inside the container.
 #COPY ${SRC}/CMakeLists.txt /playpen/factory/
