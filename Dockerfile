@@ -44,7 +44,7 @@ ARG SRC=.
 
 WORKDIR /playpen
 # Install RMr (runtime and dev) from debian package cached on packagecloud.io
-ARG RMR_VER=4.8.5
+ARG RMR_VER=4.9.1
 
 # if package cloud is actually working, this is preferred
 #
