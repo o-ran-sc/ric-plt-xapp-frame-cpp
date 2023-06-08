@@ -6,7 +6,7 @@
 #				repo and installing it.  The package method is preferred
 #				but if that breaks this can be used in place of it.
 
-rmr_ver=${1:-4.8.5}
+rmr_ver=${1:-4.9.1}
 
 # assume that we're in the proper directory
 set -e
