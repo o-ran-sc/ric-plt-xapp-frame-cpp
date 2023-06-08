@@ -12,5 +12,5 @@ RUN git clone https://github.com/Microsoft/cpprestsdk.git casablanca && \
     ninja && \
     ninja install
 RUN git clone https://github.com/nlohmann/json.git && cd json && cmake . && make install
-RUN git clone https://github.com/pboettch/json-schema-validator.git && cd json-schema-validator &&mkdir build &&cd build && cmake .. && make install
+RUN git clone https://github.com/pboettch/json-schema-validator.git && cd json-schema-validator && git checkout cae6fad80001510077a7f40e68477a31ec443add &&mkdir build &&cd build && cmake .. && make install
 COPY . ./
