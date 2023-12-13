@@ -17,6 +17,10 @@ xAPP Framework.
 
 
 
+2023 13 December; version 2.3.10
+-------------------------------
+Taking in new RMR version 4.9.3. 
+
 2023 08 June; version 2.3.9
 -------------------------------
 Taking in new RMR version 4.9.1. 
