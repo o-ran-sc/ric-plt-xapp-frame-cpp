@@ -5,6 +5,9 @@
 # has several changes.  Multiple blank lines between versions are
 # squished to one.
 
+2023 13 December; version 2.3.10.
+	Taking in new RMR version 4.9.4.
+
 2023 08 June; version 2.3.8
 	Taking in new RMR version 4.9.1.
 
