@@ -44,7 +44,7 @@ ARG SRC=.
 
 WORKDIR /playpen
 # Install RMr (runtime and dev) from debian package cached on packagecloud.io
-ARG RMR_VER=4.9.1
+ARG RMR_VER=4.9.4
 
 # if package cloud is actually working, this is preferred
 #
@@ -90,6 +90,7 @@ git g++ wget meson libcurl4-openssl-dev libssl-dev pkg-config ninja-build
 #building and installing pistache
 RUN git clone https://github.com/pistacheio/pistache.git
 RUN cd pistache && \
+	git checkout 363629b8804177a1e743cecfb880eed552922729 && \
         meson setup build \
     --buildtype=release \
     -DPISTACHE_USE_SSL=true \
