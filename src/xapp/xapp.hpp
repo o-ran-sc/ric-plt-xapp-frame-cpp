@@ -37,25 +37,40 @@
 #include <mutex>
 #include <map>
 
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/schema.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/prettywriter.h>
 #include <rmr/rmr.h>
-
+#include "config.hpp"
 #include "callback.hpp"
+#include "RestClient.h"
 #include "messenger.hpp"
 
 class Xapp : public xapp::Messenger {
 
 	private:
 		std::string name;
+		xapp::Config config;
 
 		// copy and assignment are PRIVATE because we cant "clone" the listen environment
 		Xapp( const Xapp& soi );
 		Xapp& operator=( const Xapp& soi );
-
+		bool Register();
+		std::string GetService(std::string host, std::string service);
 	public:
+		const std::string SERVICE_HTTP = "SERVICE_%s_%s_HTTP_PORT";
+		const std::string SERVICE_RMR = "SERVICE_%s_%s_RMR_PORT";
+		const std::string CONFIG_PATH = "/ric/v1/config";
+		const std::string REGISTER_PATH = "http://service-%s-appmgr-http.%s:8080/ric/v1/register";
+
 		Xapp( const char* listen_port, bool wait4rt );	// builder
 		Xapp( );
 		~Xapp();									// destroyer
-
+		
+		void RegisterXapp( );							// register xApp with Appmgr
 		void Run( int nthreads );					// message listen driver
 		void Halt( );								// force to stop
 };
