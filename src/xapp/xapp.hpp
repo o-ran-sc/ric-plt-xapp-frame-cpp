@@ -59,10 +59,10 @@ class Xapp : public xapp::Messenger {
 		Xapp( const Xapp& soi );
 		Xapp& operator=( const Xapp& soi );
 		bool Register();
-		std::string GetService(std::string host, std::string service);
+		std::string GetService(std::string host, const char* service);
 	public:
-		const std::string SERVICE_HTTP = "SERVICE_%s_%s_HTTP_PORT";
-		const std::string SERVICE_RMR = "SERVICE_%s_%s_RMR_PORT";
+		const char* SERVICE_HTTP = "SERVICE_%s_%s_HTTP_PORT";
+		const char* SERVICE_RMR = "SERVICE_%s_%s_RMR_PORT";
 		const std::string CONFIG_PATH = "/ric/v1/config";
 		const std::string REGISTER_PATH = "http://service-%s-appmgr-http.%s:8080/ric/v1/register";
 

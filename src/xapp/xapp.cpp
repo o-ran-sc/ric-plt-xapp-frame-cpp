@@ -36,7 +36,7 @@
 #include "RestClient.h"
 #include "xapp.hpp"
 using json = nlohmann::json;
-
+using namespace std;
 // --------------- builders -----------------------------------------------
 
 /*
@@ -46,10 +46,13 @@ using json = nlohmann::json;
 
 	If port is nil, then the default port is used (4560).
 */
-Xapp::Xapp( const char* port, bool wait4table ) {
-	std::thread regThread(&Xapp::RegisterXapp, this);
-	regThread.join();
-	Messenger(port, wait4table);
+Xapp::Xapp( const char* port, bool wait4table ): Messenger(port, false) {
+	thread regThread(&Xapp::RegisterXapp, this);
+	regThread.detach();
+
+	if( wait4table ) {
+		this->Wait_for_cts( 0 );
+	}
 }
 
 /*
@@ -67,12 +70,12 @@ Xapp::~Xapp() {
 */
 void Xapp::Run( int nthreads ) {
 	int i;
-	std::thread** tinfo;				// each thread we'll start
+	thread** tinfo;				// each thread we'll start
 
-	tinfo = new std::thread* [nthreads-1];
+	tinfo = new thread* [nthreads-1];
 
 	for( i = 0; i < nthreads - 1; i++ ) {				// thread for each n-1; last runs here
-		tinfo[i] = new std::thread( &Xapp::Listen, this );
+		tinfo[i] = new thread( &Xapp::Listen, this );
 	}
 
 	this->Listen();						// will return only when halted
@@ -92,23 +95,20 @@ void Xapp::Halt() {
 	this->Stop();			// messenger shut off
 }
 
-std::string Xapp::GetService(std::string host, std::string service) {
-	std::string service_url = "";
-	std::string app_namespace = std::string(getenv("APP_NAMESPACE"));
-
-	if (app_namespace == "") {
-		app_namespace = "ricxapp";
-	}
+string Xapp::GetService(string host, const char* service) {
+	string service_url = "";
+	string app_namespace = (getenv("APP_NAMESPACE") == nullptr) ? "ricxapp" : string(getenv("APP_NAMESPACE"));
 
 	if (host != "") {
-		std::transform(host.begin(), host.end(), host.begin(), ::toupper);
-		std::transform(app_namespace.begin(), app_namespace.end(), app_namespace.begin(), ::toupper);
-
-		std::string endpoint_var;
-		endpoint_var.reserve(128);
-		std::sprintf((char*)&endpoint_var, SERVICE_HTTP.c_str(), app_namespace, host);
-
-		std::replace(endpoint_var.begin(), endpoint_var.end(), '-', '_');
+		transform(host.begin(), host.end(), host.begin(), ::toupper);
+		transform(app_namespace.begin(), app_namespace.end(), app_namespace.begin(), ::toupper);
+		
+		size_t bufferSize = std::strlen(service) + strlen(app_namespace.c_str()) + strlen(host.c_str());
+		char buffer[bufferSize]; 
+		sprintf(buffer, service, app_namespace.c_str(), host.c_str());
+		
+		string endpoint_var = string(buffer);
+		replace(endpoint_var.begin(), endpoint_var.end(), '-', '_');
 
 		char* env_value = getenv((char*)&endpoint_var);
 
@@ -118,7 +118,7 @@ std::string Xapp::GetService(std::string host, std::string service) {
 			token = strtok(NULL, "//");
 		}
 
-		service_url = std::string(token);
+		service_url = string(token);
 	}
 
 	return service_url;
@@ -126,26 +126,22 @@ std::string Xapp::GetService(std::string host, std::string service) {
         
 
 bool Xapp::Register() {
-	std::string hostname = std::string(getenv("HOSTNAME"));
-	std::string xappname = config.Get_control_str("name");
-	std::string xappversion = config.Get_control_str("version");
+	string hostname = string(getenv("HOSTNAME"));
+	string xappname = config.Get_control_str("name");
+	string xappversion = config.Get_control_str("version");
 
-	std::string pltnamespace = std::string(getenv("PLT_NAMESPACE"));
+	string pltnamespace = (getenv("PLT_NAMESPACE") == nullptr) ? "ricplt" : string(getenv("PLT_NAMESPACE"));
 
-	if (pltnamespace == "") {
-		pltnamespace = "ricplt";
-	}
+	string http_endpoint = this->GetService(hostname, SERVICE_HTTP);
+	string rmr_endpoint = this->GetService(hostname, SERVICE_RMR);
 
-	std::string http_endpoint = this->GetService(hostname, SERVICE_HTTP);
-	std::string rmr_endpoint = this->GetService(hostname, SERVICE_RMR);
-
-	std::cout	<< "config details hostname : " << hostname 
+	cout	<< "config details hostname : " << hostname 
 				<< ", xappname: " << xappname 
 				<< ", xappversion : " << xappversion 
-				<< "pltnamespace : " << pltnamespace 
+				<< "pltnamespace : " << pltnamespace
 				<< ", http_endpoint: " << http_endpoint 
 				<< ", rmr_endpoint: " << rmr_endpoint 
-				<< std::endl;
+				<< endl;
 
 	json* request_string = new json
 		{
@@ -159,14 +155,14 @@ bool Xapp::Register() {
 
 		};
 
-	std::cout << "REQUEST STRING :" << request_string->dump() << std::endl;
+	cout << "REQUEST :" << request_string->dump() << endl;
 
 	// sending request
-	std::string register_url;
+	
 
-	register_url.reserve(128);
-	std::sprintf(&register_url[0], REGISTER_PATH.c_str(), pltnamespace, pltnamespace);
-
+	char buffer[100];
+	sprintf(buffer, REGISTER_PATH, pltnamespace.c_str(), pltnamespace.c_str());
+	string register_url = string(buffer);
 	xapp::cpprestclient client(register_url);
 
 	const json& const_request_string = *request_string;
@@ -181,12 +177,12 @@ bool Xapp::Register() {
 		rapidjson::StringBuffer s;
 		rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
 		document.Accept( writer );
-		std::cout << "[INFO] HandOff reply is " << s.GetString() << std::endl;
+		cout << "[INFO] HandOff reply is " << s.GetString() << endl;
 		return 1;
 	} else {
-		std::cout << "[ERROR] Unexpected HTTP code " << resp.status_code << " from " << \
+		cout << "[ERROR] Unexpected HTTP code " << resp.status_code << " from " << \
 				client.getBaseUrl() << \
-				"\n[ERROR] HTTP payload is " << resp.body.dump().c_str() << std::endl;
+				"\n[ERROR] HTTP payload is " << resp.body.dump().c_str() << endl;
 	}
 
 	return 0;
@@ -202,7 +198,7 @@ void Xapp::RegisterXapp() {
 	while (not isReady) {
 		sleep(5);
 		if (this->Register()) {
-			std::cout<<"Registration done, proceeding with startup ..."<<std::endl;
+			cout<<"Registration done, proceeding with startup ..."<<endl;
 			break;
 		}
 		
