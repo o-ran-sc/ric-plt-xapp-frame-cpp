@@ -34,22 +34,24 @@ repositories:
     - ric-plt/xapp-frame-cpp
 committers:
     - <<: *oran_ric_plt_xapp_frame_cpp_ptl
-    - name: 'Anssi Mannila'
-      email: 'anssi.mannila@nokia.com'
-      company: 'Europe/Helsinki'
-      id: 'amannila'
-    - name: 'Scott Daniels'
-      email: 'daniels@research.att.com'
-      company: 'ATT'
-      id: 'escottdaniels'
-    - name: 'Ron Shacham'
-      email: 'rshacham@research.att.com'
-      company: 'ATT'
-      id: 'rshacham'
+    - name: 'Abdulwahid W'
+      email: 'abdulwahid.w@nokia.com'
+      company: 'Nokia'
+      id: 'wahidw'
+      timezone: 'Asia/Kolkata'
 tsc:
     # yamllint disable rule:line-length
     approval: 'https://lists.o-ran-sc.org/g/main/topic/71383459#488'
     changes:
-        - type: ''
-          name: ''
+        - type: 'removal'
+          name: 'Ron Shacham'
+          link: ''
+        - type: 'removal'
+          name: 'Scott Daniels'
+          link: ''
+        - type: 'removal'
+          name: 'Anssi Mannila'
+          link: ''
+        - type: 'promotion'
+          name: 'Abdulwahid W'
           link: ''
