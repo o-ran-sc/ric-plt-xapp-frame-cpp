@@ -1,0 +1,9 @@
+Verified+1: ORAN Required GHA <releng+oran.required.gha@linuxfoundation.org>
+Code-Review+2: Abdul Wahid W <abdulwahid.w@nokia.com>
+Verified+1: Abdul Wahid W <abdulwahid.w@nokia.com>
+Verified+1: ORAN Jobbuilder <releng+oran-jobbuilder@linuxfoundation.org>
+Submitted-by: Abdul Wahid W <abdulwahid.w@nokia.com>
+Submitted-at: Thu, 02 May 2024 07:19:45 +0000
+Reviewed-on: https://gerrit.o-ran-sc.org/r/c/ric-plt/xapp-frame-cpp/+/12844
+Project: ric-plt/xapp-frame-cpp
+Branch: refs/heads/master
